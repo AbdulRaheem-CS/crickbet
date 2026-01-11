@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CrickBet - Betting Exchange & Casino Platform
 
-## Getting Started
+A full-stack MERN betting exchange and casino platform inspired by modern betting platforms.
 
-First, run the development server:
+## 🚀 Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Backend
+- **Runtime**: Node.js v18+
+- **Framework**: Express.js
+- **Database**: MongoDB with Mongoose
+- **Real-time**: Socket.io
+- **Authentication**: JWT + bcryptjs
+- **Payment**: Razorpay, PayTM, UPI
+
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: React Context API
+- **HTTP Client**: Axios
+- **Real-time**: Socket.io Client
+
+## 📁 Project Structure
+
+```
+crickbet/
+├── backend/                  # Node.js Express Backend
+│   ├── config/              # Configuration files
+│   ├── controllers/         # Route controllers
+│   ├── middleware/          # Custom middleware
+│   ├── models/             # MongoDB models (11 schemas)
+│   ├── routes/             # API routes (15 modules)
+│   ├── services/           # Business logic (8 services)
+│   ├── sockets/            # Socket.io handlers (4 handlers)
+│   ├── utils/              # Utility functions
+│   └── server.js           # Entry point
+│
+├── app/                     # Next.js App Router
+│   ├── (auth)/             # Auth pages
+│   ├── (main)/             # Main app pages  
+│   └── layout.tsx          # Root layout
+│
+├── components/              # React components
+│   ├── layout/             # Navbar, Sidebar
+│   └── betting/            # BetSlip
+│
+├── context/                 # React Context (4 providers)
+│   ├── AuthContext.tsx
+│   ├── WalletContext.tsx
+│   ├── BetSlipContext.tsx
+│   └── SocketContext.tsx
+│
+└── lib/                     # API client & services (7 services)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎯 Features Implemented (Structure)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Backend ✅
+- User authentication & JWT
+- Sports betting exchange
+- Wallet & transactions
+- KYC verification
+- Casino integration
+- Referral & Affiliate
+- Socket.io real-time
+- Payment gateways
+- 11 MongoDB models
+- 15 API route modules
+- 8 service modules
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Frontend ✅
+- Login/Register pages
+- Dashboard, Sports, Casino
+- Navbar, Sidebar, BetSlip
+- 4 Context providers
+- 7 API services
+- TypeScript setup
 
-## Learn More
+## �� Installation
 
-To learn more about Next.js, take a look at the following resources:
+### Backend
+```bash
+cd backend
+npm install
+cp .env.example .env
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Frontend
+```bash
+npm install
+echo "NEXT_PUBLIC_API_URL=http://localhost:5000/api" > .env.local
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🌐 Access
+- Frontend: http://localhost:3000
+- Backend: http://localhost:5000
 
-## Deploy on Vercel
+## 📝 Next Steps
+1. Install dependencies: `npm install` & `cd backend && npm install`
+2. Configure MongoDB connection
+3. Implement TODO placeholders
+4. Add remaining pages (slots, crash, lottery, etc.)
+5. Complete business logic
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+**Status**: Structure Complete | Logic: TODO Placeholders
