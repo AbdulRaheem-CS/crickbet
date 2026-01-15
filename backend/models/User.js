@@ -68,10 +68,12 @@ const UserSchema = new mongoose.Schema(
 
     // Wallet Information
     wallet: {
-      balance: { type: Number, default: 0, min: 0 },
-      bonus: { type: Number, default: 0, min: 0 },
-      exposure: { type: Number, default: 0, min: 0 },
+      balance: { type: Number, default: 0, min: 0 }, // Available balance
+      bonus: { type: Number, default: 0, min: 0 }, // Bonus balance
+      exposure: { type: Number, default: 0, min: 0 }, // Locked funds for pending bets
+      lockedFunds: { type: Number, default: 0, min: 0 }, // Total locked funds (exposure + other locks)
       currency: { type: String, default: 'INR' },
+      lastTransactionAt: { type: Date }, // Last wallet activity
     },
 
     // Betting Limits
