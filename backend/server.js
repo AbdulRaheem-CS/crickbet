@@ -39,6 +39,8 @@ const lotteryRoutes = require('./routes/lottery.routes');
 const sportsRoutes = require('./routes/sports.routes');
 const crashRoutes = require('./routes/crash.routes');
 const slotsRoutes = require('./routes/slots.routes');
+const oddsFeedRoutes = require('./routes/odds-feed.routes');
+const paymentRoutes = require('./routes/payment.routes');
 
 // Initialize Express app
 const app = express();
@@ -100,6 +102,8 @@ app.use('/api/lottery', lotteryRoutes);
 app.use('/api/sports', sportsRoutes);
 app.use('/api/crash', crashRoutes);
 app.use('/api/slots', slotsRoutes);
+app.use('/api/odds-feed', oddsFeedRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {

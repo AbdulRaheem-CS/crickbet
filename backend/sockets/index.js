@@ -6,6 +6,8 @@
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const oddsFeedService = require('../services/odds-feed.service');
+const { initializeBettingSocket } = require('./betting.socket');
 
 let io;
 
@@ -56,6 +58,12 @@ exports.initializeSocket = (server) => {
       socket.join(`user:${socket.userId}`);
     }
 
+    // Initialize betting socket handlers
+    initializeBettingSocket(socket);
+
+    // Handle odds feed WebSocket subscription
+    oddsFeedService.handleWebSocketFeed(socket);
+
     // Handle market subscription
     socket.on('subscribe:market', (marketId) => {
       socket.join(`market:${marketId}`);
@@ -71,6 +79,18 @@ exports.initializeSocket = (server) => {
     // Handle sport subscription
     socket.on('subscribe:sport', (sportId) => {
       socket.join(`sport:${sportId}`);
+    });
+
+    // Handle event subscription (for live scores)
+    socket.on('subscribe:event', (eventId) => {
+      socket.join(`event:${eventId}`);
+      console.log(`Socket ${socket.id} subscribed to event ${eventId}`);
+    });
+
+    // Handle event unsubscription
+    socket.on('unsubscribe:event', (eventId) => {
+      socket.leave(`event:${eventId}`);
+      console.log(`Socket ${socket.id} unsubscribed from event ${eventId}`);
     });
 
     // Handle crash game subscription

@@ -8,7 +8,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useWallet } from '@/context/WalletContext';
-import { FaBars, FaWallet, FaMoon, FaSignOutAlt } from 'react-icons/fa';
+import { FaBars, FaWallet, FaMoon, FaSignOutAlt, FaHandshake } from 'react-icons/fa';
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -51,6 +51,16 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                 className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-lg transition"
               >
                 Deposit
+              </Link>
+
+              {/* Affiliate Link */}
+              <Link
+                href="/affiliate"
+                className="hidden md:flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg transition"
+                title="Affiliate Dashboard"
+              >
+                <FaHandshake />
+                <span>Affiliate</span>
               </Link>
 
               {/* User Dropdown */}

@@ -29,6 +29,7 @@ interface MenuItem {
   icon: IconType;
   href: string;
   hasSubmenu?: boolean;
+  openInNewTab?: boolean;
 }
 
 const menuItems: MenuItem[] = [
@@ -46,8 +47,9 @@ const menuItems: MenuItem[] = [
   { label: 'VIP Club', icon: FaCrown, href: '/vip' },
   { label: 'Tournaments', icon: FaTrophy, href: '/tournaments' },
   { label: 'Leaderboard', icon: FaChartLine, href: '/leaderboard' },
+  { label: 'Affiliate', icon: FaHandshake, href: '/affiliate', openInNewTab: true },
   { label: 'Referral', icon: FaUsers, href: '/referral', hasSubmenu: true },
-  { label: 'Sponsorship', icon: FaHandshake, href: '/sponsorship' },
+  { label: 'Sponsorship', icon: FaBullhorn, href: '/sponsorship' },
   { label: 'My Bets', icon: FaFileAlt, href: '/bets' },
   { label: 'Bet History', icon: FaHistory, href: '/bet-history' },
   { label: 'Transactions', icon: FaMoneyBillWave, href: '/transactions' },
@@ -89,6 +91,34 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <nav className="p-3 space-y-1">
           {menuItems.map((item) => {
             const IconComponent = item.icon;
+            
+            // If the item should open in a new tab
+            if (item.openInNewTab) {
+              return (
+                <div key={item.href}>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                      pathname === item.href
+                        ? 'bg-blue-700 text-white'
+                        : 'text-gray-200 hover:bg-blue-800 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <IconComponent className="text-xl" />
+                      <span className="font-medium text-sm">{item.label}</span>
+                    </div>
+                    {item.hasSubmenu && (
+                      <FaChevronDown className="w-4 h-4" />
+                    )}
+                  </a>
+                </div>
+              );
+            }
+            
+            // Regular Link for internal navigation
             return (
               <div key={item.href}>
                 <Link

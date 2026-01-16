@@ -10,19 +10,57 @@ const User = require('../models/User');
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = asyncHandler(async (req, res, next) => {
-  // TODO: Implement user registration logic
-  // 1. Validate input data
-  // 2. Check if user already exists
-  // 3. Hash password
-  // 4. Create user
-  // 5. Generate referral code
-  // 6. Send verification email
-  // 7. Return JWT token
+  const { username, email, password, phone, referredBy } = req.body;
+
+  // Validate input
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide username, email, and password',
+    });
+  }
+
+  // Check if user already exists
+  const existingUser = await User.findOne({ 
+    $or: [{ email }, { username }] 
+  });
+
+  if (existingUser) {
+    return res.status(400).json({
+      success: false,
+      message: 'User with this email or username already exists',
+    });
+  }
+
+  // Generate referral code
+  const referralCode = `${username.substring(0, 3).toUpperCase()}${Date.now().toString().slice(-6)}`;
+
+  // Create user
+  const user = await User.create({
+    username,
+    email,
+    password, // Will be hashed by pre-save hook in User model
+    phone,
+    referralCode,
+    referredBy,
+  });
+
+  // Generate JWT token
+  const token = user.getSignedJwtToken();
 
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
-    data: null,
+    data: {
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        wallet: user.wallet,
+      },
+      token,
+    },
   });
 });
 
@@ -30,19 +68,76 @@ exports.register = asyncHandler(async (req, res, next) => {
 // @route   POST /api/auth/login
 // @access  Public
 exports.login = asyncHandler(async (req, res, next) => {
-  // TODO: Implement login logic
-  // 1. Validate credentials
-  // 2. Check if user exists
-  // 3. Verify password
-  // 4. Check account status
-  // 5. Check 2FA if enabled
-  // 6. Update last login
-  // 7. Return JWT token
+  const { email, password, emailOrPhone } = req.body;
+  
+  // Support both email and emailOrPhone field
+  const loginIdentifier = email || emailOrPhone;
+
+  // Validate input
+  if (!loginIdentifier || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide email and password',
+    });
+  }
+
+  // Find user by email or phone (if it's a 10-digit number)
+  const isPhone = /^[0-9]{10}$/.test(loginIdentifier);
+  const query = isPhone 
+    ? { phone: loginIdentifier }
+    : { email: loginIdentifier };
+
+  // Find user and include password field
+  const user = await User.findOne(query).select('+password');
+
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid credentials',
+    });
+  }
+
+  // Check if password matches
+  const isPasswordMatch = await user.matchPassword(password);
+
+  if (!isPasswordMatch) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid credentials',
+    });
+  }
+
+  // Check account status
+  if (user.status === 'suspended' || user.status === 'banned') {
+    return res.status(403).json({
+      success: false,
+      message: `Your account has been ${user.status}. Please contact support.`,
+    });
+  }
+
+  // Update last login
+  user.lastLogin = new Date();
+  await user.save();
+
+  // Generate JWT token
+  const token = user.getSignedJwtToken();
 
   res.status(200).json({
     success: true,
     message: 'Login successful',
-    data: null,
+    data: {
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        wallet: user.wallet,
+        isEmailVerified: user.isEmailVerified,
+        kycStatus: user.kycStatus,
+      },
+      token,
+    },
   });
 });
 

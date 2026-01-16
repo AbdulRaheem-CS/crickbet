@@ -205,32 +205,200 @@ BetSchema.statics.generateBetRef = function () {
   return `BET-${timestamp}-${random}`;
 };
 
-// TODO: Implement bet matching logic
-BetSchema.methods.matchBet = async function (counterBet) {
-  // TODO: Implement betting matching logic here
-  // 1. Check if odds are compatible
-  // 2. Calculate matched amount
-  // 3. Update both bets' matched amounts
-  // 4. Create matched bet records
-  // 5. Update user exposures
-  throw new Error('Not implemented');
+/**
+ * Match this bet with a counter bet
+ * @param {Object} counterBet - Counter bet to match with
+ * @param {Number} matchAmount - Amount to match
+ * @returns {Object} Match result
+ */
+BetSchema.methods.matchBet = async function (counterBet, matchAmount) {
+  // Validate compatibility
+  if (this.betType === counterBet.betType) {
+    throw new Error('Cannot match bets of the same type');
+  }
+
+  if (this.selection.id !== counterBet.selection.id) {
+    throw new Error('Bets must be on the same selection');
+  }
+
+  if (this.market.toString() !== counterBet.market.toString()) {
+    throw new Error('Bets must be on the same market');
+  }
+
+  // Check odds compatibility
+  if (this.betType === 'back' && this.odds < counterBet.odds) {
+    throw new Error('Back bet odds must be >= lay bet odds');
+  }
+
+  if (this.betType === 'lay' && this.odds > counterBet.odds) {
+    throw new Error('Lay bet odds must be <= back bet odds');
+  }
+
+  // Validate match amount
+  const maxMatchAmount = Math.min(this.unmatchedAmount, counterBet.unmatchedAmount);
+  if (matchAmount > maxMatchAmount) {
+    throw new Error(`Match amount exceeds available: ${maxMatchAmount}`);
+  }
+
+  // Update matched amounts
+  this.matchedAmount += matchAmount;
+  this.unmatchedAmount -= matchAmount;
+  this.matchedWith.push({
+    betId: counterBet._id,
+    amount: matchAmount,
+    odds: counterBet.odds,
+    matchedAt: new Date(),
+  });
+
+  // Update status
+  if (this.unmatchedAmount === 0) {
+    this.status = 'matched';
+  } else {
+    this.status = 'partially_matched';
+  }
+
+  return {
+    matched: true,
+    matchedAmount,
+    remainingUnmatched: this.unmatchedAmount,
+  };
 };
 
-// TODO: Implement bet settlement
+/**
+ * Settle this bet based on result
+ * @param {String} result - 'won', 'lost', 'void', 'half_won', 'half_lost'
+ * @param {String} settledBy - User ID who settled (admin)
+ * @returns {Object} Settlement details
+ */
 BetSchema.methods.settle = async function (result, settledBy) {
-  // TODO: Implement bet settlement logic here
-  // 1. Validate result
-  // 2. Calculate profit/loss
-  // 3. Update user wallet
-  // 4. Update bet status
-  throw new Error('Not implemented');
+  if (this.status === 'settled') {
+    throw new Error('Bet already settled');
+  }
+
+  if (!['won', 'lost', 'void', 'half_won', 'half_lost'].includes(result)) {
+    throw new Error('Invalid settlement result');
+  }
+
+  const matchedStake = this.matchedAmount;
+  let profitLoss = 0;
+  let commission = 0;
+
+  switch (result) {
+    case 'won':
+      if (this.betType === 'back') {
+        profitLoss = matchedStake * (this.odds - 1);
+      } else {
+        profitLoss = matchedStake;
+      }
+      commission = (profitLoss * this.commission.rate) / 100;
+      profitLoss -= commission;
+      break;
+
+    case 'lost':
+      if (this.betType === 'back') {
+        profitLoss = -matchedStake;
+      } else {
+        profitLoss = -(matchedStake * (this.odds - 1));
+      }
+      break;
+
+    case 'void':
+      profitLoss = 0;
+      break;
+
+    case 'half_won':
+      if (this.betType === 'back') {
+        profitLoss = (matchedStake * (this.odds - 1)) / 2;
+      } else {
+        profitLoss = matchedStake / 2;
+      }
+      commission = (profitLoss * this.commission.rate) / 100;
+      profitLoss -= commission;
+      break;
+
+    case 'half_lost':
+      if (this.betType === 'back') {
+        profitLoss = -matchedStake / 2;
+      } else {
+        profitLoss = -(matchedStake * (this.odds - 1)) / 2;
+      }
+      break;
+  }
+
+  this.status = 'settled';
+  this.result = result;
+  this.profitLoss = profitLoss;
+  this.commission.amount = commission;
+  this.settledAmount = matchedStake;
+  this.settledAt = new Date();
+  this.settledBy = settledBy;
+
+  return {
+    result,
+    profitLoss,
+    commission,
+    settledAmount: matchedStake,
+  };
 };
 
-// TODO: Implement cash out calculation
+/**
+ * Calculate cash out value based on current odds
+ * @param {Number} currentOdds - Current market odds for this selection
+ * @returns {Object} Cash out offer
+ */
 BetSchema.methods.calculateCashOut = function (currentOdds) {
-  // TODO: Implement cash out value calculation
-  // Based on current odds vs original odds
-  throw new Error('Not implemented');
+  if (!['matched', 'partially_matched'].includes(this.status)) {
+    throw new Error('Cash out only available for matched bets');
+  }
+
+  if (this.matchedAmount === 0) {
+    throw new Error('No matched amount to cash out');
+  }
+
+  const matchedStake = this.matchedAmount;
+  let cashOutValue = 0;
+
+  if (this.betType === 'back') {
+    // Back bet cash out calculation
+    const originalProfit = matchedStake * (this.odds - 1);
+    const currentProfit = matchedStake * (currentOdds - 1);
+
+    if (currentOdds > this.odds) {
+      // Position improved - offer partial profit
+      const improvement = currentProfit - originalProfit;
+      cashOutValue = matchedStake + (improvement * 0.8);
+    } else {
+      // Position worsened - offer reduced amount
+      cashOutValue = matchedStake * (currentOdds / this.odds) * 0.9;
+    }
+  } else {
+    // Lay bet cash out calculation
+    const originalLiability = matchedStake * (this.odds - 1);
+    const currentLiability = matchedStake * (currentOdds - 1);
+
+    if (currentOdds < this.odds) {
+      // Position improved - offer partial profit
+      const improvement = originalLiability - currentLiability;
+      cashOutValue = originalLiability + (improvement * 0.8);
+    } else {
+      // Position worsened - offer reduced amount
+      cashOutValue = originalLiability * (this.odds / currentOdds) * 0.9;
+    }
+  }
+
+  // Apply 5% cash out commission
+  const commission = cashOutValue * 0.05;
+  cashOutValue -= commission;
+
+  return {
+    cashOutValue: Math.max(0, Math.round(cashOutValue * 100) / 100),
+    commission: Math.round(commission * 100) / 100,
+    originalStake: matchedStake,
+    currentOdds,
+    originalOdds: this.odds,
+    profitLoss: Math.round((cashOutValue - matchedStake) * 100) / 100,
+  };
 };
 
 module.exports = mongoose.model('Bet', BetSchema);
+

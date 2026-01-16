@@ -160,32 +160,156 @@ MarketSchema.virtual('isLive').get(function () {
   return this.status === 'open' && this.inPlay;
 });
 
-// TODO: Implement market settlement
+/**
+ * Settle market with winning runner
+ * @param {String} winningRunnerId - ID of winning runner
+ * @param {String} settledBy - Admin user ID who settled
+ * @returns {Object} Settlement result
+ */
 MarketSchema.methods.settleMarket = async function (winningRunnerId, settledBy) {
-  // TODO: Implement market settlement logic here
-  // 1. Validate winning runner
-  // 2. Update runner statuses
-  // 3. Settle all bets on this market
-  // 4. Update market status
-  throw new Error('Not implemented');
+  if (this.status === 'settled') {
+    throw new Error('Market already settled');
+  }
+
+  if (!['open', 'suspended', 'closed'].includes(this.status)) {
+    throw new Error(`Cannot settle market with status: ${this.status}`);
+  }
+
+  // Find and validate winning runner
+  const winningRunner = this.runners.find(
+    (r) => r.runnerId === winningRunnerId || r._id.toString() === winningRunnerId
+  );
+
+  if (!winningRunner) {
+    throw new Error('Winning runner not found in this market');
+  }
+
+  // Update runner results
+  this.runners.forEach((runner) => {
+    if (runner.runnerId === winningRunnerId || runner._id.toString() === winningRunnerId) {
+      runner.result = 'winner';
+      runner.status = 'winner';
+    } else {
+      runner.result = 'loser';
+      runner.status = 'loser';
+    }
+  });
+
+  // Update market status
+  this.status = 'settled';
+  this.winningRunner = winningRunnerId;
+  this.settledTime = new Date();
+  this.settledBy = settledBy;
+
+  await this.save();
+
+  return {
+    marketId: this._id,
+    winningRunner: winningRunner.name,
+    settledAt: this.settledTime,
+  };
 };
 
-// TODO: Implement void market
+/**
+ * Void market and refund all bets
+ * @param {String} reason - Reason for voiding
+ * @param {String} voidedBy - Admin user ID who voided
+ * @returns {Object} Void result
+ */
 MarketSchema.methods.voidMarket = async function (reason, voidedBy) {
-  // TODO: Implement market void logic here
-  // 1. Void all bets
-  // 2. Refund stakes
-  // 3. Update market status
-  throw new Error('Not implemented');
+  if (this.status === 'void') {
+    throw new Error('Market already void');
+  }
+
+  if (this.status === 'settled') {
+    throw new Error('Cannot void a settled market');
+  }
+
+  // Update runner results
+  this.runners.forEach((runner) => {
+    runner.result = 'void';
+    runner.status = 'removed';
+  });
+
+  // Update market status
+  this.status = 'void';
+  this.settlementNotes = reason;
+  this.settledTime = new Date();
+  this.settledBy = voidedBy;
+
+  await this.save();
+
+  return {
+    marketId: this._id,
+    reason,
+    voidedAt: this.settledTime,
+  };
 };
 
-// TODO: Implement odds update
+/**
+ * Update runner odds
+ * @param {Array} runnerOdds - Array of {runnerId, backOdds, layOdds}
+ * @returns {Object} Update result
+ */
 MarketSchema.methods.updateOdds = async function (runnerOdds) {
-  // TODO: Implement odds update logic here
-  // 1. Validate odds data
-  // 2. Update runner odds
-  // 3. Emit socket event for live updates
-  throw new Error('Not implemented');
+  if (!Array.isArray(runnerOdds)) {
+    throw new Error('runnerOdds must be an array');
+  }
+
+  if (this.status !== 'open' && this.status !== 'suspended') {
+    throw new Error(`Cannot update odds for market with status: ${this.status}`);
+  }
+
+  let updatedCount = 0;
+
+  runnerOdds.forEach((oddsUpdate) => {
+    const { runnerId, backOdds, layOdds, lastPriceTraded } = oddsUpdate;
+
+    const runner = this.runners.find(
+      (r) => r.runnerId === runnerId || r._id.toString() === runnerId
+    );
+
+    if (runner) {
+      // Update back odds
+      if (backOdds && Array.isArray(backOdds)) {
+        runner.backOdds = backOdds
+          .filter((odd) => odd.price && odd.size)
+          .map((odd) => ({
+            price: Number(odd.price),
+            size: Number(odd.size),
+          }))
+          .slice(0, 3); // Keep top 3 prices
+      }
+
+      // Update lay odds
+      if (layOdds && Array.isArray(layOdds)) {
+        runner.layOdds = layOdds
+          .filter((odd) => odd.price && odd.size)
+          .map((odd) => ({
+            price: Number(odd.price),
+            size: Number(odd.size),
+          }))
+          .slice(0, 3); // Keep top 3 prices
+      }
+
+      // Update last price traded
+      if (lastPriceTraded) {
+        runner.lastPriceTraded = Number(lastPriceTraded);
+      }
+
+      updatedCount++;
+    }
+  });
+
+  this.updatedAt = new Date();
+  await this.save();
+
+  return {
+    marketId: this._id,
+    updatedRunners: updatedCount,
+    timestamp: this.updatedAt,
+  };
 };
 
 module.exports = mongoose.model('Market', MarketSchema);
+

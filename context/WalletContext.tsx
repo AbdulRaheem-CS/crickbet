@@ -31,10 +31,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const refreshBalance = async () => {
     setLoading(true);
     try {
-      const data: any = await walletService.getBalance();
-      setBalance(data.balance);
+      const response: any = await walletService.getBalance();
+      // API returns { success: true, data: { balance, bonus, exposure, ... } }
+      setBalance(response.data?.balance || 0);
     } catch (error) {
       console.error('Failed to fetch balance:', error);
+      setBalance(0);
     } finally {
       setLoading(false);
     }

@@ -13,6 +13,7 @@ interface User {
   username: string;
   email: string;
   phone: string;
+  role: string;
   wallet: {
     balance: number;
   };
@@ -35,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is logged in on mount
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     if (token) {
       refreshUser();
     } else {
@@ -45,11 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const data: any = await authService.me();
-      setUser(data.user);
+      const response: any = await authService.me();
+      // API returns { success: true, data: user }
+      setUser(response.data || response.user);
     } catch (error) {
       console.error('Failed to fetch user:', error);
-      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
       setUser(null);
     } finally {
       setLoading(false);
@@ -57,15 +59,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (emailOrPhone: string, password: string) => {
-    const data: any = await authService.login({ emailOrPhone, password });
-    localStorage.setItem('token', data.token);
-    setUser(data.user);
+    const response: any = await authService.login({ emailOrPhone, password });
+    // API returns { success: true, data: { user, token } }
+    const { user, token } = response.data;
+    localStorage.setItem('authToken', token);
+    setUser(user);
   };
 
   const register = async (registerData: any) => {
-    const data: any = await authService.register(registerData);
-    localStorage.setItem('token', data.token);
-    setUser(data.user);
+    const response: any = await authService.register(registerData);
+    // API returns { success: true, data: { user, token } }
+    const { user, token } = response.data;
+    localStorage.setItem('authToken', token);
+    setUser(user);
   };
 
   const logout = async () => {
@@ -74,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
       setUser(null);
     }
   };
