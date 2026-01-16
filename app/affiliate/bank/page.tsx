@@ -45,7 +45,7 @@ export default function AffiliateBankPage() {
   const fetchBankAccounts = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/api/affiliate/bank-accounts');
+      const response = await apiClient.get('/affiliate/bank-accounts');
       setBankAccounts(response.data.data || []);
       setError(null);
     } catch (err: any) {
@@ -68,7 +68,7 @@ export default function AffiliateBankPage() {
     e.preventDefault();
     try {
       setSubmitting(true);
-      await apiClient.post('/api/affiliate/bank-accounts', formData);
+      await apiClient.post('/affiliate/bank-accounts', formData);
       setShowAddModal(false);
       setFormData({
         accountHolderName: '',
@@ -91,7 +91,7 @@ export default function AffiliateBankPage() {
     if (!confirm('Are you sure you want to delete this bank account?')) return;
     
     try {
-      await apiClient.delete(`/api/affiliate/bank-accounts/${id}`);
+      await apiClient.delete(`/affiliate/bank-accounts/${id}`);
       await fetchBankAccounts();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to delete bank account');
@@ -100,7 +100,7 @@ export default function AffiliateBankPage() {
 
   const handleSetDefault = async (id: string) => {
     try {
-      await apiClient.put(`/api/affiliate/bank-accounts/${id}/set-default`);
+      await apiClient.put(`/affiliate/bank-accounts/${id}/set-default`);
       await fetchBankAccounts();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to set default account');

@@ -143,6 +143,18 @@ const UserSchema = new mongoose.Schema(
       sessionTimeLimit: { type: Number }, // in minutes
       realityCheckInterval: { type: Number, default: 60 }, // in minutes
     },
+
+    // Bank Accounts
+    bankAccounts: [{
+      accountHolderName: { type: String, required: true },
+      bankName: { type: String, required: true },
+      accountNumber: { type: String, required: true },
+      ifscCode: { type: String, required: true },
+      branchName: { type: String, required: true },
+      accountType: { type: String, enum: ['savings', 'current'], default: 'savings' },
+      isDefault: { type: Boolean, default: false },
+      createdAt: { type: Date, default: Date.now }
+    }],
   },
   {
     timestamps: true,

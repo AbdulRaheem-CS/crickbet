@@ -45,7 +45,7 @@ export default function AffiliateHierarchyPage() {
   const fetchHierarchyData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/api/affiliate/hierarchy');
+      const response = await apiClient.get('/affiliate/hierarchy');
       setData(response.data.data);
       setError(null);
     } catch (err: any) {

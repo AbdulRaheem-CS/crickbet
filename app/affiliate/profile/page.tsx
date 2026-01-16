@@ -60,7 +60,7 @@ export default function AffiliateProfilePage() {
   const fetchProfileData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/api/affiliate/profile');
+      const response = await apiClient.get('/affiliate/profile');
       setData(response.data.data);
       setError(null);
     } catch (err: any) {

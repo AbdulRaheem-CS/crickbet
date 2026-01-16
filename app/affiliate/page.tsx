@@ -44,7 +44,7 @@ export default function AffiliatePage() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/api/affiliate/dashboard');
+      const response = await apiClient.get('/affiliate/dashboard');
       setData(response.data);
       setError(null);
     } catch (err: any) {
