@@ -10,6 +10,9 @@ module.exports = {
       animation: {
         'spin-slow': 'spin 3s linear infinite',
       },
+      fontFamily: {
+        sans: ['"Helvetica Neue"', 'Arial', 'sans-serif'],
+      },
     },
   },
   plugins: [],

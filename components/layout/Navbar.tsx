@@ -2,36 +2,39 @@
 
 /**
  * Navbar Component
- * Top navigation bar
+ * Top navigation bar - Right side only (Sidebar handles left)
  */
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useWallet } from '@/context/WalletContext';
-import { FaBars, FaWallet, FaMoon, FaSignOutAlt, FaHandshake } from 'react-icons/fa';
+import { FaWallet, FaMoon, FaSignOutAlt, FaHandshake, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 interface NavbarProps {
-  onToggleSidebar: () => void;
+  isMinimized: boolean;
+  onToggleMinimize: () => void;
 }
 
-export default function Navbar({ onToggleSidebar }: NavbarProps) {
+export default function Navbar({ isMinimized, onToggleMinimize }: NavbarProps) {
   const { user, logout } = useAuth();
   const { balance } = useWallet();
 
   return (
-    <nav className="bg-blue-700 shadow-md sticky top-0 z-50">
-      <div className="px-4 py-3 flex items-center justify-between">
-        {/* Left Section - Logo and Menu Button */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onToggleSidebar}
-            className="text-white hover:bg-blue-600 p-2 rounded-lg transition"
-          >
-            <FaBars className="w-6 h-6" />
-          </button>
-          
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-white">CRICKEX</span>
+    <nav className="bg-[#005DAC] shadow-md sticky top-0 z-40">
+      <div className="px-4 py-3 flex items-center justify-between relative">
+        {/* Floating oval toggle button overlapping sidebar/navbar */}
+        <button
+          onClick={onToggleMinimize}
+          aria-label="Toggle sidebar"
+          className="absolute -left-6 top-1/2 -translate-y-1/2 bg-[#003f6b] hover:bg-[#003457] text-white w-12 h-8 rounded-full flex items-center justify-center px-2 shadow-lg z-50"
+        >
+          {isMinimized ? <FaChevronRight className="w-3 h-3" /> : <FaChevronLeft className="w-3 h-3" />}
+        </button>
+        {/* Left - Logo */}
+        <div className="flex items-center gap-3 ml-5">
+          <Link href="/dashboard" className="flex items-center">
+            <Image src="/logo.png" alt="Crickex" width={130} height={32} priority />
           </Link>
         </div>
 
@@ -54,14 +57,14 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
               </Link>
 
               {/* Affiliate Link */}
-              <Link
+              {/* <Link
                 href="/affiliate"
                 className="hidden md:flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-4 py-2 rounded-lg transition"
                 title="Affiliate Dashboard"
               >
                 <FaHandshake />
                 <span>Affiliate</span>
-              </Link>
+              </Link> */}
 
               {/* User Dropdown */}
               <div className="flex items-center gap-2">
@@ -77,9 +80,9 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
               </div>
 
               {/* Dark Mode Toggle */}
-              <button className="bg-blue-600 hover:bg-blue-500 p-2 rounded-lg text-white transition">
+              {/* <button className="bg-blue-600 hover:bg-blue-500 p-2 rounded-lg text-white transition">
                 <FaMoon />
-              </button>
+              </button> */}
             </>
           ) : (
             <>
@@ -91,7 +94,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
               </Link>
               <Link
                 href="/login"
-                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg transition"
+                className="bg-[#1A79D3] hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg transition"
               >
                 Login
               </Link>

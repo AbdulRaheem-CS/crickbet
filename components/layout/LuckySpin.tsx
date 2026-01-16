@@ -12,11 +12,10 @@ export default function LuckySpin() {
   return (
     <div className="fixed bottom-6 right-6 z-30">
       <button className="relative group">
-        {/* Spinning Wheel */}
-        <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-lg animate-spin-slow">
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-            <GiPerspectiveDiceSixFacesRandom className="text-3xl text-orange-500" />
-          </div>
+        {/* Spinning Wheel (GIF) */}
+        <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden bg-white">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://jwrcdn.monopolygaming.com/spinwin.gif" alt="Lucky Spin" className="w-full h-full object-cover" />
         </div>
         
         {/* Checkmark Badge */}

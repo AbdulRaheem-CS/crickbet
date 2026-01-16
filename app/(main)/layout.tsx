@@ -11,7 +11,7 @@ import LuckySpin from '@/components/layout/LuckySpin';
 import { useState } from 'react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarMinimized, setSidebarMinimized] = useState(false);
   const [betSlipOpen, setBetSlipOpen] = useState(false);
 
   return (
@@ -19,15 +19,30 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <WalletProvider>
         <BetSlipProvider>
           <SocketProvider>
-            <div className="min-h-screen bg-gray-100">
-              <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-              <div className="flex relative">
-                <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-                <main className="flex-1 transition-all duration-300">
+            <div className="min-h-screen bg-white">
+              {/* Sidebar - Always visible, fixed position */}
+              <Sidebar 
+                isMinimized={sidebarMinimized} 
+                onToggleMinimize={() => setSidebarMinimized(!sidebarMinimized)} 
+              />
+              
+              {/* Main Content Area - Adjusted for sidebar width */}
+              <div 
+                className={`flex flex-col transition-all duration-300 ${
+                  sidebarMinimized ? 'ml-20' : 'ml-[17%]'
+                }`}
+                style={{ minHeight: '100vh' }}
+              >
+                <Navbar
+                  isMinimized={sidebarMinimized}
+                  onToggleMinimize={() => setSidebarMinimized(!sidebarMinimized)}
+                />
+                <main className="flex-1 bg-white overflow-auto">
                   {children}
                 </main>
-                <BetSlip isOpen={betSlipOpen} onClose={() => setBetSlipOpen(false)} />
               </div>
+              
+              <BetSlip isOpen={betSlipOpen} onClose={() => setBetSlipOpen(false)} />
               <LuckySpin />
             </div>
           </SocketProvider>

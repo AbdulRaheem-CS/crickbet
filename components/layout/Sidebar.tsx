@@ -16,12 +16,12 @@ import {
   FaMobileAlt, FaShieldAlt, FaChevronDown,
   FaCrown, FaBullhorn, FaHistory, FaFileAlt,
   FaMoneyBillWave, FaCog, FaQuestionCircle,
-  FaStar, FaChartLine
+  FaStar, FaChartLine, FaChevronLeft, FaChevronRight
 } from 'react-icons/fa';
 
 interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isMinimized: boolean;
+  onToggleMinimize: () => void;
 }
 
 interface MenuItem {
@@ -60,7 +60,7 @@ const menuItems: MenuItem[] = [
   { label: 'Responsible Gaming', icon: FaShieldAlt, href: '/responsible-gaming' },
 ];
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
@@ -73,76 +73,131 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   }
 
   return (
-    <>
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
+    <aside
+      className={`fixed top-0 left-0 h-screen bg-[#005DAC] border-r-4 border-gray-500 overflow-y-auto z-40 transition-all duration-300 ${
+        isMinimized ? 'w-20' : 'w-[17%]'
+      }`}
+    >
+      {/* Navigation - Home at top with minimize button */}
+      <nav className=" space-y-1">
+        {/* Home item with integrated minimize button */}
+        <div className="group relative">
+          <div className="flex items-center gap-1">
+            <Link
+              href="/dashboard"
+              className={`w-full flex items-center ${isMinimized ? 'justify-center' : 'justify-start'} px-4 py-3 rounded-lg transition ${
+                pathname === '/dashboard'
+                  ? 'bg-[#1A79D3] text-white'
+                  : 'text-gray-200 hover:bg-[#1A79D3] hover:text-white'
+              }`}
+              title={isMinimized ? 'Home' : ''}
+            >
+              <div className={`flex items-center ${isMinimized ? '' : 'gap-3'}`}>
+                <FaHome className="text-xl" />
+                {!isMinimized && <span className="font-extrabold text-md">Home</span>}
+              </div>
+            </Link>
+            {/* {!isMinimized && (
+              <button
+                onClick={onToggleMinimize}
+                className="text-white hover:bg-[#1A79D3] p-2 rounded-lg transition"
+                title="Minimize Sidebar"
+              >
+                <FaChevronLeft className="w-4 h-4" />
+              </button>
+            )} */}
+          </div>
+          {/* Tooltip for minimized state */}
+          {isMinimized && (
+            <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+              Home
+            </div>
+          )}
+        </div>
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed lg:sticky top-15 left-0 h-[calc(100vh-60px)] bg-blue-900 border-r border-blue-800 overflow-y-auto z-40 transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } w-64`}
-      >
-        <nav className="p-3 space-y-1">
-          {menuItems.map((item) => {
-            const IconComponent = item.icon;
-            
-            // If the item should open in a new tab
-            if (item.openInNewTab) {
-              return (
-                <div key={item.href}>
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex items-center justify-between px-4 py-3 rounded-lg transition ${
-                      pathname === item.href
-                        ? 'bg-blue-700 text-white'
-                        : 'text-gray-200 hover:bg-blue-800 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <IconComponent className="text-xl" />
-                      <span className="font-medium text-sm">{item.label}</span>
-                    </div>
-                    {item.hasSubmenu && (
-                      <FaChevronDown className="w-4 h-4" />
-                    )}
-                  </a>
-                </div>
-              );
-            }
-            
-            // Regular Link for internal navigation
+        {/* Expand button when minimized */}
+        {isMinimized && (
+          <div className="group relative">
+            <button
+              onClick={onToggleMinimize}
+              className="w-full flex items-center justify-center px-4 py-3 rounded-lg transition text-gray-200 hover:bg-[#1A79D3] hover:text-white"
+              title="Expand Sidebar"
+            >
+              <FaChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+              Expand
+            </div>
+          </div>
+        )}
+
+        {/* Rest of menu items (skip Home as it's shown above) */}
+        {menuItems.filter(item => item.href !== '/dashboard').map((item) => {
+          const IconComponent = item.icon;
+          
+          // If the item should open in a new tab
+          if (item.openInNewTab) {
             return (
-              <div key={item.href}>
-                <Link
+              <div key={item.href} className="group relative">
+                <a
                   href={item.href}
-                  onClick={() => onClose()}
-                  className={`flex items-center justify-between px-4 py-3 rounded-lg transition ${
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-full flex items-center ${isMinimized ? 'justify-center' : 'justify-between'} px-4 py-3 rounded-lg transition ${
                     pathname === item.href
-                      ? 'bg-blue-700 text-white'
-                      : 'text-gray-200 hover:bg-blue-800 hover:text-white'
+                      ? 'bg-[#1A79D3] text-white'
+                        : 'text-gray-200 hover:bg-[#1A79D3] hover:text-white'
                   }`}
+                  title={isMinimized ? item.label : ''}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className={`flex items-center ${isMinimized ? '' : 'gap-3'}`}>
                     <IconComponent className="text-xl" />
-                    <span className="font-medium text-sm">{item.label}</span>
+                    {!isMinimized && <span className="font-medium text-sm">{item.label}</span>}
                   </div>
-                  {item.hasSubmenu && (
+                  {!isMinimized && item.hasSubmenu && (
                     <FaChevronDown className="w-4 h-4" />
                   )}
-                </Link>
+                </a>
+                {/* Tooltip for minimized state */}
+                {isMinimized && (
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                    {item.label}
+                  </div>
+                )}
               </div>
             );
-          })}
-        </nav>
-      </aside>
-    </>
+          }
+          
+          // Regular Link for internal navigation
+          return (
+            <div key={item.href} className="group relative">
+              <Link
+                href={item.href}
+                className={`w-full flex items-center ${isMinimized ? 'justify-center' : 'justify-between'} px-4 py-3 rounded-lg transition ${
+                  pathname === item.href
+                    ? 'bg-[#1A79D3] text-white'
+                    : 'text-gray-200 hover:bg-[#1A79D3] hover:text-white'
+                }`}
+                title={isMinimized ? item.label : ''}
+              >
+                <div className={`flex items-center ${isMinimized ? '' : 'gap-3'}`}>
+                  <IconComponent className="text-xl" />
+                    {!isMinimized && <span className="font-extrabold text-md">{item.label}</span>}
+                </div>
+                {!isMinimized && item.hasSubmenu && (
+                  <FaChevronDown className="w-4 h-4" />
+                )}
+              </Link>
+              {/* Tooltip for minimized state */}
+              {isMinimized && (
+                <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                  {item.label}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }

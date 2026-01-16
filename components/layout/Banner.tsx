@@ -6,29 +6,14 @@
  */
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 const banners = [
-  {
-    id: 1,
-    title: 'CX AMBASSADOR 2025',
-    subtitle: 'TANGIA ZAMAN METHILA',
-    buttonText: 'SEE MORE',
-    bgColor: 'from-blue-600 to-blue-800',
-  },
-  {
-    id: 2,
-    title: 'ROI BATTLE BEGINS',
-    subtitle: '588% NON-STOP WINNING ACTION!',
-    buttonText: 'SEE MORE',
-    bgColor: 'from-red-600 to-red-800',
-  },
-  {
-    id: 3,
-    title: 'WELCOME BONUS',
-    subtitle: 'Get 100% Bonus on First Deposit',
-    buttonText: 'CLAIM NOW',
-    bgColor: 'from-green-600 to-green-800',
-  },
+  { id: 1, image: '/banners/image_282634.jpg', title: 'CX AMBASSADOR 2025', subtitle: 'TANGIA ZAMAN METHILA', buttonText: 'SEE MORE' },
+  { id: 2, image: '/banners/image_294118.jpg', title: 'ROI BATTLE BEGINS', subtitle: '588% NON-STOP WINNING ACTION!', buttonText: 'SEE MORE' },
+  { id: 3, image: '/banners/image_319646.jpg', title: 'WELCOME BONUS', subtitle: 'Get 100% Bonus on First Deposit', buttonText: 'CLAIM NOW' },
+  { id: 4, image: '/banners/image_320643.jpg', title: '', subtitle: '', buttonText: '' },
+  { id: 5, image: '/banners/image_322614.jpg', title: '', subtitle: '', buttonText: '' },
 ];
 
 export default function Banner() {
@@ -50,12 +35,12 @@ export default function Banner() {
 
   if (!mounted) {
     return (
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg h-64 md:h-80" />
+      <div className="relative overflow-hidden rounded-lg h-64 md:h-80 bg-gray-100 p-8" />
     );
   }
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg">
+    <div className="relative overflow-hidden rounded-lg">
       <div className="relative h-64 md:h-80">
         {banners.map((banner, index) => (
           <div
@@ -64,14 +49,9 @@ export default function Banner() {
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <div className={`h-full bg-gradient-to-r ${banner.bgColor} flex items-center justify-center px-8`}>
-              <div className="text-center text-white">
-                <h2 className="text-4xl md:text-6xl font-bold mb-2">{banner.title}</h2>
-                <p className="text-xl md:text-2xl mb-6">{banner.subtitle}</p>
-                <button className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-full transition">
-                  {banner.buttonText}
-                </button>
-              </div>
+            <div className="h-full w-full relative">
+              <Image src={banner.image} alt={banner.title || `Banner ${banner.id}`} fill className="object-cover" priority={index === 0} />
+              {/* No overlay text/buttons - show image only */}
             </div>
           </div>
         ))}

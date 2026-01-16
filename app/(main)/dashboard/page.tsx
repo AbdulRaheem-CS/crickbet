@@ -11,9 +11,9 @@ import { FaFire, FaMoneyBillWave, FaGift, FaChartBar, FaDice } from 'react-icons
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white">
       {/* Banner Section */}
-      <div className="p-4">
+      <div className="p-8">
         <Banner />
       </div>
 
@@ -21,7 +21,7 @@ export default function DashboardPage() {
       <CategoryNav />
 
       {/* Hot Games Section */}
-      <section className="p-4">
+      {/* <section className="p-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <FaFire className="text-orange-500" /> HOT
@@ -34,7 +34,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Game Grid */}
+     
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
           {[
             'Super Ace', 'Fortune Gems 500', 'Boxing King', 'Super Ace Deluxe',
@@ -57,10 +57,10 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* Promotional Banner */}
-      <section className="p-4">
+      <section className="p-8">
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white text-center">
           <p className="text-lg flex items-center justify-center gap-2 flex-wrap">
             <FaGift /> Join Crickex <FaMoneyBillWave /> Earn unlimited rebate commission from every refer up to 3 tier <FaChartBar />. 
