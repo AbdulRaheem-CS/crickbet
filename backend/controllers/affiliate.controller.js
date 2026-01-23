@@ -15,6 +15,58 @@ module.exports = {
     res.status(201).json({ success: true, message: 'Application submitted' });
   }),
   
+  // Public registration for affiliate (creates a pending user and affiliate record)
+  registerAffiliate: asyncHandler(async (req, res) => {
+    const { username, firstName, lastName, email, password, phone, dateOfBirth } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ success: false, message: 'username, email and password are required' });
+    }
+
+    // Check for existing username/email
+    const existing = await User.findOne({ $or: [{ username }, { email }] });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'User with this email or username already exists' });
+    }
+
+    // Create user with pending status
+    const user = await User.create({
+      username,
+      email,
+      password,
+      phone,
+      firstName,
+      lastName,
+      dateOfBirth,
+      role: 'affiliate',
+      status: 'pending',
+    });
+
+    // Create minimal affiliate record
+    const Affiliate = require('../models/Affiliate');
+    await Affiliate.create({ user: user._id });
+
+    res.status(201).json({ success: true, message: 'Affiliate registration submitted. Awaiting admin approval.' });
+  }),
+
+  // Admin: approve affiliate user
+  approveAffiliate: asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    user.status = 'active';
+    user.approvedAt = new Date();
+    await user.save();
+
+    // Update affiliate status
+    const Affiliate = require('../models/Affiliate');
+    await Affiliate.findOneAndUpdate({ user: user._id }, { status: 'active', 'application.reviewedAt': new Date() });
+
+    res.status(200).json({ success: true, message: 'Affiliate approved' });
+  }),
+
+  
   /**
    * @route   GET /api/affiliate/dashboard
    * @desc    Get affiliate dashboard statistics

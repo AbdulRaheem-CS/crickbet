@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth, AuthProvider } from '@/context/AuthContext';
 import {
@@ -215,6 +215,13 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  // If we're on the admin login page, render children without the admin chrome
+  if (pathname === '/admin/login') {
+    return <AuthProvider>{children}</AuthProvider>;
+  }
+
   return (
     <AuthProvider>
       <AdminLayoutContent>{children}</AdminLayoutContent>

@@ -6,12 +6,18 @@
 const express = require('express');
 const router = express.Router();
 const affiliateController = require('../controllers/affiliate.controller');
-const { protect } = require('../middleware/auth.middleware');
+const { protect, authorize } = require('../middleware/auth.middleware');
 
 // @route   POST /api/affiliate/apply
 // @desc    Apply for affiliate program
 // @access  Private
 router.post('/apply', protect, affiliateController.applyForAffiliate);
+
+// Public affiliate registration (creates user with pending status)
+router.post('/register', affiliateController.registerAffiliate);
+
+// Admin approve route
+router.put('/approve/:userId', protect, authorize('admin'), affiliateController.approveAffiliate);
 
 // @route   GET /api/affiliate/dashboard
 // @desc    Get affiliate dashboard data

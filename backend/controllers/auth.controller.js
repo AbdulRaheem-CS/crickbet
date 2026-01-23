@@ -115,6 +115,14 @@ exports.login = asyncHandler(async (req, res, next) => {
     });
   }
 
+  // If account is pending (for affiliate signups), prevent login
+  if (user.status === 'pending') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your account is pending approval. Please wait for admin approval.',
+    });
+  }
+
   // Update last login
   user.lastLogin = new Date();
   await user.save();
@@ -135,6 +143,8 @@ exports.login = asyncHandler(async (req, res, next) => {
         wallet: user.wallet,
         isEmailVerified: user.isEmailVerified,
         kycStatus: user.kycStatus,
+        lastWithdrawal: user.lastWithdrawal,
+        approvedAt: user.approvedAt,
       },
       token,
     },

@@ -23,6 +23,8 @@ router.delete('/users/:id', requireSuperAdmin, logAdminAction('delete_user'), ad
 // KYC Management
 router.get('/kyc/pending', adminController.getPendingKYC);
 router.get('/kyc/:id', adminController.getKYCById);
+// Pending affiliates
+router.get('/affiliates/pending', adminController.getPendingAffiliates);
 router.post('/kyc/:id/approve', logAdminAction('approve_kyc'), adminController.approveKYC);
 router.post('/kyc/:id/reject', logAdminAction('reject_kyc'), adminController.rejectKYC);
 
@@ -55,6 +57,13 @@ router.put('/promotions/:id', logAdminAction('update_promotion'), adminControlle
 router.delete('/promotions/:id', logAdminAction('delete_promotion'), adminController.deletePromotion);
 
 // Reports
+// Stats endpoints (kept for backward compatibility with frontend adminAPI)
+router.get('/stats/overview', adminController.getOverviewStats);
+router.get('/stats/revenue', adminController.getRevenueReport);
+router.get('/stats/users', adminController.getUsersReport);
+router.get('/stats/bets', adminController.getBetsReport);
+
+// Legacy reports routes (also kept)
 router.get('/reports/overview', adminController.getOverviewReport);
 router.get('/reports/revenue', adminController.getRevenueReport);
 router.get('/reports/users', adminController.getUsersReport);

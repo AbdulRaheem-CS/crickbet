@@ -117,6 +117,10 @@ const UserSchema = new mongoose.Schema(
     lastLogin: { type: Date },
     lastLoginIp: { type: String },
     registrationIp: { type: String },
+  // Last withdrawal timestamp
+  lastWithdrawal: { type: Date },
+  // When account was approved (for affiliate or special accounts)
+  approvedAt: { type: Date },
 
     // Preferences
     preferences: {

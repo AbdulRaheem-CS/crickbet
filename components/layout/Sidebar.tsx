@@ -47,7 +47,7 @@ const menuItems: MenuItem[] = [
   { label: 'VIP Club', icon: FaCrown, href: '/vip' },
   { label: 'Tournaments', icon: FaTrophy, href: '/tournaments' },
   { label: 'Leaderboard', icon: FaChartLine, href: '/leaderboard' },
-  { label: 'Affiliate', icon: FaHandshake, href: '/affiliate', openInNewTab: true },
+  { label: 'Affiliate', icon: FaHandshake, href: '/affiliate/login', openInNewTab: true },
   { label: 'Referral', icon: FaUsers, href: '/referral', hasSubmenu: true },
   { label: 'Sponsorship', icon: FaBullhorn, href: '/sponsorship' },
   { label: 'My Bets', icon: FaFileAlt, href: '/bets' },

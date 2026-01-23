@@ -233,6 +233,37 @@ exports.deleteUser = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * @route   GET /api/admin/affiliates/pending
+ * @desc    Get pending affiliate registrations
+ * @access  Admin
+ */
+exports.getPendingAffiliates = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 50 } = req.query;
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  const [affiliates, total] = await Promise.all([
+    User.find({ role: 'affiliate', status: 'pending' })
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean(),
+    User.countDocuments({ role: 'affiliate', status: 'pending' })
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: affiliates,
+    pagination: {
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      pages: Math.ceil(total / parseInt(limit))
+    }
+  });
+});
+
 // ============================================
 // KYC MANAGEMENT
 // ============================================

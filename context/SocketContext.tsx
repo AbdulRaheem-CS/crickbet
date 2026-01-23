@@ -133,27 +133,54 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken'); // Changed from 'token' to 'authToken'
     
     const newSocket = io(SOCKET_URL, {
       auth: { token },
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 10,
+      transports: ['websocket', 'polling'], // Try websocket first, fallback to polling
+      autoConnect: true,
     });
 
     newSocket.on('connect', () => {
-      console.log('✅ Socket connected:', newSocket.id);
+      console.log('✅ Socket connected:', newSocket.id, '| User:', user?.username || 'Anonymous');
       setConnected(true);
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('❌ Socket disconnected');
+    newSocket.on('disconnect', (reason) => {
+      console.log('❌ Socket disconnected. Reason:', reason);
       setConnected(false);
     });
 
     newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      console.error('❌ Socket connection error:', error.message);
+      // Suppress verbose error logs in production
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Connection details:', {
+          url: SOCKET_URL,
+          transport: newSocket.io.engine?.transport?.name,
+          readyState: newSocket.io.engine?.readyState
+        });
+      }
+    });
+
+    newSocket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
+    });
+
+    newSocket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('🔄 Reconnection attempt:', attemptNumber);
+    });
+
+    newSocket.on('reconnect_error', (error) => {
+      console.error('❌ Reconnection error:', error.message);
+    });
+
+    newSocket.on('reconnect_failed', () => {
+      console.error('❌ Socket reconnection failed after all attempts');
     });
 
     // Handle bet errors
@@ -170,6 +197,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     setSocket(newSocket);
 
     return () => {
+      console.log('🔌 Closing socket connection');
       newSocket.close();
     };
   }, [user]);

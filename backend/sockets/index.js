@@ -18,8 +18,14 @@ exports.initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+      methods: ["GET", "POST"],
       credentials: true,
+      allowedHeaders: ["*"]
     },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
+    pingTimeout: 60000,
+    pingInterval: 25000,
   });
 
   // Socket authentication middleware
