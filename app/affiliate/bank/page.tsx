@@ -46,11 +46,20 @@ export default function AffiliateBankPage() {
     try {
       setLoading(true);
       const response = await apiClient.get('/affiliate/bank-accounts');
-      setBankAccounts(response.data.data || []);
-      setError(null);
+      // apiClient may return either the backend payload { success, data } or the data array directly
+      let accounts: BankAccount[] = [];
+      if (Array.isArray(response)) {
+        accounts = response as BankAccount[];
+      } else if (response && Array.isArray(response.data)) {
+        accounts = response.data;
+      } else if (response && Array.isArray(response?.data?.data)) {
+        accounts = response.data.data;
+      }
+      setBankAccounts(accounts);
+  setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load bank accounts');
-      console.error('Bank accounts error:', err);
+  setError(err?.message || 'Failed to load bank accounts');
+  console.error('Bank accounts error:', err);
     } finally {
       setLoading(false);
     }
@@ -68,7 +77,17 @@ export default function AffiliateBankPage() {
     e.preventDefault();
     try {
       setSubmitting(true);
-      await apiClient.post('/affiliate/bank-accounts', formData);
+      const postResponse = await apiClient.post('/affiliate/bank-accounts', formData);
+      // Try to update local state from response to provide immediate feedback
+      let updatedAccounts: BankAccount[] | null = null;
+      if (Array.isArray(postResponse)) {
+        updatedAccounts = postResponse as BankAccount[];
+      } else if (postResponse && Array.isArray(postResponse.data)) {
+        updatedAccounts = postResponse.data;
+      } else if (postResponse && Array.isArray(postResponse?.data?.data)) {
+        updatedAccounts = postResponse.data.data;
+      }
+
       setShowAddModal(false);
       setFormData({
         accountHolderName: '',
@@ -79,9 +98,13 @@ export default function AffiliateBankPage() {
         accountType: 'savings',
         isDefault: false
       });
-      await fetchBankAccounts();
+      if (updatedAccounts) {
+        setBankAccounts(updatedAccounts);
+      } else {
+        await fetchBankAccounts();
+      }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to add bank account');
+  alert(err?.message || 'Failed to add bank account');
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +117,7 @@ export default function AffiliateBankPage() {
       await apiClient.delete(`/affiliate/bank-accounts/${id}`);
       await fetchBankAccounts();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete bank account');
+  alert(err?.message || 'Failed to delete bank account');
     }
   };
 
@@ -103,7 +126,7 @@ export default function AffiliateBankPage() {
       await apiClient.put(`/affiliate/bank-accounts/${id}/set-default`);
       await fetchBankAccounts();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to set default account');
+  alert(err?.message || 'Failed to set default account');
     }
   };
 

@@ -46,7 +46,8 @@ const protect = async (req, res, next) => {
 
       // Check if user is active
       if (user.status !== 'active') {
-        return res.status(401).json({
+        // Use 403 Forbidden to indicate the user is authenticated but not allowed due to status
+        return res.status(403).json({
           success: false,
           message: `Your account is ${user.status}. Please contact support.`,
         });

@@ -61,9 +61,16 @@ exports.getUsers = asyncHandler(async (req, res) => {
     User.countDocuments(query),
   ]);
 
+  // Map to include a boolean kycVerified (frontend expects this flag)
+  const mappedUsers = users.map((u) => ({
+    ...u,
+    // prefer explicit kycVerified flag if present, otherwise derive from kycStatus
+    kycVerified: (typeof u.kycVerified !== 'undefined' && u.kycVerified) || (u.kycStatus === 'verified') || false,
+  }));
+
   res.status(200).json({
     success: true,
-    data: users,
+    data: mappedUsers,
     pagination: {
       total,
       page: parseInt(page),
@@ -280,7 +287,8 @@ exports.getPendingKYC = asyncHandler(async (req, res) => {
 
   const [kycs, total] = await Promise.all([
     KYC.find({ status: 'pending' })
-      .populate('userId', 'username email phone')
+      // ensure we populate the actual 'user' ref; some KYC docs may use alias 'userId'
+      .populate('user', 'username email phone')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -288,9 +296,31 @@ exports.getPendingKYC = asyncHandler(async (req, res) => {
     KYC.countDocuments({ status: 'pending' }),
   ]);
 
+  // Map KYC documents to the flattened shape expected by the admin UI
+  const mapped = kycs.map((k) => {
+    const userObj = k.user || k.userId || null;
+    return {
+      _id: k._id,
+      userId: userObj
+        ? { _id: userObj._id || userObj, username: userObj.username || 'N/A', email: userObj.email || 'N/A', phone: userObj.phone }
+        : null,
+      documentType: k.identityDocument?.type || k.addressDocument?.type || null,
+      documentNumber: k.identityDocument?.number || k.addressDocument?.number || null,
+      documentFront: k.identityDocument?.frontImage || null,
+      documentBack: k.identityDocument?.backImage || null,
+      selfieImage: k.selfieWithId?.image || null,
+      addressProof: k.addressDocument?.image || k.addressDocument?.image || null,
+      status: k.status,
+      rejectionReason: k.rejectionReason || null,
+      verifiedAt: k.verifiedAt || null,
+      submittedAt: k.submittedAt || k.createdAt || null,
+      raw: k,
+    };
+  });
+
   res.status(200).json({
     success: true,
-    data: kycs,
+    data: mapped,
     pagination: {
       total,
       page: parseInt(page),
@@ -307,7 +337,7 @@ exports.getPendingKYC = asyncHandler(async (req, res) => {
  */
 exports.getKYCById = asyncHandler(async (req, res) => {
   const kyc = await KYC.findById(req.params.id)
-    .populate('userId', 'username email phone createdAt')
+    .populate('user', 'username email phone createdAt')
     .lean();
 
   if (!kyc) {
@@ -317,9 +347,26 @@ exports.getKYCById = asyncHandler(async (req, res) => {
     });
   }
 
+  const userObj = kyc.user || kyc.userId || null;
+  const mapped = {
+    _id: kyc._id,
+    userId: userObj ? { _id: userObj._id || userObj, username: userObj.username || 'N/A', email: userObj.email || 'N/A', phone: userObj.phone } : null,
+    documentType: kyc.identityDocument?.type || kyc.addressDocument?.type || null,
+    documentNumber: kyc.identityDocument?.number || kyc.addressDocument?.number || null,
+    documentFront: kyc.identityDocument?.frontImage || null,
+    documentBack: kyc.identityDocument?.backImage || null,
+    selfieImage: kyc.selfieWithId?.image || null,
+    addressProof: kyc.addressDocument?.image || null,
+    status: kyc.status,
+    rejectionReason: kyc.rejectionReason || null,
+    verifiedAt: kyc.verifiedAt || null,
+    submittedAt: kyc.submittedAt || kyc.createdAt || null,
+    raw: kyc,
+  };
+
   res.status(200).json({
     success: true,
-    data: kyc,
+    data: mapped,
   });
 });
 
@@ -340,22 +387,42 @@ exports.approveKYC = asyncHandler(async (req, res) => {
     });
   }
 
-  kyc.status = 'approved';
-  kyc.verificationLevel = verificationLevel;
-  kyc.verifiedBy = req.user._id;
-  kyc.verifiedAt = new Date();
-  await kyc.save();
+  // Use a safe update that sets the KYC to a valid enum state and avoids running schema-level required validations
+  const updated = await KYC.findByIdAndUpdate(
+    req.params.id,
+    {
+      $set: {
+        status: 'verified',
+        verificationLevel: verificationLevel,
+        verifiedBy: req.user._id,
+        verifiedAt: new Date(),
+      },
+    },
+    { new: true, runValidators: false }
+  );
 
-  // Update user KYC status
-  await User.findByIdAndUpdate(kyc.userId, {
-    kycVerified: true,
-  });
+  // Update user KYC flag
+  const userId = (updated.user && (updated.user._id || updated.user)) || updated.userId || updated.user;
+  if (userId) {
+    // Update user canonical KYC flags and mirror verification into embedded user.kyc
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          kycVerified: true,
+          kycStatus: 'verified',
+          kycVerifiedAt: new Date(),
+          'kyc.status': 'verified',
+          'kyc.verifiedAt': new Date(),
+          'kyc.identity.verified': true,
+          'kyc.address.verified': true,
+        },
+      },
+      { new: true }
+    );
+  }
 
-  res.status(200).json({
-    success: true,
-    message: 'KYC approved successfully',
-    data: kyc,
-  });
+  res.status(200).json({ success: true, message: 'KYC approved successfully', data: updated });
 });
 
 /**
@@ -373,26 +440,24 @@ exports.rejectKYC = asyncHandler(async (req, res) => {
     });
   }
 
-  const kyc = await KYC.findById(req.params.id);
+  const updated = await KYC.findByIdAndUpdate(
+    req.params.id,
+    {
+      $set: {
+        status: 'rejected',
+        rejectionReason: reason,
+        verifiedBy: req.user._id,
+        verifiedAt: new Date(),
+      },
+    },
+    { new: true, runValidators: false }
+  );
 
-  if (!kyc) {
-    return res.status(404).json({
-      success: false,
-      message: 'KYC submission not found',
-    });
+  if (!updated) {
+    return res.status(404).json({ success: false, message: 'KYC submission not found' });
   }
 
-  kyc.status = 'rejected';
-  kyc.rejectionReason = reason;
-  kyc.verifiedBy = req.user._id;
-  kyc.verifiedAt = new Date();
-  await kyc.save();
-
-  res.status(200).json({
-    success: true,
-    message: 'KYC rejected',
-    data: kyc,
-  });
+  res.status(200).json({ success: true, message: 'KYC rejected', data: updated });
 });
 
 // ============================================

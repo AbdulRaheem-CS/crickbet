@@ -37,8 +37,9 @@ export default function AffiliateLogin() {
       setMessage('Login successful! Redirecting...');
       router.push('/affiliate');
     } catch (error: unknown) {
-      // Extract error message
-      const msg = (error && typeof error === 'object' && 'response' in error && (error as any).response?.data?.message)
+      // Extract error message from various shapes (api-client rejects { message, status, data })
+      const anyErr = error as any;
+      const msg = (anyErr && typeof anyErr === 'object' && (anyErr.message || anyErr.data?.message || anyErr.response?.data?.message))
         || (error instanceof Error && error.message)
         || 'Login failed. Please check your credentials.';
       setError(msg as string);

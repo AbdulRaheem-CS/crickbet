@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { affiliateAPI } from '@/lib/api-client';
 
 /**
  * Affiliate KYC Page
@@ -73,20 +74,15 @@ export default function AffiliateKYCPage() {
 
   const fetchKYCData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/affiliate/kyc', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setKycData(data.data.kyc);
+      const res: any = await affiliateAPI.getKYC();
+      if (res?.data?.kyc) {
+        setKycData(res.data.kyc);
+      } else if (res?.kyc) {
+        // some responses may be unwrapped by api-client
+        setKycData(res.kyc);
       }
-    } catch (err) {
-      console.error('Error fetching KYC data:', err);
+    } catch (err: any) {
+      console.error('Error fetching KYC data:', err?.message || err);
     } finally {
       setLoading(false);
     }
@@ -160,11 +156,10 @@ export default function AffiliateKYCPage() {
     setError('');
     setSuccess('');
     setSubmitting(true);
-
+    // Validate required fields
     try {
-      // Validate required fields
-      if (!identityForm.documentType || !identityForm.documentNumber || !identityForm.expiryDate || 
-          !identityForm.frontImage || !identityForm.selfieImage) {
+      if (!identityForm.documentType || !identityForm.documentNumber || !identityForm.expiryDate ||
+        !identityForm.frontImage || !identityForm.selfieImage) {
         setError('Please fill all required fields');
         setSubmitting(false);
         return;
@@ -175,26 +170,17 @@ export default function AffiliateKYCPage() {
       const backImageBase64 = identityForm.backImage ? await convertToBase64(identityForm.backImage) : null;
       const selfieImageBase64 = await convertToBase64(identityForm.selfieImage);
 
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/affiliate/kyc/identity', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          documentType: identityForm.documentType,
-          documentNumber: identityForm.documentNumber,
-          expiryDate: identityForm.expiryDate,
-          frontImage: frontImageBase64,
-          backImage: backImageBase64,
-          selfieImage: selfieImageBase64,
-        }),
+      const res: any = await affiliateAPI.submitIdentityKYC({
+        documentType: identityForm.documentType,
+        documentNumber: identityForm.documentNumber,
+        expiryDate: identityForm.expiryDate,
+        frontImage: frontImageBase64,
+        backImage: backImageBase64,
+        selfieImage: selfieImageBase64,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      const data = res?.data || res;
+      if (data?.kyc || data?.success) {
         setSuccess('Identity KYC submitted successfully!');
         fetchKYCData();
         // Reset form
@@ -208,10 +194,10 @@ export default function AffiliateKYCPage() {
         });
         setIdentityPreviews({ front: '', back: '', selfie: '' });
       } else {
-        setError(data.message || 'Failed to submit KYC');
+        setError(data?.message || 'Failed to submit KYC');
       }
-    } catch (err) {
-      setError('Error submitting KYC. Please try again.');
+    } catch (err: any) {
+      setError(err?.message || 'Error submitting KYC. Please try again.');
       console.error('Error:', err);
     } finally {
       setSubmitting(false);
@@ -223,11 +209,10 @@ export default function AffiliateKYCPage() {
     setError('');
     setSuccess('');
     setSubmitting(true);
-
     try {
       // Validate required fields
-      if (!addressForm.documentType || !addressForm.documentNumber || !addressForm.expiryDate || 
-          !addressForm.frontImage) {
+      if (!addressForm.documentType || !addressForm.documentNumber || !addressForm.expiryDate ||
+        !addressForm.frontImage) {
         setError('Please fill all required fields');
         setSubmitting(false);
         return;
@@ -237,25 +222,16 @@ export default function AffiliateKYCPage() {
       const frontImageBase64 = await convertToBase64(addressForm.frontImage);
       const backImageBase64 = addressForm.backImage ? await convertToBase64(addressForm.backImage) : null;
 
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/affiliate/kyc/address', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          documentType: addressForm.documentType,
-          documentNumber: addressForm.documentNumber,
-          expiryDate: addressForm.expiryDate,
-          frontImage: frontImageBase64,
-          backImage: backImageBase64,
-        }),
+      const res: any = await affiliateAPI.submitAddressKYC({
+        documentType: addressForm.documentType,
+        documentNumber: addressForm.documentNumber,
+        expiryDate: addressForm.expiryDate,
+        frontImage: frontImageBase64,
+        backImage: backImageBase64,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      const data = res?.data || res;
+      if (data?.kyc || data?.success) {
         setSuccess('Address KYC submitted successfully!');
         fetchKYCData();
         // Reset form
@@ -268,10 +244,10 @@ export default function AffiliateKYCPage() {
         });
         setAddressPreviews({ front: '', back: '' });
       } else {
-        setError(data.message || 'Failed to submit KYC');
+        setError(data?.message || 'Failed to submit KYC');
       }
-    } catch (err) {
-      setError('Error submitting KYC. Please try again.');
+    } catch (err: any) {
+      setError(err?.message || 'Error submitting KYC. Please try again.');
       console.error('Error:', err);
     } finally {
       setSubmitting(false);
@@ -284,6 +260,65 @@ export default function AffiliateKYCPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-12">
             <div className="text-gray-600">Loading KYC data...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show status message if KYC is verified
+  if (kycData?.status === 'verified') {
+    return (
+      <div className="min-h-screen bg-gray-100 p-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Affiliate KYC</h1>
+          
+          <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-green-800 mb-2">KYC Verified</h2>
+            <p className="text-green-700">Your KYC has been successfully verified by our admin team.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show rejection message if KYC is rejected
+  if (kycData?.status === 'rejected') {
+    return (
+      <div className="min-h-screen bg-gray-100 p-6">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Affiliate KYC</h1>
+          
+          <div className="bg-red-50 border border-red-200 rounded-lg p-8">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-red-100 rounded-full">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-4 flex-1">
+                <h2 className="text-xl font-bold text-red-800 mb-2">KYC Rejected</h2>
+                <p className="text-red-700 mb-4">
+                  Your KYC submission has been rejected by our admin team.
+                </p>
+                {kycData.rejectionReason && (
+                  <div className="bg-white border border-red-200 rounded-lg p-4">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Reason for Rejection:</p>
+                    <p className="text-sm text-gray-900">{kycData.rejectionReason}</p>
+                  </div>
+                )}
+                <p className="text-sm text-red-600 mt-4">
+                  Please contact support or resubmit your documents with the correct information.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

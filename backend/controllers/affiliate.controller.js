@@ -42,9 +42,15 @@ module.exports = {
       status: 'pending',
     });
 
-    // Create minimal affiliate record
+    // Create minimal affiliate record (ensure affiliateCode provided)
     const Affiliate = require('../models/Affiliate');
-    await Affiliate.create({ user: user._id });
+    // generate an affiliate code here to avoid relying solely on schema pre-save hook
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = 'AFF';
+    for (let i = 0; i < 7; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    await Affiliate.create({ user: user._id, affiliateCode: code });
 
     res.status(201).json({ success: true, message: 'Affiliate registration submitted. Awaiting admin approval.' });
   }),
@@ -442,8 +448,9 @@ module.exports = {
     const affiliateId = req.user._id;
 
     // Get user profile
+    // Note: User schema stores phone in `phone` field
     const user = await User.findById(affiliateId).select(
-      'username firstName lastName email phoneNumber dateOfBirth referralCode status createdAt lastLogin'
+      'username firstName lastName email phone dateOfBirth referralCode status createdAt lastLogin'
     );
 
     if (!user) {
@@ -743,7 +750,7 @@ module.exports = {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          phoneNumber: user.phoneNumber,
+          phoneNumber: user.phone,
           dateOfBirth: user.dateOfBirth,
           referralCode: user.referralCode,
           accountStatus: user.status,
@@ -832,7 +839,20 @@ module.exports = {
    */
   addBankAccount: asyncHandler(async (req, res) => {
     const affiliateId = req.user._id;
-    const { accountHolderName, bankName, accountNumber, ifscCode, branchName, accountType, isDefault } = req.body;
+  let { accountHolderName, bankName, accountNumber, ifscCode, branchName, accountType, isDefault } = req.body;
+
+  // Log incoming request for debugging
+  console.log('[affiliate.addBankAccount] affiliateId:', affiliateId);
+  console.log('[affiliate.addBankAccount] payload:', { accountHolderName, bankName, accountNumber, ifscCode, branchName, accountType, isDefault });
+
+  // Normalize / sanitize inputs
+  accountHolderName = typeof accountHolderName === 'string' ? accountHolderName.trim() : accountHolderName;
+  bankName = typeof bankName === 'string' ? bankName.trim() : bankName;
+  accountNumber = accountNumber != null ? String(accountNumber).trim() : accountNumber;
+  ifscCode = typeof ifscCode === 'string' ? ifscCode.trim().toUpperCase() : ifscCode;
+  branchName = typeof branchName === 'string' ? branchName.trim() : branchName;
+  accountType = accountType || 'savings';
+  isDefault = !!isDefault;
 
     // Validate required fields
     if (!accountHolderName || !bankName || !accountNumber || !ifscCode || !branchName) {
@@ -992,14 +1012,19 @@ module.exports = {
     // Get upline (the person who referred this user)
     let upline = null;
     if (currentUser.referredBy) {
+      // select 'phone' from DB (User model stores phone as 'phone')
       upline = await User.findById(currentUser.referredBy)
-        .select('username email phoneNumber createdAt status')
+        .select('username email phone createdAt status')
         .lean();
+      if (upline) {
+        upline.phoneNumber = upline.phone || upline.phoneNumber || '';
+      }
     }
 
     // Get downline (users referred by this user)
     const downlineUsers = await User.find({ referredBy: affiliateId })
-      .select('username email phoneNumber createdAt status')
+      // select 'phone' since the model uses 'phone'
+      .select('username email phone createdAt status')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -1048,6 +1073,7 @@ module.exports = {
 
         return {
           ...referralUser,
+          phoneNumber: referralUser.phone || referralUser.phoneNumber || '',
           totalDeposits: deposits[0]?.total || 0,
           totalWithdrawals: withdrawals[0]?.total || 0,
           totalBets: bets
@@ -1100,35 +1126,74 @@ module.exports = {
   getKYC: asyncHandler(async (req, res) => {
     const affiliateId = req.user._id;
 
-    const user = await User.findById(affiliateId).select('kyc').lean();
+    // include top-level kycStatus and kycVerified so we can reflect admin actions
+    const user = await User.findById(affiliateId).select('kyc kycStatus kycVerified').lean();
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    const defaultKyc = {
+      status: 'not_submitted',
+      identity: {
+        documentType: null,
+        documentNumber: null,
+        expiryDate: null,
+        frontImage: null,
+        backImage: null,
+        selfieImage: null,
+        verified: false
+      },
+      address: {
+        documentType: null,
+        documentNumber: null,
+        expiryDate: null,
+        frontImage: null,
+        backImage: null,
+        verified: false
+      }
+    };
+
+    const userKyc = user.kyc || {};
+
+    // Determine a canonical status: prefer nested kyc.status, then top-level kycStatus, then kycVerified
+    const computedStatus = userKyc.status || user.kycStatus || (user.kycVerified ? 'verified' : defaultKyc.status);
+
+    const mergedKyc = {
+      // merge nested fields but ensure defaults exist
+      status: computedStatus,
+      identity: {
+        documentType: (userKyc.identity && userKyc.identity.documentType) || defaultKyc.identity.documentType,
+        documentNumber: (userKyc.identity && userKyc.identity.documentNumber) || defaultKyc.identity.documentNumber,
+        expiryDate: (userKyc.identity && userKyc.identity.expiryDate) || defaultKyc.identity.expiryDate,
+        frontImage: (userKyc.identity && userKyc.identity.frontImage) || defaultKyc.identity.frontImage,
+        backImage: (userKyc.identity && userKyc.identity.backImage) || defaultKyc.identity.backImage,
+        selfieImage: (userKyc.identity && userKyc.identity.selfieImage) || defaultKyc.identity.selfieImage,
+        verified: (typeof (userKyc.identity && userKyc.identity.verified) === 'boolean') ? userKyc.identity.verified : false
+      },
+      address: {
+        documentType: (userKyc.address && userKyc.address.documentType) || defaultKyc.address.documentType,
+        documentNumber: (userKyc.address && userKyc.address.documentNumber) || defaultKyc.address.documentNumber,
+        expiryDate: (userKyc.address && userKyc.address.expiryDate) || defaultKyc.address.expiryDate,
+        frontImage: (userKyc.address && userKyc.address.frontImage) || defaultKyc.address.frontImage,
+        backImage: (userKyc.address && userKyc.address.backImage) || defaultKyc.address.backImage,
+        verified: (typeof (userKyc.address && userKyc.address.verified) === 'boolean') ? userKyc.address.verified : false
+      }
+    };
+
+    // If KYC is rejected, fetch rejectionReason from KYC document
+    if (computedStatus === 'rejected') {
+      const KYC = require('../models/KYC');
+      const kycDoc = await KYC.findOne({ user: affiliateId }).select('rejectionReason').lean();
+      if (kycDoc && kycDoc.rejectionReason) {
+        mergedKyc.rejectionReason = kycDoc.rejectionReason;
+      }
+    }
+
     res.status(200).json({
       success: true,
       data: {
-        kyc: user.kyc || {
-          status: 'pending',
-          identity: {
-            documentType: null,
-            documentNumber: null,
-            expiryDate: null,
-            frontImage: null,
-            backImage: null,
-            selfieImage: null,
-            verified: false
-          },
-          address: {
-            documentType: null,
-            documentNumber: null,
-            expiryDate: null,
-            frontImage: null,
-            backImage: null,
-            verified: false
-          }
-        }
+        kyc: mergedKyc
       }
     });
   }),
@@ -1181,6 +1246,53 @@ module.exports = {
     user.kyc.status = 'pending';
 
     await user.save();
+
+  // NOTE: address upserts belong in submitAddressKYC; do not create addressDocument here
+
+    // Also create or update a KYC document in the KYC collection so admin can review
+    try {
+      const KYC = require('../models/KYC');
+      const identityDoc = {
+        type: documentType,
+        number: documentNumber,
+        frontImage,
+        backImage,
+        expiryDate: new Date(expiryDate)
+      };
+
+      console.log('[submitIdentityKYC] upserting identity part for user:', affiliateId.toString());
+
+      const upsertResultI = await KYC.findOneAndUpdate(
+        { user: affiliateId },
+        {
+          user: affiliateId,
+          identityDocument: identityDoc,
+          selfieWithId: { image: selfieImage, uploadedAt: new Date() },
+          status: 'pending',
+          submittedAt: new Date()
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+
+      console.log('[submitIdentityKYC] identity upsert result id:', upsertResultI?._id?.toString());
+    } catch (err) {
+      console.error('[submitIdentityKYC] failed to upsert identity KYC doc:', err.message || err);
+      // fallback: attempt explicit create
+      try {
+        const KYC = require('../models/KYC');
+        const fallback = new KYC({
+          user: affiliateId,
+          identityDocument: { type: documentType, number: documentNumber, frontImage, backImage, expiryDate: new Date(expiryDate) },
+          selfieWithId: { image: selfieImage, uploadedAt: new Date() },
+          status: 'pending',
+          submittedAt: new Date()
+        });
+        const saved = await fallback.save();
+        console.log('[submitIdentityKYC] fallback identity KYC created id:', saved._id.toString());
+      } catch (err2) {
+        console.error('[submitIdentityKYC] fallback create identity failed:', err2.message || err2);
+      }
+    }
 
     res.status(200).json({
       success: true,

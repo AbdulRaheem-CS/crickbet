@@ -7,13 +7,14 @@ const mongoose = require('mongoose');
 
 const KYCSchema = new mongoose.Schema(
   {
-    // User reference
+    // User reference (alias userId included for older code paths that reference userId)
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
       unique: true,
       index: true,
+      alias: 'userId',
     },
 
     // Personal Information

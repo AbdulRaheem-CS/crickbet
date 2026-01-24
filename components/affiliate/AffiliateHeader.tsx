@@ -1,6 +1,9 @@
-'use client';
+ 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useWallet } from '@/context/WalletContext';
+import { FaSignOutAlt } from 'react-icons/fa';
 import { FaBars, FaCopy } from 'react-icons/fa';
 
 interface AffiliateHeaderProps {
@@ -8,6 +11,9 @@ interface AffiliateHeaderProps {
 }
 
 export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProps) {
+  const { user, logout } = useAuth();
+  const { balance: walletBalance } = useWallet();
+
   const [balance, setBalance] = useState('0.00');
   const [currency, setCurrency] = useState('BDT');
   const [signupLink, setSignupLink] = useState('cxsport.vip/af/S97yYf27/join');
@@ -65,7 +71,7 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
           </div>
         </div>
 
-        {/* Right: Currency & Balance */}
+        {/* Right: Currency, Balance & User */}
         <div className="flex items-center gap-3">
           <select
             value={currency}
@@ -78,9 +84,24 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
             <option value="EUR">EUR</option>
             <option value="GBP">GBP</option>
           </select>
+
           <div className="bg-gray-700 px-4 py-2 rounded font-semibold">
-            ৳ {balance}
+            ৳ {walletBalance ? walletBalance.toFixed(2) : balance}
           </div>
+
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-gray-200">{user.username || user.email}</div>
+              <button
+                onClick={() => logout()}
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded flex items-center gap-2"
+                title="Logout"
+              >
+                <FaSignOutAlt />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
 

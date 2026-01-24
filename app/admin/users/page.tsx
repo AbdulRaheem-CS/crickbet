@@ -23,7 +23,7 @@ interface User {
   username: string;
   email: string;
   phone?: string;
-  status: 'active' | 'suspended' | 'banned';
+  status: 'pending' | 'active' | 'suspended' | 'banned';
   role: string;
   kycVerified: boolean;
   createdAt: string;
@@ -69,8 +69,10 @@ export default function AdminUsersPage() {
       });
       fetchUsers();
     } catch (error) {
-      console.error('Error changing status:', error);
-      alert('Failed to change user status');
+  // Better error logging: show backend message if available
+  console.error('Error changing status - full error:', error);
+  const errMsg = (error as any)?.message || (error as any)?.data?.message || JSON.stringify(error);
+  alert('Failed to change user status: ' + errMsg);
     }
   };
 
@@ -206,9 +208,12 @@ export default function AdminUsersPage() {
                             ? 'bg-green-100 text-green-800'
                             : user.status === 'suspended'
                             ? 'bg-yellow-100 text-yellow-800'
+                            : user.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
+                        <option value="pending">Pending</option>
                         <option value="active">Active</option>
                         <option value="suspended">Suspended</option>
                         <option value="banned">Banned</option>

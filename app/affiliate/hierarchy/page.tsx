@@ -46,10 +46,36 @@ export default function AffiliateHierarchyPage() {
     try {
       setLoading(true);
       const response = await apiClient.get('/affiliate/hierarchy');
-      setData(response.data.data);
+      // apiClient may return either the backend payload { success, data } or the data object directly
+      let payload: any = response;
+      if (response && response.data && response.data.data) {
+        payload = response.data.data;
+      } else if (response && response.data && !response.data.data && response.data.success !== undefined) {
+        // backend returned { success: true, data: {...} }
+        payload = response.data;
+      }
+
+      // normalize structure
+      const normalized: HierarchyData = {
+        upline: payload?.upline ? {
+          ...payload.upline,
+          phoneNumber: payload.upline.phoneNumber || payload.upline.phone || ''
+        } : null,
+        downline: Array.isArray(payload?.downline) ? payload.downline.map((d: any) => ({
+          ...d,
+          phoneNumber: d.phoneNumber || d.phone || ''
+        })) : [],
+        stats: {
+          totalReferrals: payload?.stats?.totalReferrals || 0,
+          activeReferrals: payload?.stats?.activeReferrals || 0,
+          totalEarnings: payload?.stats?.totalEarnings || 0,
+        }
+      };
+
+      setData(normalized);
       setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load hierarchy data');
+      setError(err?.message || 'Failed to load hierarchy data');
       console.error('Hierarchy error:', err);
     } finally {
       setLoading(false);

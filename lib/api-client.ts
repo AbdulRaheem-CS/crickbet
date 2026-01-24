@@ -21,7 +21,8 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
+      // Support both new ('authToken') and legacy ('token') keys
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -512,7 +513,8 @@ export const adminAPI = {
     status: 'active' | 'suspended' | 'banned';
     reason?: string;
   }) => {
-    return apiClient.patch(`/admin/users/${userId}/status`, data);
+    // Backend route expects PUT for status changes
+    return apiClient.put(`/admin/users/${userId}/status`, data);
   },
 
   deleteUser: async (userId: string) => {
@@ -634,6 +636,78 @@ export const adminAPI = {
 
   getBetsReport: async (params?: { period?: string }) => {
     return apiClient.get('/admin/stats/bets', { params });
+  },
+};
+
+// ============================================
+// AFFILIATE API
+// ============================================
+export const affiliateAPI = {
+  // Register new affiliate
+  register: async (data: {
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    phone?: string;
+    dateOfBirth?: string;
+  }) => {
+    return apiClient.post('/affiliate/register', data);
+  },
+
+  // Get affiliate profile
+  getProfile: async () => {
+    return apiClient.get('/affiliate/profile');
+  },
+
+  // Get affiliate dashboard stats
+  getDashboard: async () => {
+    return apiClient.get('/affiliate/dashboard');
+  },
+
+  // Get affiliate commissions
+  getCommissions: async (params?: {
+    page?: number;
+    limit?: number;
+    startDate?: string;
+    endDate?: string;
+  }) => {
+    return apiClient.get('/affiliate/commissions', { params });
+  },
+
+  // Get affiliate referrals
+  getReferrals: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+  }) => {
+    return apiClient.get('/affiliate/referrals', { params });
+  },
+  // KYC (affiliate)
+  getKYC: async () => {
+    return apiClient.get('/affiliate/kyc');
+  },
+
+  submitIdentityKYC: async (data: {
+    documentType: string;
+    documentNumber: string;
+    expiryDate: string;
+    frontImage: string;
+    backImage?: string | null;
+    selfieImage: string;
+  }) => {
+    return apiClient.post('/affiliate/kyc/identity', data);
+  },
+
+  submitAddressKYC: async (data: {
+    documentType: string;
+    documentNumber: string;
+    expiryDate: string;
+    frontImage: string;
+    backImage?: string | null;
+  }) => {
+    return apiClient.post('/affiliate/kyc/address', data);
   },
 };
 

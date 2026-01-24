@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import axios from 'axios';
+import { affiliateAPI } from '@/lib/api-client';
 
 type FormState = {
   username: string;
@@ -40,8 +40,16 @@ export default function AffiliateRegister() {
     }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    // For phone field, keep only digits
+    if (name === 'phone') {
+      const digits = value.replace(/\D/g, '');
+      setForm((p) => ({ ...p, phone: digits }));
+    } else {
+      setForm((p) => ({ ...p, [name]: value }));
+    }
+  };
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,24 +71,32 @@ export default function AffiliateRegister() {
       return;
     }
 
+    // Validate phone (must be 10 digits)
+    const phoneDigits = form.phone ? form.phone.replace(/\D/g, '') : '';
+    if (!phoneDigits || phoneDigits.length !== 10) {
+      setError('Please provide a valid 10-digit mobile number');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await axios.post('/api/affiliate/register', {
+      const response: any = await affiliateAPI.register({
         username: form.username,
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
         password: form.password,
-        phone: form.phone,
+        phone: phoneDigits,
         dateOfBirth: form.dateOfBirth
       });
-      setMessage(res.data.message || 'Registration submitted successfully!');
+      setMessage(response.message || 'Registration submitted successfully!');
       setSuccess(true);
       // Wait 3 seconds then redirect to login
       setTimeout(() => {
         router.push('/affiliate/login');
       }, 3000);
     } catch (err: unknown) {
-      const msg = (err && typeof err === 'object' && 'response' in err && (err as any).response?.data?.message)
+      const msg = (err && typeof err === 'object' && 'message' in err && (err as any).message)
         || 'Registration failed. Please try again.';
       setError(msg as string);
     } finally {

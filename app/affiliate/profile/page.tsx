@@ -60,11 +60,16 @@ export default function AffiliateProfilePage() {
   const fetchProfileData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/affiliate/profile');
-      setData(response.data.data);
+  // apiClient already returns the server response body (see lib/api-client.ts -> response interceptor)
+  const response = await apiClient.get('/affiliate/profile');
+  // response => { success: true, data: { profile, potential, commission } }
+  const payload = response?.data || response;
+  setData(payload.data || payload);
       setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load profile data');
+  // apiClient rejects with a normalized object { message, status, data }
+  const msg = err?.message || err?.data?.message || err?.response?.data?.message || 'Failed to load profile data';
+  setError(msg);
       console.error('Profile error:', err);
     } finally {
       setLoading(false);
@@ -93,6 +98,47 @@ export default function AffiliateProfilePage() {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0];
   };
+
+  // If API didn't return data, fallback to minimal info from AuthContext
+  const fallbackData: ProfileData | null = data || (user ? {
+    profile: {
+      username: (user as any).username || (user as any).email || '-',
+      firstName: (user as any).firstName || '-',
+      lastName: (user as any).lastName || '-',
+      email: (user as any).email || '-',
+      phoneNumber: (user as any).phone || (user as any).phoneNumber || '-',
+      dateOfBirth: (user as any).dateOfBirth || '',
+      referralCode: (user as any).referralCode || '-',
+      accountStatus: (user as any).status || 'active',
+      approvedDate: (user as any).approvedAt || (user as any).createdAt || '',
+      lastLoginTime: (user as any).lastLogin || '',
+      lastWithdrawalTime: null,
+    },
+    potential: {
+      totalProfitLoss: 0,
+      totalDeduction: 0,
+      totalRevenueTurnover: 0,
+      totalBonus: 0,
+      totalRecycleAmount: 0,
+      totalReferralCommission: 0,
+      totalRevenueAdjustment: 0,
+      totalCancelFee: 0,
+      totalVipCashBonus: 0,
+      totalPaymentFee: 0,
+      negativeCarryForward: 0,
+      totalNetProfit: 0,
+      commissionPercentage: 0,
+      earnings: 0,
+    },
+    commission: {
+      pending: 0,
+      available: 0,
+      processingWithdrawal: 0,
+    }
+  } : null);
+
+  // Unified profile data source (API response or fallback)
+  const profile = data || fallbackData;
 
   if (loading) {
     return (
@@ -139,13 +185,13 @@ export default function AffiliateProfilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">Username</label>
-                  <p className="text-gray-900 font-medium">{data?.profile.username || '-'}</p>
+                  <p className="text-gray-900 font-medium">{profile?.profile.username || '-'}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Account Status</label>
                   <div>
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {data?.profile.accountStatus || 'Active'}
+                      {profile?.profile.accountStatus || 'Active'}
                     </span>
                   </div>
                 </div>
@@ -154,39 +200,39 @@ export default function AffiliateProfilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">First Name</label>
-                  <p className="text-gray-900">{data?.profile.firstName || '-'}</p>
+                  <p className="text-gray-900">{profile?.profile.firstName || '-'}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Approved Date and Time</label>
-                  <p className="text-gray-900 text-sm">{formatDate(data?.profile.approvedDate || '')}</p>
+                  <p className="text-gray-900 text-sm">{formatDate(profile?.profile.approvedDate || '')}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">Last Name</label>
-                  <p className="text-gray-900">{data?.profile.lastName || '-'}</p>
+                  <p className="text-gray-900">{profile?.profile.lastName || '-'}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Last Login Time</label>
-                  <p className="text-gray-900 text-sm">{formatDate(data?.profile.lastLoginTime || '')}</p>
+                  <p className="text-gray-900 text-sm">{formatDate(profile?.profile.lastLoginTime || '')}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">Date of Birth</label>
-                  <p className="text-gray-900">{formatDateOnly(data?.profile.dateOfBirth || '')}</p>
+                  <p className="text-gray-900">{formatDateOnly(profile?.profile.dateOfBirth || '')}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Referral Code</label>
-                  <p className="text-gray-900 font-mono">{data?.profile.referralCode || '-'}</p>
+                  <p className="text-gray-900 font-mono">{profile?.profile.referralCode || '-'}</p>
                 </div>
               </div>
 
               <div>
                 <label className="text-sm font-medium text-gray-600">Last Withdrawal Time</label>
-                <p className="text-gray-900">{formatDate(data?.profile.lastWithdrawalTime || null)}</p>
+                <p className="text-gray-900">{formatDate(profile?.profile.lastWithdrawalTime || null)}</p>
               </div>
             </div>
           </div>
@@ -211,7 +257,7 @@ export default function AffiliateProfilePage() {
               <div>
                 <label className="text-sm font-medium text-gray-600">Phone Number 1</label>
                 <div className="flex items-center justify-between mt-1 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-900">{data?.profile.phoneNumber || '-'}</span>
+                  <span className="text-gray-900">{profile?.profile.phoneNumber || '-'}</span>
                   <button className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -223,7 +269,7 @@ export default function AffiliateProfilePage() {
               <div>
                 <label className="text-sm font-medium text-gray-600">Email</label>
                 <div className="flex items-center justify-between mt-1 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-900">{data?.profile.email || '-'}</span>
+                  <span className="text-gray-900">{profile?.profile.email || '-'}</span>
                   <button className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -283,31 +329,31 @@ export default function AffiliateProfilePage() {
                 <>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-red-600">(-) Total Profit & Loss</span>
-                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(data?.potential.totalProfitLoss || 0)}</span>
+                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(profile?.potential.totalProfitLoss || 0)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-gray-700">(-) Total Bonus</span>
-                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(data?.potential.totalBonus || 0)}</span>
+                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(profile?.potential.totalBonus || 0)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-gray-700">(-) Total Revenue Adjustment</span>
-                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(data?.potential.totalRevenueAdjustment || 0)}</span>
+                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(profile?.potential.totalRevenueAdjustment || 0)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-gray-700">Negative Carry Forward</span>
-                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(data?.potential.negativeCarryForward || 0)}</span>
+                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(profile?.potential.negativeCarryForward || 0)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-t pt-2">
                     <span className="text-sm font-medium text-gray-700">Total Net Profit</span>
-                    <span className="text-sm text-gray-900 font-mono font-medium">{formatCurrency(data?.potential.totalNetProfit || 0)}</span>
+                    <span className="text-sm text-gray-900 font-mono font-medium">{formatCurrency(profile?.potential.totalNetProfit || 0)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-gray-700">Commission(%)</span>
-                    <span className="text-sm text-gray-900 font-mono">{data?.potential.commissionPercentage || 0}</span>
+                    <span className="text-sm text-gray-900 font-mono">{profile?.potential.commissionPercentage || 0}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-t pt-2">
                     <span className="text-sm font-medium text-gray-700">Earnings</span>
-                    <span className="text-sm text-gray-900 font-mono font-medium">{formatCurrency(data?.potential.earnings || 0)}</span>
+                    <span className="text-sm text-gray-900 font-mono font-medium">{formatCurrency(profile?.potential.earnings || 0)}</span>
                   </div>
                 </>
               )}
@@ -317,7 +363,7 @@ export default function AffiliateProfilePage() {
                 <>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-red-600">(-) Total Deduction</span>
-                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(data?.potential.totalDeduction || 0)}</span>
+                    <span className="text-sm text-gray-900 font-mono">{formatCurrency(profile?.potential.totalDeduction || 0)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-sm text-gray-700">Total Revenue From Turnover</span>
