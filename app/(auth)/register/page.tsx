@@ -1,12 +1,14 @@
-'use client';
+ 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refParam = searchParams?.get('ref') || '';
   const { register } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
@@ -14,7 +16,7 @@ export default function RegisterPage() {
     phone: '',
     password: '',
     confirmPassword: '',
-    referralCode: '',
+    referralCode: refParam,
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,8 @@ export default function RegisterPage() {
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
-        referralCode: formData.referralCode || undefined,
+  // send referral as refCode so backend will resolve it
+  refCode: formData.referralCode || undefined,
       });
       router.push('/dashboard');
     } catch (err: any) {

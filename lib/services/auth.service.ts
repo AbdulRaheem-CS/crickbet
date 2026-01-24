@@ -11,6 +11,7 @@ export interface RegisterData {
   phone: string;
   password: string;
   referralCode?: string;
+  refCode?: string; // optional referral code passed from marketing link
 }
 
 export interface LoginData {

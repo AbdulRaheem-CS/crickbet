@@ -44,8 +44,18 @@ export default function AffiliatePage() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/affiliate/dashboard');
-      setData(response.data);
+      const response: any = await apiClient.get('/affiliate/dashboard');
+
+      // apiClient returns response.data (the JSON body). Backend uses { success, data }.
+      // normalize to the inner data object that contains dashboard metrics
+      let payload: any = response;
+      if (payload && payload.success && payload.data) {
+        payload = payload.data;
+      } else if (payload && payload.data && payload.data.data) {
+        payload = payload.data.data;
+      }
+
+      setData(payload || null);
       setError(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load dashboard data');

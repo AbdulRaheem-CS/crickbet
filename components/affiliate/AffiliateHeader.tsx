@@ -18,10 +18,42 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
   const [currency, setCurrency] = useState('BDT');
   const [signupLink, setSignupLink] = useState('cxsport.vip/af/S97yYf27/join');
   const [referralLink, setReferralLink] = useState('playicc1.com/saf/S97yYf27');
+  const [loadingLinks, setLoadingLinks] = useState(false);
+
+  useEffect(() => {
+    const fetchLinks = async () => {
+      try {
+        setLoadingLinks(true);
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('http://localhost:5001/api/affiliate/links-short', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          setSignupLink(data.data.signupLink);
+          setReferralLink(data.data.referralLink);
+        }
+      } catch (err) {
+        // ignore — keep defaults
+      } finally {
+        setLoadingLinks(false);
+      }
+    };
+
+    fetchLinks();
+  }, []);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     // You can add a toast notification here
+  };
+
+  const ensureHref = (link: string) => {
+    if (!link) return '';
+    if (link.startsWith('http://') || link.startsWith('https://')) return link;
+    // default to http for local development
+    return `http://${link}`;
   };
 
   return (
@@ -44,10 +76,17 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
           <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded">
             <div>
               <p className="text-xs text-gray-300">Default Player Sign-up Link</p>
-              <p className="text-sm font-mono">{signupLink}</p>
+              <a
+                href={ensureHref(signupLink)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-mono hover:underline"
+              >
+                {signupLink}
+              </a>
             </div>
             <button
-              onClick={() => copyToClipboard(`https://${signupLink}`)}
+              onClick={() => copyToClipboard(ensureHref(signupLink))}
               className="p-2 hover:bg-gray-600 rounded"
               title="Copy to clipboard"
             >
@@ -59,10 +98,17 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
           <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded">
             <div>
               <p className="text-xs text-gray-300">Affiliate Referral Link</p>
-              <p className="text-sm font-mono">{referralLink}</p>
+              <a
+                href={ensureHref(referralLink)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-mono hover:underline"
+              >
+                {referralLink}
+              </a>
             </div>
             <button
-              onClick={() => copyToClipboard(`https://${referralLink}`)}
+              onClick={() => copyToClipboard(ensureHref(referralLink))}
               className="p-2 hover:bg-gray-600 rounded"
               title="Copy to clipboard"
             >
@@ -111,10 +157,17 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
         <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded text-sm">
           <div className="flex-1">
             <p className="text-xs text-gray-300">Default Player Sign-up Link</p>
-            <p className="text-xs font-mono truncate">{signupLink}</p>
+            <a
+              href={ensureHref(signupLink)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-mono truncate hover:underline block"
+            >
+              {signupLink}
+            </a>
           </div>
           <button
-            onClick={() => copyToClipboard(`https://${signupLink}`)}
+            onClick={() => copyToClipboard(ensureHref(signupLink))}
             className="p-2 hover:bg-gray-600 rounded"
           >
             <FaCopy className="text-sm" />
@@ -125,10 +178,17 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
         <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded text-sm">
           <div className="flex-1">
             <p className="text-xs text-gray-300">Affiliate Referral Link</p>
-            <p className="text-xs font-mono truncate">{referralLink}</p>
+            <a
+              href={ensureHref(referralLink)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-mono truncate hover:underline block"
+            >
+              {referralLink}
+            </a>
           </div>
           <button
-            onClick={() => copyToClipboard(`https://${referralLink}`)}
+            onClick={() => copyToClipboard(ensureHref(referralLink))}
             className="p-2 hover:bg-gray-600 rounded"
           >
             <FaCopy className="text-sm" />

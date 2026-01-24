@@ -99,6 +99,11 @@ router.put('/bank-accounts/:id/set-default', protect, affiliateController.setDef
 // @access  Private
 router.get('/hierarchy', protect, affiliateController.getHierarchy);
 
+// @route   GET /api/affiliate/links-short
+// @desc    Get short affiliate links (signup & referral) for header display
+// @access  Private
+router.get('/links-short', protect, affiliateController.getShortLinks);
+
 // @route   GET /api/affiliate/kyc
 // @desc    Get affiliate KYC status and documents
 // @access  Private

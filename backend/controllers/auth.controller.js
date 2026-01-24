@@ -10,7 +10,10 @@ const User = require('../models/User');
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = asyncHandler(async (req, res, next) => {
-  const { username, email, password, phone, referredBy } = req.body;
+  const { username, email, password, phone, referredBy, refCode } = req.body;
+
+  // Also accept referral via query param e.g. /api/auth/register?ref=<affiliateId|refCode>
+  const refQuery = req.query.ref;
 
   // Validate input
   if (!username || !email || !password) {
@@ -35,6 +38,26 @@ exports.register = asyncHandler(async (req, res, next) => {
   // Generate referral code
   const referralCode = `${username.substring(0, 3).toUpperCase()}${Date.now().toString().slice(-6)}`;
 
+  // Resolve referredBy: priority -> body.referredBy -> body.refCode -> query.ref
+  let referredByFinal = referredBy || null;
+
+  if (!referredByFinal && refCode) {
+    // Try to resolve referral code to a user id
+    const referringUser = await User.findOne({ referralCode: refCode }).select('_id');
+    if (referringUser) referredByFinal = referringUser._id;
+  }
+
+  if (!referredByFinal && refQuery) {
+    // refQuery may be an id or a referral code
+    const maybeUserById = await User.findById(refQuery).select('_id').lean().catch(() => null);
+    if (maybeUserById) {
+      referredByFinal = maybeUserById._id;
+    } else {
+      const byCode = await User.findOne({ referralCode: refQuery }).select('_id');
+      if (byCode) referredByFinal = byCode._id;
+    }
+  }
+
   // Create user
   const user = await User.create({
     username,
@@ -42,7 +65,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     password, // Will be hashed by pre-save hook in User model
     phone,
     referralCode,
-    referredBy,
+    referredBy: referredByFinal,
   });
 
   // Generate JWT token

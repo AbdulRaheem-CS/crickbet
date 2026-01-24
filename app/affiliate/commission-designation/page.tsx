@@ -110,11 +110,16 @@ export default function CommissionDesignationPage() {
         },
       });
 
-      const data = await response.json();
+      const body = await response.json();
 
-      if (data.success && data.data.downline) {
-        setAvailablePlayers(data.data.downline);
-      }
+      // backend returns { success, data }
+      const payload = body && body.success && body.data ? body.data : (body.data || body);
+
+      const players = (payload?.downline && payload.downline.length > 0)
+        ? payload.downline
+        : (payload?.availablePlayers || []);
+
+      setAvailablePlayers(players || []);
     } catch (err) {
       console.error('Error fetching players:', err);
     }
@@ -468,7 +473,11 @@ export default function CommissionDesignationPage() {
                   max="100"
                   step="0.01"
                   value={createForm.commissionRate}
-                  onChange={(e) => setCreateForm(prev => ({ ...prev, commissionRate: parseFloat(e.target.value) }))}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const parsed = v === '' ? 0 : parseFloat(v);
+                    setCreateForm(prev => ({ ...prev, commissionRate: Number.isNaN(parsed) ? 0 : parsed }));
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />

@@ -46,22 +46,23 @@ export default function AffiliateHierarchyPage() {
     try {
       setLoading(true);
       const response = await apiClient.get('/affiliate/hierarchy');
-      // apiClient may return either the backend payload { success, data } or the data object directly
+      // apiClient returns response.data (the JSON body). The body shape from backend is { success, data }.
+      // Normalize to end up with the inner data object that contains upline/downline/stats.
       let payload: any = response;
-      if (response && response.data && response.data.data) {
-        payload = response.data.data;
-      } else if (response && response.data && !response.data.data && response.data.success !== undefined) {
-        // backend returned { success: true, data: {...} }
-        payload = response.data;
+      if (payload && payload.success && payload.data) {
+        payload = payload.data; // { upline, downline, stats, availablePlayers }
+      } else if (payload && payload.data && payload.data.data) {
+        // handle shape: { data: { data: {...} } }
+        payload = payload.data.data;
       }
 
       // normalize structure
       const normalized: HierarchyData = {
-        upline: payload?.upline ? {
+  upline: payload?.upline ? {
           ...payload.upline,
           phoneNumber: payload.upline.phoneNumber || payload.upline.phone || ''
         } : null,
-        downline: Array.isArray(payload?.downline) ? payload.downline.map((d: any) => ({
+  downline: Array.isArray(payload?.downline) ? payload.downline.map((d: any) => ({
           ...d,
           phoneNumber: d.phoneNumber || d.phone || ''
         })) : [],

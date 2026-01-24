@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is logged in on mount
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
     if (token) {
       refreshUser();
     } else {
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response: any = await authService.login({ emailOrPhone, password });
     // API returns { success: true, data: { user, token } }
     const { user, token } = response.data;
-    localStorage.setItem('authToken', token);
+  localStorage.setItem('token', token);
     setUser(user);
   };
 
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response: any = await authService.register(registerData);
     // API returns { success: true, data: { user, token } }
     const { user, token } = response.data;
-    localStorage.setItem('authToken', token);
+  localStorage.setItem('token', token);
     setUser(user);
   };
 
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('authToken');
+  localStorage.removeItem('token');
       setUser(null);
     }
   };

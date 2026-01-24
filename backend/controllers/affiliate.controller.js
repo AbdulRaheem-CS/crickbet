@@ -139,6 +139,26 @@ module.exports = {
       })
     ]);
 
+    // If there are no bets yet, fall back to counting referred users with status 'active'
+    let activePlayersThisCount = activePlayersThis.length;
+    let activePlayersLastCount = activePlayersLast.length;
+
+    if (activePlayersThisCount === 0) {
+      activePlayersThisCount = await User.countDocuments({
+        referredBy: affiliateId,
+        status: 'active',
+        createdAt: { $gte: thisMonthStart }
+      });
+    }
+
+    if (activePlayersLastCount === 0) {
+      activePlayersLastCount = await User.countDocuments({
+        referredBy: affiliateId,
+        status: 'active',
+        createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd }
+      });
+    }
+
     // Registered Users by period
     const registeredUsers = await User.aggregate([
       {
@@ -421,8 +441,8 @@ module.exports = {
           lastMonth: lastMonthCommission[0]?.total || 0
         },
         activePlayers: {
-          thisMonth: activePlayersThis.length,
-          lastMonth: activePlayersLast.length
+          thisMonth: activePlayersThisCount,
+          lastMonth: activePlayersLastCount
         },
         registeredUsers,
         firstDeposits,
@@ -1104,11 +1124,29 @@ module.exports = {
       })
     ]);
 
+    // Prepare availablePlayers: prefer downline, but if empty provide a safe fallback
+    let availablePlayers = downlineWithStats;
+    if (!availablePlayers || availablePlayers.length === 0) {
+      // Fallback: provide a small list of recent users with role 'user' so affiliate can designate
+      // This is a limited, read-only list for selection only (no sensitive fields)
+      const fallbackPlayers = await User.find({ role: 'user' })
+        .select('username email phone createdAt status')
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean();
+
+      availablePlayers = fallbackPlayers.map(u => ({
+        ...u,
+        phoneNumber: u.phone || u.phoneNumber || ''
+      }));
+    }
+
     res.status(200).json({
       success: true,
       data: {
         upline: upline,
         downline: downlineWithStats,
+        availablePlayers,
         stats: {
           totalReferrals: downlineUsers.length,
           activeReferrals: activeBettors.length,
@@ -1586,6 +1624,34 @@ module.exports = {
           page: parseInt(page),
           pages: Math.ceil(total / limit)
         }
+      }
+    });
+  }),
+
+  /**
+   * @route   GET /api/affiliate/links-short
+   * @desc    Get short affiliate links (signup & referral) for header display
+   * @access  Private (Affiliate)
+   */
+  getShortLinks: asyncHandler(async (req, res) => {
+    const affiliateId = req.user._id;
+
+    // Base domain for public links - prefer env var, fallback to localhost
+    const PUBLIC_HOST = process.env.PUBLIC_HOST || 'localhost:3000';
+    const MARKETING_HOST = process.env.MARKETING_HOST || PUBLIC_HOST;
+
+    // Use affiliateCode or referralCode if present, otherwise fallback to encoded id
+    const user = await User.findById(affiliateId).select('affiliateCode referralCode username').lean();
+
+    const refCode = user?.referralCode || affiliateId.toString().slice(-8);
+    const signupLink = `${MARKETING_HOST}/af/${refCode}/join`;
+    const referralLink = `${MARKETING_HOST}/saf/${refCode}`;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        signupLink,
+        referralLink,
       }
     });
   }),
