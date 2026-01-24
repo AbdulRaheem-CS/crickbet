@@ -2,13 +2,12 @@
  * Affiliate Controller
  * Handles all affiliate program operations
  */
-
-const { asyncHandler } = require("../middleware/error.middleware");
+const AffiliateLink = require('../models/AffiliateLink');
+const { asyncHandler } = require('../middleware/error.middleware');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Bet = require('../models/Bet');
 const CommissionDesignation = require('../models/CommissionDesignation');
-const AffiliateLink = require('../models/AffiliateLink');
 
 module.exports = {
   applyForAffiliate: asyncHandler(async (req, res) => {
@@ -96,7 +95,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: affiliateId,
+        user: affiliateId,
             type: 'commission',
             status: 'completed',
             createdAt: { $gte: thisMonthStart }
@@ -112,7 +111,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: affiliateId,
+        user: affiliateId,
             type: 'commission',
             status: 'completed',
             createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd }
@@ -129,12 +128,12 @@ module.exports = {
 
     // Active players (users who placed bets this month)
     const [activePlayersThis, activePlayersLast] = await Promise.all([
-      Bet.distinct('userId', {
-        userId: { $in: referredUserIds },
+      Bet.distinct('user', {
+        user: { $in: referredUserIds },
         createdAt: { $gte: thisMonthStart }
       }),
-      Bet.distinct('userId', {
-        userId: { $in: referredUserIds },
+      Bet.distinct('user', {
+        user: { $in: referredUserIds },
         createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd }
       })
     ]);
@@ -160,7 +159,7 @@ module.exports = {
     }
 
     // Registered Users by period
-    const registeredUsers = await User.aggregate([
+  const registeredUsers = await User.aggregate([
       {
         $match: {
           referredBy: affiliateId
@@ -182,14 +181,14 @@ module.exports = {
     const firstDeposits = await Transaction.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           type: 'deposit',
           status: 'completed'
         }
       },
       {
         $group: {
-          _id: '$userId',
+          _id: '$user',
           firstDeposit: { $first: '$$ROOT' }
         }
       },
@@ -213,7 +212,7 @@ module.exports = {
     const deposits = await Transaction.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           type: 'deposit',
           status: 'completed'
         }
@@ -235,7 +234,7 @@ module.exports = {
     const withdrawals = await Transaction.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           type: 'withdrawal',
           status: 'completed'
         }
@@ -257,7 +256,7 @@ module.exports = {
     const bonuses = await Transaction.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           type: 'bonus',
           status: 'completed'
         }
@@ -279,7 +278,7 @@ module.exports = {
     const recycleAmount = await Transaction.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           type: 'refund',
           status: 'completed'
         }
@@ -301,7 +300,7 @@ module.exports = {
     const cancelFees = await Transaction.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           type: 'fee',
           subType: 'cancel_fee',
           status: 'completed'
@@ -324,7 +323,7 @@ module.exports = {
     const vipCashBonus = await Transaction.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           type: 'bonus',
           subType: 'vip_cash',
           status: 'completed'
@@ -347,7 +346,7 @@ module.exports = {
     const referralCommissions = await Transaction.aggregate([
       {
         $match: {
-          userId: affiliateId,
+          user: affiliateId,
           type: 'commission',
           status: 'completed'
         }
@@ -369,7 +368,7 @@ module.exports = {
     const turnover = await Bet.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           status: { $in: ['settled', 'won', 'lost'] }
         }
       },
@@ -390,7 +389,7 @@ module.exports = {
     const profitLoss = await Transaction.aggregate([
       {
         $match: {
-          userId: { $in: referredUserIds },
+          user: { $in: referredUserIds },
           type: { $in: ['deposit', 'withdrawal', 'bet_settlement'] },
           status: 'completed'
         }
@@ -487,7 +486,7 @@ module.exports = {
 
     // Get last withdrawal time
     const lastWithdrawal = await Transaction.findOne({
-      userId: affiliateId,
+      user: affiliateId,
       type: 'withdrawal',
       status: 'completed'
     }).sort({ createdAt: -1 }).select('createdAt');
@@ -509,7 +508,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             createdAt: { $gte: thisMonthStart },
             status: 'completed'
           }
@@ -549,7 +548,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             type: 'deduction',
             createdAt: { $gte: thisMonthStart },
             status: 'completed'
@@ -566,7 +565,7 @@ module.exports = {
       Bet.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             status: { $in: ['settled', 'won', 'lost'] },
             createdAt: { $gte: thisMonthStart }
           }
@@ -582,7 +581,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             type: 'bonus',
             createdAt: { $gte: thisMonthStart },
             status: 'completed'
@@ -599,7 +598,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             type: 'refund',
             createdAt: { $gte: thisMonthStart },
             status: 'completed'
@@ -616,7 +615,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             type: 'fee',
             subType: 'cancel_fee',
             createdAt: { $gte: thisMonthStart },
@@ -634,7 +633,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             type: 'bonus',
             subType: 'vip_cash',
             createdAt: { $gte: thisMonthStart },
@@ -652,7 +651,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: affiliateId,
+            user: affiliateId,
             type: 'commission',
             createdAt: { $gte: thisMonthStart },
             status: 'completed'
@@ -669,7 +668,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             type: 'adjustment',
             createdAt: { $gte: thisMonthStart },
             status: 'completed'
@@ -686,7 +685,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: referredUserIds },
+            user: { $in: referredUserIds },
             type: 'fee',
             subType: 'payment_fee',
             createdAt: { $gte: thisMonthStart },
@@ -718,7 +717,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: affiliateId,
+            user: affiliateId,
             type: 'commission',
             status: 'pending'
           }
@@ -733,7 +732,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: affiliateId,
+            user: affiliateId,
             type: 'commission',
             status: 'completed'
           }
@@ -748,7 +747,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: affiliateId,
+            user: affiliateId,
             type: 'withdrawal',
             status: 'processing'
           }
@@ -1058,7 +1057,7 @@ module.exports = {
           Transaction.aggregate([
             {
               $match: {
-                userId: referralUser._id,
+                user: referralUser._id,
                 type: 'deposit',
                 status: 'completed'
               }
@@ -1073,7 +1072,7 @@ module.exports = {
           Transaction.aggregate([
             {
               $match: {
-                userId: referralUser._id,
+                user: referralUser._id,
                 type: 'withdrawal',
                 status: 'completed'
               }
@@ -1086,7 +1085,7 @@ module.exports = {
             }
           ]),
           Bet.countDocuments({
-            userId: referralUser._id,
+            user: referralUser._id,
             status: { $in: ['settled', 'won', 'lost'] }
           })
         ]);
@@ -1106,7 +1105,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: affiliateId,
+            user: affiliateId,
             type: 'commission',
             status: 'completed'
           }
@@ -1118,8 +1117,8 @@ module.exports = {
           }
         }
       ]),
-      Bet.distinct('userId', {
-        userId: { $in: referralIds },
+      Bet.distinct('user', {
+        user: { $in: referralIds },
         createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // Last 30 days
       })
     ]);
@@ -1858,14 +1857,14 @@ module.exports = {
     const enrichedMembers = await Promise.all(
       members.map(async (member) => {
         // Get last bet time
-        const lastBet = await Bet.findOne({ userId: member._id })
+        const lastBet = await Bet.findOne({ user: member._id })
           .sort({ createdAt: -1 })
           .select('createdAt')
           .lean();
 
         // Get last deposit time
         const lastDeposit = await Transaction.findOne({
-          userId: member._id,
+          user: member._id,
           type: 'deposit',
           status: 'completed'
         })
@@ -1989,7 +1988,7 @@ module.exports = {
       registeredUsers.map(async (user) => {
         // Find first deposit
         const firstDeposit = await Transaction.findOne({
-          userId: user._id,
+          user: user._id,
           type: 'deposit',
           status: 'completed'
         })
@@ -1999,7 +1998,7 @@ module.exports = {
 
         // Find first bet
         const firstBet = await Bet.findOne({
-          userId: user._id
+          user: user._id
         })
           .sort({ createdAt: 1 })
           .select('amount createdAt')
@@ -2034,14 +2033,14 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: allUserIds },
+            user: { $in: allUserIds },
             type: 'deposit',
             status: 'completed'
           }
         },
         {
           $group: {
-            _id: '$userId',
+            _id: '$user',
             firstDeposit: { $first: '$amount' }
           }
         },
@@ -2055,12 +2054,12 @@ module.exports = {
       Bet.aggregate([
         {
           $match: {
-            userId: { $in: allUserIds }
+            user: { $in: allUserIds }
           }
         },
         {
           $group: {
-            _id: '$userId',
+            _id: '$user',
             firstBet: { $first: '$amount' }
           }
         },
@@ -2206,7 +2205,7 @@ module.exports = {
         const depositStats = await Transaction.aggregate([
           {
             $match: {
-              userId: user._id,
+              user: user._id,
               type: 'deposit',
               status: 'completed'
             }
@@ -2224,7 +2223,7 @@ module.exports = {
         const withdrawalStats = await Transaction.aggregate([
           {
             $match: {
-              userId: user._id,
+              user: user._id,
               type: 'withdrawal',
               status: 'completed'
             }
@@ -2242,7 +2241,7 @@ module.exports = {
         const betStats = await Bet.aggregate([
           {
             $match: {
-              userId: user._id
+              user: user._id
             }
           },
           {
@@ -2257,7 +2256,7 @@ module.exports = {
 
         // Get first deposit
         const firstDeposit = await Transaction.findOne({
-          userId: user._id,
+          user: user._id,
           type: 'deposit',
           status: 'completed'
         })
@@ -2317,7 +2316,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: allUserIds },
+            user: { $in: allUserIds },
             type: 'deposit',
             status: 'completed'
           }
@@ -2333,7 +2332,7 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-            userId: { $in: allUserIds },
+            user: { $in: allUserIds },
             type: 'withdrawal',
             status: 'completed'
           }
@@ -2349,7 +2348,7 @@ module.exports = {
       Bet.aggregate([
         {
           $match: {
-            userId: { $in: allUserIds }
+            user: { $in: allUserIds }
           }
         },
         {
@@ -2484,7 +2483,7 @@ module.exports = {
 
         // Get deposits for these players
         const depositMatch = {
-          userId: { $in: playerIds },
+          user: { $in: playerIds },
           type: 'deposit',
           status: 'completed'
         };
@@ -2504,7 +2503,7 @@ module.exports = {
 
         // Get withdrawals
         const withdrawalMatch = {
-          userId: { $in: playerIds },
+          user: { $in: playerIds },
           type: 'withdrawal',
           status: 'completed'
         };
@@ -2523,7 +2522,7 @@ module.exports = {
         ]);
 
         // Get bet winnings
-        const betMatch = { userId: { $in: playerIds } };
+  const betMatch = { user: { $in: playerIds } };
         if (Object.keys(dateFilter).length > 0) {
           betMatch.createdAt = dateFilter;
         }

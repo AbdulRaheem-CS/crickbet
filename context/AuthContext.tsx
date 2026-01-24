@@ -48,10 +48,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response: any = await authService.me();
       // API returns { success: true, data: user }
-      setUser(response.data || response.user);
+      // Normalize possible shapes: { success, data }, { user }, or user object
+      const userPayload = response?.data || response?.user || response;
+      setUser(userPayload || null);
     } catch (error) {
-      console.error('Failed to fetch user:', error);
+      // Try to log structured error information for easier debugging
+      try {
+        console.error('Failed to fetch user - error object:', error);
+        // Common shape from api-client rejection
+        if (error && typeof error === 'object') {
+          console.error('error.message:', (error as any).message);
+          console.error('error.status:', (error as any).status);
+          console.error('error.data:', (error as any).data);
+        }
+      } catch (logErr) {
+        console.error('Failed to log error details', logErr);
+      }
+      // Clear both legacy and new token keys
       localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
       setUser(null);
     } finally {
       setLoading(false);
@@ -62,7 +77,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response: any = await authService.login({ emailOrPhone, password });
     // API returns { success: true, data: { user, token } }
     const { user, token } = response.data;
-  localStorage.setItem('token', token);
+  // Persist token under both keys for backward compatibility
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('token', token);
+  }
     setUser(user);
   };
 
@@ -70,7 +89,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response: any = await authService.register(registerData);
     // API returns { success: true, data: { user, token } }
     const { user, token } = response.data;
-  localStorage.setItem('token', token);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('token', token);
+  }
     setUser(user);
   };
 
