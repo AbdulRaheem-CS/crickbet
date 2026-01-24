@@ -4,9 +4,11 @@ import ClientFallbackRedirect from '../ClientFallbackRedirect';
 export default function JoinRedirect({ params }: { params?: { code?: string } }) {
   const code = params?.code || '';
 
-  // If we have a code on the server, perform a server-side redirect for best UX.
+  // If we have a code on the server, redirect to the dashboard and open the
+  // site-wide register popup (so the default player signup link opens the
+  // signup modal instead of navigating to the standalone /register page).
   if (code) {
-    return redirect(`/register?ref=${encodeURIComponent(code)}`);
+    return redirect(`/dashboard?ref=${encodeURIComponent(code)}&open=register`);
   }
 
   // Fallback: render a small client-side redirect component which will

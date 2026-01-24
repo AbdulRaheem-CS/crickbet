@@ -26,6 +26,11 @@ interface AuthContextType {
   register: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  // Auth modal controls (site-wide)
+  showAuthModal: boolean;
+  openAuthModal: (tab?: 'login' | 'register') => void;
+  closeAuthModal: () => void;
+  authModalTab: 'login' | 'register';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +38,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  // Site-wide auth modal state
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
+  const [dismissed, setDismissed] = useState(false);
 
   // Check if user is logged in on mount
   useEffect(() => {
@@ -102,13 +111,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-  localStorage.removeItem('token');
+      localStorage.removeItem('token');
       setUser(null);
+      // Reset modal state on logout
+      setShowAuthModal(false);
+      setDismissed(false);
     }
   };
 
+  const openAuthModal = (tab: 'login' | 'register' = 'login') => {
+    setAuthModalTab(tab);
+    setDismissed(false);
+    setShowAuthModal(true);
+  };
+
+  const closeAuthModal = () => {
+    setShowAuthModal(false);
+    setDismissed(true);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        refreshUser,
+        showAuthModal,
+        openAuthModal,
+        closeAuthModal,
+        authModalTab,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -5,7 +5,7 @@ export default function SafRedirect({ params }: { params?: { code?: string } }) 
   const code = params?.code || '';
 
   if (code) {
-    return redirect(`/register?ref=${encodeURIComponent(code)}`);
+    return redirect(`/dashboard?ref=${encodeURIComponent(code)}&open=register`);
   }
 
   return <ClientFallbackRedirect pattern="/saf/([^/]+)" queryKey="ref" />;

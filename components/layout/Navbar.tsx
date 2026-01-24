@@ -17,7 +17,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ isMinimized, onToggleMinimize }: NavbarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, openAuthModal } = useAuth();
   const { balance } = useWallet();
 
   return (
@@ -86,18 +86,8 @@ export default function Navbar({ isMinimized, onToggleMinimize }: NavbarProps) {
             </>
           ) : (
             <>
-              <Link
-                href="/register"
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-lg transition"
-              >
-                Sign up
-              </Link>
-              <Link
-                href="/login"
-                className="bg-[#1A79D3] hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg transition"
-              >
-                Login
-              </Link>
+              <button onClick={() => openAuthModal('register')} className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-lg transition">Sign up</button>
+              <button onClick={() => openAuthModal('login')} className="bg-[#1A79D3] hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg transition">Login</button>
             </>
           )}
         </div>

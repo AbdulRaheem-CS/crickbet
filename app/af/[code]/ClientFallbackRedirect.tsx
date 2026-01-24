@@ -12,11 +12,15 @@ export default function ClientFallbackRedirect({ pattern, queryKey }: { pattern:
       const re = new RegExp(pattern);
       const m = path.match(re);
       const code = m && m[1] ? m[1] : '';
-      const query = code ? `?${encodeURIComponent(queryKey)}=${encodeURIComponent(code)}` : '';
-      router.replace(`/register${query}`);
+      // Build a dashboard URL that opens the register modal and passes the
+      // referral code when available. Use URLSearchParams for safe encoding.
+      const params = new URLSearchParams();
+      if (code) params.set(queryKey, code);
+      params.set('open', 'register');
+      router.replace(`/dashboard?${params.toString()}`);
     } catch (err) {
-      // if anything fails, go to register without ref
-      router.replace('/register');
+      // if anything fails, open the dashboard register modal without ref
+      router.replace('/dashboard?open=register');
     }
   }, [pattern, queryKey, router]);
 
