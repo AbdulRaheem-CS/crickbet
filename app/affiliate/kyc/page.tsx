@@ -27,6 +27,8 @@ interface KYCData {
     backImage: string | null;
     verified: boolean;
   };
+  // optional field populated when admin rejects a submission
+  rejectionReason?: string | null;
 }
 
 export default function AffiliateKYCPage() {
