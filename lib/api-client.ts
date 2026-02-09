@@ -374,11 +374,22 @@ export const oddsFeedAPI = {
 export const casinoAPI = {
   getGames: async (params?: {
     category?: string;
-    provider?: string;
+    gameType?: string;
+    productCode?: number;
+    search?: string;
     page?: number;
     limit?: number;
+    sort?: string;
   }) => {
     return apiClient.get('/casino/games', { params });
+  },
+
+  getGamesByCategory: async (category: string, params?: { page?: number; limit?: number }) => {
+    return apiClient.get(`/casino/games/category/${category}`, { params });
+  },
+
+  getGamesByProvider: async (provider: string, params?: { page?: number; limit?: number }) => {
+    return apiClient.get(`/casino/games/provider/${provider}`, { params });
   },
 
   getGameById: async (gameId: string) => {
@@ -387,6 +398,34 @@ export const casinoAPI = {
 
   launchGame: async (gameId: string) => {
     return apiClient.post(`/casino/games/${gameId}/launch`);
+  },
+
+  launchDemo: async (gameId: string) => {
+    return apiClient.post(`/casino/games/${gameId}/demo`);
+  },
+
+  getPopularGames: async () => {
+    return apiClient.get('/casino/popular');
+  },
+
+  getFeaturedGames: async () => {
+    return apiClient.get('/casino/featured');
+  },
+
+  getNewGames: async () => {
+    return apiClient.get('/casino/new');
+  },
+
+  getProviders: async () => {
+    return apiClient.get('/casino/providers');
+  },
+
+  getCategories: async () => {
+    return apiClient.get('/casino/categories');
+  },
+
+  searchGames: async (query: string, limit: number = 20) => {
+    return apiClient.get('/casino/games', { params: { search: query, limit } });
   },
 };
 
@@ -652,6 +691,7 @@ export const affiliateAPI = {
     password: string;
     phone?: string;
     dateOfBirth?: string;
+    refCode?: string;  // Referral code from referring affiliate
   }) => {
     return apiClient.post('/affiliate/register', data);
   },

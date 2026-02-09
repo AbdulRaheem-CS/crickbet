@@ -34,7 +34,7 @@ export default function AffiliateSidebar({ isOpen }: AffiliateSidebarProps) {
 
   return (
     <aside
-      className={`bg-gray-700 text-white h-[calc(100vh-140px)] lg:h-[calc(100vh-100px)] overflow-y-auto transition-all duration-300 ${
+      className={`bg-gray-700 text-white min-h-screen overflow-y-auto transition-all duration-300 ${
         isOpen ? 'w-64' : 'w-0 lg:w-16'
       }`}
     >

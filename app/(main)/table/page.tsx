@@ -1,11 +1,22 @@
 'use client';
 
+/**
+ * Table Games Page
+ * Display table games from GSC+
+ */
+
+import { FaTableTennis } from 'react-icons/fa';
+import GameGridPage from '@/components/casino/GameGridPage';
+
 export default function TableGamesPage() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-white">Table Games</h1>
-      <p className="text-gray-400">Blackjack, Roulette, Baccarat, Poker...</p>
-      {/* TODO: Implement table games */}
-    </div>
+    <GameGridPage
+      category="table"
+      title="Table Games"
+      subtitle="Blackjack, Roulette, Baccarat, Poker and more"
+      icon={<FaTableTennis />}
+      showProviderFilter={true}
+      defaultLimit={40}
+    />
   );
 }

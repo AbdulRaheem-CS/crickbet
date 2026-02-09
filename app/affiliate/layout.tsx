@@ -30,11 +30,11 @@ export default function AffiliateLayout({
             </div>
           ) : (
             // Show full affiliate dashboard layout
-            <div className="min-h-screen bg-gray-100">
+            <div className="min-h-screen bg-gray-100 flex flex-col">
               {/* Affiliate Header */}
               <AffiliateHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-              <div className="flex">
+              <div className="flex flex-1">
                 {/* Affiliate Sidebar */}
                 <AffiliateSidebar isOpen={sidebarOpen} />
 

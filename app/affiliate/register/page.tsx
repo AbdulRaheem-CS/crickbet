@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { affiliateAPI } from '@/lib/api-client';
 
@@ -27,18 +27,41 @@ export default function AffiliateRegister() {
     phone: '',
     dateOfBirth: ''
   });
+  const [refCode, setRefCode] = useState<string>('');
   const [message, setMessage] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     // If opened from another tab, sever the reference to prevent opener-driven navigation
     if (typeof window !== 'undefined' && window.opener) {
       try { window.opener = null; } catch (e) { /* ignore */ }
     }
-  }, []);
+    // Read referral code from URL query param. Use both Next's searchParams
+    // and a window.location fallback for robustness (redirects / client
+    // navigation can sometimes cause timing differences).
+    try {
+      let ref = searchParams?.get('ref') || '';
+      if (!ref && typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search || '');
+        ref = params.get('ref') || '';
+      }
+      if (!ref && typeof window !== 'undefined') {
+        const stored = localStorage.getItem('affiliateRef');
+        if (stored) {
+          ref = stored;
+          // clear stored ref so it's not reused unexpectedly
+          localStorage.removeItem('affiliateRef');
+        }
+      }
+      if (ref) setRefCode(ref);
+    } catch (err) {
+      // ignore
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -87,7 +110,8 @@ export default function AffiliateRegister() {
         email: form.email,
         password: form.password,
         phone: phoneDigits,
-        dateOfBirth: form.dateOfBirth
+        dateOfBirth: form.dateOfBirth,
+        refCode: refCode || undefined  // Include referral code from URL if present
       });
       setMessage(response.message || 'Registration submitted successfully!');
       setSuccess(true);
@@ -180,6 +204,21 @@ export default function AffiliateRegister() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
+          </div>
+
+          {/* Referral Code (optional) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Referral Code (optional)
+            </label>
+            <input
+              name="referral"
+              type="text"
+              placeholder="Referral code (if any)"
+              value={refCode}
+              onChange={(e) => setRefCode(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

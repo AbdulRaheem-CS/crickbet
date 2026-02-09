@@ -16,7 +16,7 @@ module.exports = {
   
   // Public registration for affiliate (creates a pending user and affiliate record)
   registerAffiliate: asyncHandler(async (req, res) => {
-    const { username, firstName, lastName, email, password, phone, dateOfBirth } = req.body;
+    const { username, firstName, lastName, email, password, phone, dateOfBirth, refCode } = req.body;
 
     if (!username || !email || !password) {
       return res.status(400).json({ success: false, message: 'username, email and password are required' });
@@ -26,6 +26,24 @@ module.exports = {
     const existing = await User.findOne({ $or: [{ username }, { email }] });
     if (existing) {
       return res.status(400).json({ success: false, message: 'User with this email or username already exists' });
+    }
+
+    // If refCode provided, look up the referring affiliate
+    let referringAffiliateId = null;
+    if (refCode) {
+      // refCode can be a referralCode on User, or an affiliateCode on Affiliate, or a user _id
+      const Affiliate = require('../models/Affiliate');
+      // Try finding by user referralCode first
+      const referringUser = await User.findOne({ referralCode: refCode, role: 'affiliate' }).select('_id').lean();
+      if (referringUser) {
+        referringAffiliateId = referringUser._id;
+      } else {
+        // Try finding by Affiliate.affiliateCode
+        const referringAff = await Affiliate.findOne({ affiliateCode: refCode }).select('user').lean();
+        if (referringAff) {
+          referringAffiliateId = referringAff.user;
+        }
+      }
     }
 
     // Create user with pending status
@@ -39,6 +57,7 @@ module.exports = {
       dateOfBirth,
       role: 'affiliate',
       status: 'pending',
+      referredBy: referringAffiliateId || undefined,
     });
 
     // Create minimal affiliate record (ensure affiliateCode provided)
@@ -49,7 +68,7 @@ module.exports = {
     for (let i = 0; i < 7; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    await Affiliate.create({ user: user._id, affiliateCode: code });
+    await Affiliate.create({ user: user._id, affiliateCode: code, parentAffiliate: referringAffiliateId || undefined });
 
     res.status(201).json({ success: true, message: 'Affiliate registration submitted. Awaiting admin approval.' });
   }),

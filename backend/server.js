@@ -41,6 +41,8 @@ const crashRoutes = require('./routes/crash.routes');
 const slotsRoutes = require('./routes/slots.routes');
 const oddsFeedRoutes = require('./routes/odds-feed.routes');
 const paymentRoutes = require('./routes/payment.routes');
+const winnerBoardRoutes = require('./routes/winnerBoard.routes');
+const gscCallbackRoutes = require('./routes/gsc-callback.routes');
 
 // Initialize Express app
 const app = express();
@@ -104,6 +106,10 @@ app.use('/api/crash', crashRoutes);
 app.use('/api/slots', slotsRoutes);
 app.use('/api/odds-feed', oddsFeedRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/winner-board', winnerBoardRoutes);
+
+// GSC+ Seamless Wallet Callback Routes (called by GSC+ platform, no JWT auth)
+app.use('/v1/api/seamless', gscCallbackRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
