@@ -6,7 +6,7 @@
  * Handles fetching, filtering, search, pagination, and game launching
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch, FaFilter, FaTh, FaThLarge, FaChevronLeft, FaChevronRight, FaSpinner } from 'react-icons/fa';
 import { casinoService } from '@/lib/services/casino.service';
@@ -25,7 +25,7 @@ interface GameGridPageProps {
   defaultLimit?: number;
 }
 
-export default function GameGridPage({
+function GameGridContent({
   category,
   title,
   subtitle,
@@ -356,5 +356,17 @@ export default function GameGridPage({
         </div>
       </div>
     </>
+  );
+}
+
+export default function GameGridPage(props: GameGridPageProps) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <FaSpinner className="animate-spin text-blue-500 text-4xl" />
+      </div>
+    }>
+      <GameGridContent {...props} />
+    </Suspense>
   );
 }
