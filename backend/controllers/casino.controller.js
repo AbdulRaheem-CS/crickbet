@@ -214,6 +214,10 @@ module.exports.getGamesByProvider = asyncHandler(async (req, res) => {
  * @desc    Launch a real game via GSC+ API
  * @route   POST /api/casino/games/:id/launch
  * @access  Private (logged in users only)
+ * 
+ * GSC+ Launch Game API (3.1):
+ *   POST {{operator_url}}/api/operators/launch-game
+ *   Response: { Code, Message, URL, Content }
  */
 module.exports.launchGame = asyncHandler(async (req, res) => {
   const game = await GscGame.findById(req.params.id);
@@ -232,20 +236,27 @@ module.exports.launchGame = asyncHandler(async (req, res) => {
     return res.status(401).json({ success: false, message: 'User not found' });
   }
 
-  // Determine platform from user agent
+  // Determine platform from user agent (WEB, DESKTOP, MOBILE, Widget)
   const userAgent = req.headers['user-agent'] || '';
   let platform = 'WEB';
   if (/mobile|android|iphone|ipad/i.test(userAgent)) {
     platform = 'MOBILE';
   }
 
-  // Get language code
+  // Get language code (must be sent as string per API spec)
   const langMap = gscConfig.languageCodes;
   const userLang = user.preferences?.language || 'en';
-  const languageCode = langMap[userLang] || 0;
+  const languageCode = String(langMap[userLang] || 0);
 
   // Generate password hash for GSC+ (MD5 of a consistent value)
   const passwordHash = md5(`${user.username}_${gscConfig.operatorCode}`);
+
+  // Get client IP address
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+    || req.headers['x-real-ip']
+    || req.ip
+    || req.connection?.remoteAddress
+    || '127.0.0.1';
 
   try {
     // Get the correct operator-assigned currency for this product
@@ -262,11 +273,23 @@ module.exports.launchGame = asyncHandler(async (req, res) => {
       gameCode: game.gameCode,
       productCode: game.productCode,
       gameType: game.gameType,
-      ip: req.ip || req.connection.remoteAddress || '127.0.0.1',
+      ip: clientIp,
       platform,
       lobbyUrl: `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/casino`,
       languageCode,
     });
+
+    // GSC+ returns { Code, Message, URL, Content } (normalized to lowercase by service)
+    const gameUrl = result.url || result.URL;
+    const gameContent = result.content || result.Content || null;
+
+    if (!gameUrl && !gameContent) {
+      console.error('[Casino] GSC+ launch returned no URL or Content:', result);
+      return res.status(500).json({
+        success: false,
+        message: 'Game provider did not return a launch URL. Please try again.',
+      });
+    }
 
     // Create session record
     const gameSession = new GscSession({
@@ -276,10 +299,10 @@ module.exports.launchGame = asyncHandler(async (req, res) => {
       gameCode: game.gameCode,
       gameType: game.gameType,
       gameName: game.gameName,
-      gameUrl: result.url,
+      gameUrl: gameUrl,
       platform,
       balanceStart: user.wallet.balance || 0,
-      ip: req.ip || req.connection.remoteAddress,
+      ip: clientIp,
       userAgent,
     });
     await gameSession.save();
@@ -292,8 +315,8 @@ module.exports.launchGame = asyncHandler(async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        gameUrl: result.url,
-        content: result.content || null,
+        gameUrl: gameUrl,
+        content: gameContent,
         sessionId: gameSession._id,
       },
     });
@@ -310,6 +333,8 @@ module.exports.launchGame = asyncHandler(async (req, res) => {
       userMessage = 'This game is not available in your region. Please try another game.';
     } else if (error.message.includes('non-JSON response') || error.message.includes('504')) {
       userMessage = 'Game provider is not responding. Please try again later.';
+    } else if (error.message.includes('currency')) {
+      userMessage = 'Currency configuration error. Please contact support.';
     }
 
     res.status(500).json({
@@ -324,6 +349,8 @@ module.exports.launchGame = asyncHandler(async (req, res) => {
  * @desc    Launch game in demo mode (no real money)
  * @route   POST /api/casino/games/:id/demo
  * @access  Public
+ * 
+ * Uses same GSC+ Launch Game API (3.1) with a demo account
  */
 module.exports.launchDemo = asyncHandler(async (req, res) => {
   const game = await GscGame.findById(req.params.id);
@@ -333,6 +360,20 @@ module.exports.launchDemo = asyncHandler(async (req, res) => {
   }
 
   const passwordHash = md5(`demo_user_${gscConfig.operatorCode}`);
+
+  // Get client IP
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+    || req.headers['x-real-ip']
+    || req.ip
+    || req.connection?.remoteAddress
+    || '127.0.0.1';
+
+  // Determine platform
+  const userAgent = req.headers['user-agent'] || '';
+  let platform = 'WEB';
+  if (/mobile|android|iphone|ipad/i.test(userAgent)) {
+    platform = 'MOBILE';
+  }
 
   try {
     // Get the correct operator-assigned currency for this product
@@ -346,16 +387,21 @@ module.exports.launchDemo = asyncHandler(async (req, res) => {
       gameCode: game.gameCode,
       productCode: game.productCode,
       gameType: game.gameType,
-      ip: req.ip || '127.0.0.1',
-      platform: 'WEB',
+      ip: clientIp,
+      platform,
       lobbyUrl: `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/casino`,
+      languageCode: String(gscConfig.defaultLanguage),
     });
+
+    // GSC+ returns { Code, Message, URL, Content } (normalized to lowercase by service)
+    const gameUrl = result.url || result.URL;
+    const gameContent = result.content || result.Content || null;
 
     res.status(200).json({
       success: true,
       data: {
-        gameUrl: result.url,
-        content: result.content || null,
+        gameUrl: gameUrl,
+        content: gameContent,
       },
     });
   } catch (error) {
@@ -363,6 +409,7 @@ module.exports.launchDemo = asyncHandler(async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Demo mode is not available for this game.',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 });

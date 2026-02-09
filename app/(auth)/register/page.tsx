@@ -1,11 +1,11 @@
  'use client';
 
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
-function RegisterForm() {
+export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const refParam = searchParams?.get('ref') || '';
@@ -159,17 +159,5 @@ function RegisterForm() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function RegisterPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
-        <div className="text-white">Loading...</div>
-      </div>
-    }>
-      <RegisterForm />
-    </Suspense>
   );
 }

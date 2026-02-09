@@ -8,12 +8,12 @@
 import Banner from '@/components/layout/Banner';
 import CategoryNav from '@/components/layout/CategoryNav';
 import { FaFire, FaMoneyBillWave, FaGift, FaChartBar, FaDice, FaTimes } from 'react-icons/fa';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function DashboardContent() {
+export default function DashboardPage() {
   const { user, loading, showAuthModal, authModalTab, openAuthModal, closeAuthModal } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -294,18 +294,5 @@ function DashboardContent() {
         </div>
       )}
     </div>
-  );
-}
-
-export default function DashboardPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-900">
-        <Banner />
-        <CategoryNav />
-      </div>
-    }>
-      <DashboardContent />
-    </Suspense>
   );
 }

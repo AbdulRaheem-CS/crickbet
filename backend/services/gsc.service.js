@@ -122,9 +122,25 @@ const makeRequest = async (method, path, data = {}) => {
 
     const result = await response.json();
 
-    if (result.code && result.code !== 200 && result.code !== 0) {
+    // GSC+ returns PascalCase keys (Code, Message, URL, Content) for some endpoints
+    // Normalize to lowercase for consistent access
+    const code = result.Code ?? result.code;
+    const message = result.Message ?? result.message;
+
+    if (code && code !== 200 && code !== 0) {
       console.error(`[GSC+] API Error:`, result);
-      throw new Error(`GSC+ API Error: ${result.message || 'Unknown error'} (code: ${result.code})`);
+      throw new Error(`GSC+ API Error: ${message || 'Unknown error'} (code: ${code})`);
+    }
+
+    // Normalize response keys to lowercase for consistent usage
+    if (result.Code !== undefined || result.URL !== undefined || result.Content !== undefined) {
+      return {
+        ...result,
+        code: result.Code ?? result.code,
+        message: result.Message ?? result.message,
+        url: result.URL ?? result.url,
+        content: result.Content ?? result.content,
+      };
     }
 
     return result;
@@ -141,17 +157,22 @@ const makeRequest = async (method, path, data = {}) => {
 
 /**
  * Launch a game for a player
+ * POST {{operator_url}}/api/operators/launch-game
+ * 
  * @param {Object} params
- * @param {string} params.memberAccount - Player's username (max 50 chars)
- * @param {string} params.password - Player's hashed password (MD5)
- * @param {string} params.nickname - Display name in game
- * @param {string} params.currency - Currency code
- * @param {string} params.gameCode - Game code (null for lobby)
- * @param {number} params.productCode - Product code
- * @param {string} params.gameType - Game type (SLOT, LIVE_CASINO, etc.)
- * @param {string} params.ip - Player's IP address
- * @param {string} params.platform - WEB, DESKTOP, or MOBILE
- * @param {string} params.lobbyUrl - URL to return to after closing game
+ * @param {string} params.memberAccount - Player's unique identifier (max 50 chars) [Must]
+ * @param {string} params.password - Player's password for identity verification [Must]
+ * @param {string} params.nickname - Display name in game [Optional]
+ * @param {string} params.currency - Currency code supported by the provider [Must]
+ * @param {string} params.gameCode - Unique game identifier from game list API [Optional, depends on provider]
+ * @param {number} params.productCode - Product code identifier [Must]
+ * @param {string} params.gameType - Game type (SLOT, LIVE_CASINO, etc.) [Must]
+ * @param {string} params.ip - Player's IP address [Must]
+ * @param {string} params.platform - WEB, DESKTOP, MOBILE, or Widget [Must]
+ * @param {string} params.lobbyUrl - Client site URL (operator_lobby_url) [Must]
+ * @param {string} params.languageCode - Language code, default "0" [Optional]
+ * @param {string} params.widgetId - SABA Sports Quick Bet Widget ID [Optional]
+ * @param {boolean} params.isWidgetLogin - SABA Sports Widget login status [Optional]
  * @returns {Object} { code, message, url, content }
  */
 exports.launchGame = async ({
@@ -165,7 +186,9 @@ exports.launchGame = async ({
   ip = '127.0.0.1',
   platform = 'WEB',
   lobbyUrl = '',
-  languageCode = gscConfig.defaultLanguage,
+  languageCode = String(gscConfig.defaultLanguage),
+  widgetId = null,
+  isWidgetLogin = null,
 }) => {
   const requestTime = getTimestamp();
   const sign = generateOutboundSignature('launchGame', requestTime);
@@ -173,19 +196,41 @@ exports.launchGame = async ({
   const body = {
     operator_code: gscConfig.operatorCode,
     member_account: memberAccount,
-    password: password, // Should be MD5 hashed
+    password: password,
     nickname: nickname || memberAccount,
     currency: currency || gscConfig.defaultCurrency,
-    game_code: gameCode,
     product_code: productCode,
     game_type: gameType,
-    language_code: languageCode,
-    ip,
-    platform,
-    sign,
+    language_code: String(languageCode),
+    ip: ip,
+    platform: platform,
+    sign: sign,
     request_time: requestTime,
     operator_lobby_url: lobbyUrl,
   };
+
+  // game_code is optional - only include if provided (required if provider supports direct play)
+  if (gameCode) {
+    body.game_code = gameCode;
+  }
+
+  // SABA Sports Widget parameters (optional)
+  if (widgetId) {
+    body.widget_id = widgetId;
+  }
+  if (isWidgetLogin !== null && isWidgetLogin !== undefined) {
+    body.is_widget_login = isWidgetLogin;
+  }
+
+  console.log(`[GSC+] Launch game request:`, {
+    member_account: memberAccount,
+    product_code: productCode,
+    game_type: gameType,
+    game_code: gameCode,
+    currency: body.currency,
+    platform,
+    ip,
+  });
 
   return makeRequest('POST', gscConfig.operatorPaths.launchGame, body);
 };

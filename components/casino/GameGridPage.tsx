@@ -86,9 +86,49 @@ function GameGridContent({
       };
       if (category) params.category = category;
       if (search) params.search = search;
-      if (selectedProvider) params.productCode = parseInt(selectedProvider, 10);
 
-      const res = await casinoService.getGames(params);
+      let res: any;
+      // selectedProvider can be either a numeric productCode or a provider name like 'Evolution'
+      if (selectedProvider) {
+        const asNumber = parseInt(selectedProvider, 10);
+        if (!Number.isNaN(asNumber)) {
+          params.productCode = asNumber;
+          res = await casinoService.getGames(params);
+        } else {
+          // provider name -- use provider-specific endpoint which expects provider name
+          // If category is set, fetch a large limit (all games) since the provider endpoint doesn't support category param
+          // Then we'll filter and paginate client-side
+          if (category) {
+            res = await casinoService.getGamesByProvider(selectedProvider, { page: 1, limit: 10000 });
+            if (res && res.success) {
+              let fetched = res.data || [];
+              // Filter by category client-side
+              fetched = fetched.filter((g: any) => g.category === category);
+              // Apply search filter if present
+              if (search) {
+                const searchLower = search.toLowerCase();
+                fetched = fetched.filter((g: any) =>
+                  g.gameName?.toLowerCase().includes(searchLower) ||
+                  g.gameCode?.toLowerCase().includes(searchLower)
+                );
+              }
+              const totalFiltered = fetched.length;
+              const start = (page - 1) * defaultLimit;
+              const pageItems = fetched.slice(start, start + defaultLimit);
+              setGames(pageItems);
+              setTotalPages(Math.ceil(totalFiltered / defaultLimit) || 1);
+              setTotalGames(totalFiltered);
+              setLoading(false);
+              return;
+            }
+          } else {
+            // No category filter - use server-side pagination
+            res = await casinoService.getGamesByProvider(selectedProvider, { page, limit: defaultLimit });
+          }
+        }
+      } else {
+        res = await casinoService.getGames(params);
+      }
       if (res.success) {
         setGames(res.data);
         setTotalPages(res.pagination.pages);

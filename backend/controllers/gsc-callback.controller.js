@@ -93,7 +93,21 @@ exports.handleBalance = async (req, res) => {
  * Handle withdraw (deduction) from player wallet
  * Called when player places a bet, gives tip, etc.
  * 
+ * Per GSC+ API 2.2:
+ * Request:
+ *   - batch_requests[]: { member_account, product_code, game_type, transactions[] }
+ *   - operator_code, game_type (optional), currency, sign, request_time
+ *   - sign = md5(operator_code + request_time + "withdraw" + secret_key)
+ *   - Transaction fields: id, action, wager_code, wager_status, round_id,
+ *     channel_code, amount, bet_amount, valid_bet_amount, prize_amount,
+ *     tip_amount, settled_at, game_code, Channel_code, wager_type
+ * 
+ * Response:
+ *   - data[]: { member_account, product_code, before_balance, balance, code, message }
+ *   - balance fields: float64, up to 4 decimal places
+ * 
  * IMPORTANT: Must handle duplicate transactions (idempotency)
+ *   If tx_id exists and has been refunded before, return the duplicate transaction
  * IMPORTANT: Must check sufficient balance before deducting
  */
 exports.handleWithdraw = async (req, res) => {
@@ -123,8 +137,7 @@ exports.handleWithdraw = async (req, res) => {
           continue;
         }
 
-        let currentBalance = user.wallet.balance || 0;
-        let beforeBalance = currentBalance;
+        let beforeBalance = user.wallet.balance || 0;
         let lastCode = gscConfig.responseCodes.SUCCESS;
         let lastMessage = '';
 
@@ -132,15 +145,13 @@ exports.handleWithdraw = async (req, res) => {
         for (const txn of transactions) {
           const result = await processWithdrawTransaction(user, txn, product_code, game_type, currency, req.body);
 
-          if (result.code === gscConfig.responseCodes.SUCCESS) {
-            currentBalance = result.balanceAfter;
-          } else {
+          if (result.code !== gscConfig.responseCodes.SUCCESS) {
             lastCode = result.code;
             lastMessage = result.message;
           }
         }
 
-        // Refresh user balance
+        // Refresh user balance after all transactions
         const updatedUser = await User.findById(user._id).select('wallet');
 
         responseData.push({
@@ -178,6 +189,13 @@ exports.handleWithdraw = async (req, res) => {
 
 /**
  * Process a single withdraw transaction with atomicity
+ * 
+ * Per GSC+ docs (2.2):
+ * - If the tx_id already exists and has been processed/refunded before,
+ *   return the duplicate transaction with SUCCESS code (idempotency).
+ * - Transactions contain: id, action, wager_code, wager_status, round_id,
+ *   channel_code, amount, bet_amount, valid_bet_amount, prize_amount,
+ *   tip_amount, settled_at, game_code, Channel_code, wager_type
  */
 async function processWithdrawTransaction(user, txn, productCode, gameType, currency, rawRequest) {
   const session = await mongoose.startSession();
@@ -187,13 +205,16 @@ async function processWithdrawTransaction(user, txn, productCode, gameType, curr
 
     await session.withTransaction(async () => {
       // Check for duplicate transaction (idempotency)
+      // Per GSC+ docs: if tx_id exists, return the duplicate transaction as SUCCESS
       const existing = await GscTransaction.findDuplicate(txn.id, 'withdraw');
       if (existing) {
-        console.log(`[GSC+ Withdraw] Duplicate transaction: ${txn.id}`);
+        console.log(`[GSC+ Withdraw] Duplicate transaction: ${txn.id}, returning existing balance`);
+        // Return SUCCESS with the existing balance (idempotent response)
         result = {
-          code: gscConfig.responseCodes.DUPLICATE_TRANSACTION,
-          message: 'Duplicate transaction',
+          code: gscConfig.responseCodes.SUCCESS,
+          message: '',
           balanceAfter: existing.balanceAfter,
+          beforeBalance: existing.balanceBefore,
         };
         return;
       }
@@ -201,7 +222,7 @@ async function processWithdrawTransaction(user, txn, productCode, gameType, curr
       const amount = Math.abs(txn.amount);
 
       // Handle ROLLBACK/CANCEL - these ADD money back
-      const isRefund = ['ROLLBACK', 'CANCEL'].includes(txn.action);
+      const isRefund = ['ROLLBACK', 'CANCEL'].includes(txn.action?.toUpperCase());
 
       // Get fresh user data within transaction
       const freshUser = await User.findById(user._id).session(session);
@@ -217,6 +238,7 @@ async function processWithdrawTransaction(user, txn, productCode, gameType, curr
             code: gscConfig.responseCodes.INSUFFICIENT_BALANCE,
             message: 'Insufficient balance',
             balanceAfter: balanceBefore,
+            beforeBalance: balanceBefore,
           };
           return;
         }
@@ -226,7 +248,7 @@ async function processWithdrawTransaction(user, txn, productCode, gameType, curr
       freshUser.wallet.lastTransactionAt = new Date();
       await freshUser.save({ session });
 
-      // Log GSC transaction
+      // Log GSC transaction with all fields from the API spec
       const gscTxn = new GscTransaction({
         gscTransactionId: txn.id,
         user: user._id,
@@ -242,12 +264,12 @@ async function processWithdrawTransaction(user, txn, productCode, gameType, curr
         wagerCode: txn.wager_code,
         wagerStatus: txn.wager_status,
         roundId: txn.round_id,
-        channelCode: txn.channel_code,
+        channelCode: txn.channel_code || txn.Channel_code,
         wagerType: txn.wager_type,
-        betAmount: txn.bet_amount || 0,
-        validBetAmount: txn.valid_bet_amount || 0,
-        prizeAmount: txn.prize_amount || 0,
-        tipAmount: txn.tip_amount || 0,
+        betAmount: parseFloat(txn.bet_amount) || 0,
+        validBetAmount: parseFloat(txn.valid_bet_amount) || 0,
+        prizeAmount: parseFloat(txn.prize_amount) || 0,
+        tipAmount: parseFloat(txn.tip_amount) || 0,
         settledAt: txn.settled_at,
         currency: currency || gscConfig.defaultCurrency,
         status: 'completed',
@@ -260,11 +282,12 @@ async function processWithdrawTransaction(user, txn, productCode, gameType, curr
         code: gscConfig.responseCodes.SUCCESS,
         message: '',
         balanceAfter: freshUser.wallet.balance,
+        beforeBalance: balanceBefore,
       };
     });
 
     await session.endSession();
-    return result || { code: gscConfig.responseCodes.INTERNAL_ERROR, message: 'Transaction failed', balanceAfter: 0 };
+    return result || { code: gscConfig.responseCodes.INTERNAL_ERROR, message: 'Transaction failed', balanceAfter: 0, beforeBalance: 0 };
   } catch (error) {
     await session.endSession();
     console.error(`[GSC+ Withdraw] Transaction error:`, error);
@@ -272,6 +295,7 @@ async function processWithdrawTransaction(user, txn, productCode, gameType, curr
       code: gscConfig.responseCodes.INTERNAL_ERROR,
       message: error.message,
       balanceAfter: user.wallet.balance || 0,
+      beforeBalance: user.wallet.balance || 0,
     };
   }
 }
@@ -371,6 +395,7 @@ exports.handleDeposit = async (req, res) => {
 
 /**
  * Process a single deposit transaction with atomicity
+ * Same idempotency rules as withdraw — duplicate tx_id returns SUCCESS
  */
 async function processDepositTransaction(user, txn, productCode, gameType, currency, rawRequest) {
   const session = await mongoose.startSession();
@@ -380,12 +405,13 @@ async function processDepositTransaction(user, txn, productCode, gameType, curre
 
     await session.withTransaction(async () => {
       // Check for duplicate transaction (idempotency)
+      // Per GSC+ docs: if tx_id exists, return SUCCESS with existing balance
       const existing = await GscTransaction.findDuplicate(txn.id, 'deposit');
       if (existing) {
-        console.log(`[GSC+ Deposit] Duplicate transaction: ${txn.id}`);
+        console.log(`[GSC+ Deposit] Duplicate transaction: ${txn.id}, returning existing balance`);
         result = {
-          code: gscConfig.responseCodes.DUPLICATE_TRANSACTION,
-          message: 'Duplicate transaction',
+          code: gscConfig.responseCodes.SUCCESS,
+          message: '',
           balanceAfter: existing.balanceAfter,
         };
         return;
@@ -394,7 +420,7 @@ async function processDepositTransaction(user, txn, productCode, gameType, curre
       const amount = Math.abs(txn.amount);
 
       // Handle ROLLBACK/CANCEL in deposit context - these DEDUCT money
-      const isDeduction = ['ROLLBACK', 'CANCEL'].includes(txn.action);
+      const isDeduction = ['ROLLBACK', 'CANCEL'].includes(txn.action?.toUpperCase());
 
       // Get fresh user data
       const freshUser = await User.findById(user._id).session(session);
@@ -412,7 +438,7 @@ async function processDepositTransaction(user, txn, productCode, gameType, curre
       freshUser.wallet.lastTransactionAt = new Date();
       await freshUser.save({ session });
 
-      // Log GSC transaction
+      // Log GSC transaction with all fields from the API spec
       const gscTxn = new GscTransaction({
         gscTransactionId: txn.id,
         user: user._id,
@@ -428,12 +454,12 @@ async function processDepositTransaction(user, txn, productCode, gameType, curre
         wagerCode: txn.wager_code,
         wagerStatus: txn.wager_status,
         roundId: txn.round_id,
-        channelCode: txn.channel_code,
+        channelCode: txn.channel_code || txn.Channel_code,
         wagerType: txn.wager_type,
-        betAmount: txn.bet_amount || 0,
-        validBetAmount: txn.valid_bet_amount || 0,
-        prizeAmount: txn.prize_amount || 0,
-        tipAmount: txn.tip_amount || 0,
+        betAmount: parseFloat(txn.bet_amount) || 0,
+        validBetAmount: parseFloat(txn.valid_bet_amount) || 0,
+        prizeAmount: parseFloat(txn.prize_amount) || 0,
+        tipAmount: parseFloat(txn.tip_amount) || 0,
         settledAt: txn.settled_at,
         currency: currency || gscConfig.defaultCurrency,
         status: 'completed',
