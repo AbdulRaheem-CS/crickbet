@@ -57,63 +57,52 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
   };
 
   return (
-    <header className="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 text-white shadow-md sticky top-0 z-50">
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Left: Menu Toggle & Welcome */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onToggleSidebar}
-            className="p-2 hover:bg-gray-600 rounded lg:hidden"
-          >
-            <FaBars className="text-xl" />
-          </button>
-          <h1 className="text-lg font-semibold">Welcome</h1>
-        </div>
-
-        {/* Center: Links */}
-        <div className="hidden lg:flex items-center gap-6 flex-1 justify-center">
+    <header className="bg-[#465065] text-white shadow-md sticky top-0 z-50">
+      <div className="flex items-center justify-between px-4 py-2.5 gap-4">
+        {/* Left/Center: Links */}
+        <div className="flex items-center gap-4 flex-1">
           {/* Default Player Sign-up Link */}
-          <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded">
-            <div>
-              <p className="text-xs text-gray-300">Default Player Sign-up Link</p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-white whitespace-nowrap">Default Player Sign-up Link</span>
+            <div className="flex items-center gap-2 bg-[#596274] rounded-lg px-2 py-1">
               <a
                 href={ensureHref(signupLink)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-mono hover:underline"
+                className="text-sm font-mono hover:underline text-white"
               >
                 {signupLink}
               </a>
+              <button
+                onClick={() => copyToClipboard(ensureHref(signupLink))}
+                className="p-1 hover:bg-gray-300 rounded"
+                title="Copy to clipboard"
+              >
+                <FaCopy className="text-sm text-gray-700" />
+              </button>
             </div>
-            <button
-              onClick={() => copyToClipboard(ensureHref(signupLink))}
-              className="p-2 hover:bg-gray-600 rounded"
-              title="Copy to clipboard"
-            >
-              <FaCopy />
-            </button>
           </div>
 
           {/* Affiliate Referral Link */}
-          <div className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded">
-            <div>
-              <p className="text-xs text-gray-300">Affiliate Referral Link</p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-white whitespace-nowrap">Affiliate Referral Link</span>
+            <div className="flex items-center gap-2 bg-[#596274] rounded-lg px-2 py-1">
               <a
                 href={ensureHref(referralLink)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-mono hover:underline"
+                className="text-sm font-mono hover:underline text-white"
               >
                 {referralLink}
               </a>
+              <button
+                onClick={() => copyToClipboard(ensureHref(referralLink))}
+                className="p-1 hover:bg-gray-300 rounded"
+                title="Copy to clipboard"
+              >
+                <FaCopy className="text-sm text-gray-700" />
+              </button>
             </div>
-            <button
-              onClick={() => copyToClipboard(ensureHref(referralLink))}
-              className="p-2 hover:bg-gray-600 rounded"
-              title="Copy to clipboard"
-            >
-              <FaCopy />
-            </button>
           </div>
         </div>
 
@@ -122,7 +111,7 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-gray-700 text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           >
             <option value="BDT">BDT</option>
             <option value="INR">INR</option>
@@ -131,68 +120,23 @@ export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProp
             <option value="GBP">GBP</option>
           </select>
 
-          <div className="bg-gray-700 px-4 py-2 rounded font-semibold">
+          <div className="bg-gray-700 px-3 py-1.5 rounded font-semibold text-sm border border-gray-600">
             ৳ {walletBalance ? walletBalance.toFixed(2) : balance}
           </div>
 
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="text-sm text-gray-200">{user.username || user.email}</div>
               <button
                 onClick={() => logout()}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded flex items-center gap-2"
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-sm flex items-center gap-1"
                 title="Logout"
               >
-                <FaSignOutAlt />
-                <span className="hidden sm:inline">Logout</span>
+                <FaSignOutAlt className="text-xs" />
+                <span>Logout</span>
               </button>
             </div>
           ) : null}
-        </div>
-      </div>
-
-      {/* Mobile Links */}
-      <div className="lg:hidden px-4 pb-3 space-y-2">
-        {/* Default Player Sign-up Link */}
-        <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded text-sm">
-          <div className="flex-1">
-            <p className="text-xs text-gray-300">Default Player Sign-up Link</p>
-            <a
-              href={ensureHref(signupLink)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono truncate hover:underline block"
-            >
-              {signupLink}
-            </a>
-          </div>
-          <button
-            onClick={() => copyToClipboard(ensureHref(signupLink))}
-            className="p-2 hover:bg-gray-600 rounded"
-          >
-            <FaCopy className="text-sm" />
-          </button>
-        </div>
-
-        {/* Affiliate Referral Link */}
-        <div className="flex items-center gap-2 bg-gray-700 px-3 py-2 rounded text-sm">
-          <div className="flex-1">
-            <p className="text-xs text-gray-300">Affiliate Referral Link</p>
-            <a
-              href={ensureHref(referralLink)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono truncate hover:underline block"
-            >
-              {referralLink}
-            </a>
-          </div>
-          <button
-            onClick={() => copyToClipboard(ensureHref(referralLink))}
-            className="p-2 hover:bg-gray-600 rounded"
-          >
-            <FaCopy className="text-sm" />
-          </button>
         </div>
       </div>
     </header>

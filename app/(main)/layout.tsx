@@ -10,6 +10,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import BetSlip from '@/components/betting/BetSlip';
 import LuckySpin from '@/components/layout/LuckySpin';
 import WinnerBoardModal from '@/components/layout/WinnerBoardModal';
+import AuthModal from '@/components/layout/AuthModal';
 import { useState } from 'react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -48,6 +49,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 <BetSlip isOpen={betSlipOpen} onClose={() => setBetSlipOpen(false)} />
                 <LuckySpin />
                 <WinnerBoardModal />
+                <AuthModal />
               </div>
             </WinnerBoardProvider>
           </SocketProvider>

@@ -41,7 +41,11 @@ apiClient.interceptors.response.use(
     const message = error.response?.data?.message || error.response?.data?.error || 'An error occurred';
     
     // Handle 401 - Unauthorized
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
+    // Don't redirect if it's a login or register attempt (failed credentials)
+    const isAuthEndpoint = error.config?.url?.includes('/auth/login') || 
+                          error.config?.url?.includes('/auth/register');
+    
+    if (error.response?.status === 401 && typeof window !== 'undefined' && !isAuthEndpoint) {
       localStorage.removeItem('authToken');
       window.location.href = '/login';
     }

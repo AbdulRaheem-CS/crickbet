@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/lib/api-client';
+import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
 
 interface DashboardData {
   commission: {
@@ -95,163 +96,119 @@ export default function AffiliatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Track your earnings and performance</p>
-        </div>
-
-        {/* Commission and Active Players Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="min-h-screen bg-white">
+      <div className="space-y-0">
+        {/* Commission and Active Players Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
           {/* Commission Card */}
-          <div className="bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Commission</h3>
-              <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-600">This Month</p>
-                <p className="text-3xl font-bold text-green-500">{formatCurrency(data?.commission.thisMonth || 0)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Last Month</p>
-                <p className="text-xl font-semibold text-gray-700">{formatCurrency(data?.commission.lastMonth || 0)}</p>
-              </div>
-              {data && (
-                <div className={`flex items-center gap-2 ${calculateChange(data.commission.thisMonth, data.commission.lastMonth) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {calculateChange(data.commission.thisMonth, data.commission.lastMonth) >= 0 ? (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                  <span className="text-sm font-medium">
-                    {Math.abs(calculateChange(data.commission.thisMonth, data.commission.lastMonth)).toFixed(2)}%
-                  </span>
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-gray-300 p-6">
+            <div className="space-y-2">
+              <h3 className="text-base font-semibold text-gray-700 mb-4">Commission</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">This Period</span>
+                  <span className="text-2xl font-bold text-gray-800">৳{(data?.commission.thisMonth || 0).toFixed(2)}</span>
                 </div>
-              )}
+                <div className="flex justify-between items-center border-t border-gray-300 pt-2">
+                  <span className="text-sm text-gray-600">Last Period</span>
+                  <span className="text-2xl font-bold text-gray-800">৳{(data?.commission.lastMonth || 0).toFixed(2)}</span>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Active Players Card */}
-          <div className="bg-linear-to-br from-blue-50 to-green-100 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Active Players</h3>
-              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-600">This Month</p>
-                <p className="text-3xl font-bold text-blue-500">{data?.activePlayers.thisMonth || 0}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Last Month</p>
-                <p className="text-xl font-semibold text-gray-700">{data?.activePlayers.lastMonth || 0}</p>
-              </div>
-              {data && (
-                <div className={`flex items-center gap-2 ${calculateChange(data.activePlayers.thisMonth, data.activePlayers.lastMonth) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {calculateChange(data.activePlayers.thisMonth, data.activePlayers.lastMonth) >= 0 ? (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                  <span className="text-sm font-medium">
-                    {Math.abs(calculateChange(data.activePlayers.thisMonth, data.activePlayers.lastMonth)).toFixed(2)}%
-                  </span>
+          <div className="bg-gradient-to-br from-green-50 to-green-100 border border-gray-300 p-6">
+            <div className="space-y-2">
+              <h3 className="text-base font-semibold text-gray-700 mb-4">Active Players</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">This Period</span>
+                  <span className="text-2xl font-bold text-gray-800">{data?.activePlayers.thisMonth || 0}</span>
                 </div>
-              )}
+                <div className="flex justify-between items-center border-t border-gray-300 pt-2">
+                  <span className="text-sm text-gray-600">Last Period</span>
+                  <span className="text-2xl font-bold text-gray-800">{data?.activePlayers.lastMonth || 0}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Data Tables Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Data Tables Grid - 2 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
           {/* Registered Users */}
-          <DataTable
+          <CollapsibleDataTable
             title="Registered Users"
             data={data?.registeredUsers || []}
             showAmount={false}
           />
 
           {/* First Deposit */}
-          <DataTable
+          <CollapsibleDataTable
             title="First Deposit"
             data={data?.firstDeposits || []}
             showAmount={true}
           />
 
           {/* Deposit */}
-          <DataTable
+          <CollapsibleDataTable
             title="Deposit"
             data={data?.deposits || []}
             showAmount={true}
           />
 
           {/* Withdrawal */}
-          <DataTable
+          <CollapsibleDataTable
             title="Withdrawal"
             data={data?.withdrawals || []}
             showAmount={true}
           />
 
           {/* Bonus */}
-          <DataTable
+          <CollapsibleDataTable
             title="Bonus"
             data={data?.bonuses || []}
             showAmount={true}
           />
 
           {/* Recycle Amount */}
-          <DataTable
+          <CollapsibleDataTable
             title="Recycle Amount"
             data={data?.recycleAmount || []}
             showAmount={true}
           />
 
           {/* Cancel Fee */}
-          <DataTable
+          <CollapsibleDataTable
             title="Cancel Fee"
             data={data?.cancelFees || []}
             showAmount={true}
           />
 
           {/* VIP Cash Bonus */}
-          <DataTable
+          <CollapsibleDataTable
             title="VIP Cash Bonus"
             data={data?.vipCashBonus || []}
             showAmount={true}
           />
 
           {/* Referral Commission */}
-          <DataTable
+          <CollapsibleDataTable
             title="Referral Commission"
             data={data?.referralCommissions || []}
             showAmount={true}
           />
 
           {/* Turnover */}
-          <DataTable
+          <CollapsibleDataTable
             title="Turnover"
             data={data?.turnover || []}
             showAmount={true}
           />
 
           {/* Affiliate Profit & Loss */}
-          <DataTable
+          <CollapsibleDataTable
             title="Affiliate Profit & Loss"
             data={data?.profitLoss || []}
             showAmount={true}
@@ -268,60 +225,97 @@ interface DataTableProps {
   showAmount: boolean;
 }
 
-function DataTable({ title, data, showAmount }: DataTableProps) {
+function CollapsibleDataTable({ title, data, showAmount }: DataTableProps) {
+  const [isOpen, setIsOpen] = useState(true);
+
   const formatCurrency = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  // Transform period labels
+  const getPeriodLabel = (period: string) => {
+    const periodMap: Record<string, string> = {
+      'Today': 'Today',
+      'Yesterday': 'Yesterday',
+      'This Week': 'This Week',
+      'Last Week': 'Last Week',
+      'This Month': 'This Month',
+      'Last Month': 'Last Month',
+    };
+    return periodMap[period] || period;
   };
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden">
-      <div className="bg-gray-100 px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Period
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Count
-              </th>
-              {showAmount && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Amount
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            {data.length > 0 ? (
-              data.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {item._id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {item.count}
-                  </td>
-                  {showAmount && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {formatCurrency(item.amount || 0)}
-                    </td>
-                  )}
-                </tr>
-              ))
-            ) : (
+    <div className="bg-white border border-gray-300">
+      {/* Header */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full bg-white px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors border-b border-gray-200"
+      >
+        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+          <span className="w-1 h-5 bg-gray-800"></span>
+          {title}
+        </h3>
+        {isOpen ? (
+          <FaChevronUp className="text-gray-500 text-sm" />
+        ) : (
+          <FaChevronDown className="text-gray-500 text-sm" />
+        )}
+      </button>
+
+      {/* Table Content */}
+      {isOpen && (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-100">
               <tr>
-                <td colSpan={showAmount ? 3 : 2} className="px-6 py-8 text-center text-gray-600">
-                  No data available
-                </td>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  Period
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                  Count
+                </th>
+                {showAmount && (
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                    Amount
+                  </th>
+                )}
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {data.length > 0 ? (
+                data.map((item, index) => (
+                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {getPeriodLabel(item._id)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {item.count}
+                    </td>
+                    {showAmount && (
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatCurrency(item.amount || 0)}
+                      </td>
+                    )}
+                  </tr>
+                ))
+              ) : (
+                <>
+                  {['Today', 'Yesterday', 'This Week', 'Last Week', 'This Month', 'Last Month'].map((period, idx) => (
+                    <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{period}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">0</td>
+                      {showAmount && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">0.00</td>
+                      )}
+                    </tr>
+                  ))}
+                </>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

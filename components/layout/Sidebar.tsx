@@ -42,7 +42,17 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { label: 'Home', icon: FaHome, href: '/dashboard' },
-  { label: 'HOT', icon: FaFire, href: '/hot' },
+  { 
+    label: 'HOT', 
+    icon: FaFire, 
+    href: '/hot',
+    hasSubmenu: true,
+    submenuItems: [
+      { label: 'Popular Games', href: '/casino?filter=popular' },
+      { label: 'Featured Games', href: '/casino?filter=featured' },
+      { label: 'New Games', href: '/casino?filter=new' },
+    ]
+  },
   { 
     label: 'Sports', 
     icon: FaFutbol, 
@@ -131,7 +141,7 @@ const menuItems: MenuItem[] = [
     ]
   },
   { label: 'Promotions', icon: FaGift, href: '/promotions' },
-  { label: 'VIP Club', icon: FaCrown, href: '/vip' },
+  // { label: 'VIP Club', icon: FaCrown, href: '/vip' },
   { label: 'Tournaments', icon: FaTrophy, href: '/tournaments' },
   { label: 'Leaderboard', icon: FaChartLine, href: '/leaderboard' },
   { label: 'Winner Board', icon: FaTrophy, href: '/winner-board', isModal: true },
