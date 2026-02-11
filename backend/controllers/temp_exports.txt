@@ -1,0 +1,14 @@
+module.exports.{ asyncHandler } = require('../middleware/error.middleware');
+module.exports.betController= require
+module.exports.marketController= require
+module.exports.walletController= require
+module.exports.kycController= require
+module.exports.casinoController= require
+module.exports.referralController= require
+module.exports.affiliateController= require
+module.exports.promotionController= require
+module.exports.lotteryController= require
+module.exports.sportsController= require
+module.exports.crashController= require
+module.exports.slotsController= require
+module.exports.adminController= require
