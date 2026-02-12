@@ -7,7 +7,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { IconType } from 'react-icons';
 import { useWinnerBoard } from '@/context/WinnerBoardContext';
 import { 
@@ -17,8 +17,11 @@ import {
   FaMobileAlt, FaShieldAlt, FaChevronDown,
   FaCrown, FaBullhorn, FaHistory, FaFileAlt,
   FaMoneyBillWave, FaCog, FaQuestionCircle,
-  FaStar, FaChartLine, FaChevronLeft, FaChevronRight
+  FaStar, FaChartLine, FaChevronLeft, FaChevronRight,
+  FaSpinner
 } from 'react-icons/fa';
+import { casinoService } from '@/lib/services/casino.service';
+import type { CasinoGame } from '@/lib/services/casino.service';
 
 interface SidebarProps {
   isMinimized: boolean;
@@ -38,6 +41,8 @@ interface MenuItem {
   openInNewTab?: boolean;
   submenuItems?: SubMenuItem[];
   isModal?: boolean; // For items that open modals instead of navigating
+  dynamicSubmenu?: boolean; // For items that fetch submenu items from API
+  apiCategory?: string; // The casino category to fetch games from
 }
 
 const menuItems: MenuItem[] = [
@@ -58,13 +63,9 @@ const menuItems: MenuItem[] = [
     icon: FaFutbol, 
     href: '/sports', 
     hasSubmenu: true,
-    submenuItems: [
-      { label: 'Cricket', href: '/sports/cricket' },
-      { label: 'Football', href: '/sports/football' },
-      { label: 'Tennis', href: '/sports/tennis' },
-      { label: 'Basketball', href: '/sports/basketball' },
-      { label: 'Horse Racing', href: '/sports/horse-racing' },
-    ]
+    dynamicSubmenu: true,
+    apiCategory: 'live', // Using 'live' category as sports games are often under live casino
+    submenuItems: []
   },
   { 
     label: 'Live Casino', 
@@ -142,8 +143,7 @@ const menuItems: MenuItem[] = [
   },
   { label: 'Promotions', icon: FaGift, href: '/promotions' },
   // { label: 'VIP Club', icon: FaCrown, href: '/vip' },
-  { label: 'Tournaments', icon: FaTrophy, href: '/tournaments' },
-  { label: 'Leaderboard', icon: FaChartLine, href: '/leaderboard' },
+  { label: 'Leaderboard', icon: FaChartLine, href: 'https://heyvipwin.com' },
   { label: 'Winner Board', icon: FaTrophy, href: '/winner-board', isModal: true },
   { label: 'Affiliate', icon: FaHandshake, href: '/affiliate/login', openInNewTab: true },
   { 
@@ -165,7 +165,11 @@ const menuItems: MenuItem[] = [
   { label: 'Download App', icon: FaMobileAlt, href: '/download' },
   { label: 'Help & Support', icon: FaQuestionCircle, href: '/support' },
   { label: 'Settings', icon: FaCog, href: '/settings' },
-  { label: 'Responsible Gaming', icon: FaShieldAlt, href: '/responsible-gaming' },
+  { label: 'Responsible Gaming', icon: FaShieldAlt, href: '/responsible-gambling' },
+  { label: 'About Us', icon: FaShieldAlt, href: '/about-us' },
+  { label: 'FAQS', icon: FaShieldAlt, href: '/home' },
+
+
 ];
 
 export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps) {
@@ -173,16 +177,65 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
   const { openWinnerBoardModal } = useWinnerBoard();
   const [mounted, setMounted] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+  const [dynamicItems, setDynamicItems] = useState<Record<string, SubMenuItem[]>>({});
+  const [loadingDynamic, setLoadingDynamic] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const toggleDropdown = (href: string) => {
+  // Fetch dynamic submenu items for a category
+  const fetchDynamicSubmenu = useCallback(async (item: MenuItem) => {
+    if (!item.dynamicSubmenu || !item.apiCategory) return;
+    if (dynamicItems[item.href]) return; // Already loaded
+
+    setLoadingDynamic(item.href);
+    try {
+      console.log(`Fetching dynamic submenu for category: ${item.apiCategory}`);
+      
+      // Fetch games - try category-specific first, then fall back to general games with filter
+      let res;
+      try {
+        res = await casinoService.getGamesByCategory(item.apiCategory, { limit: 20 });
+        console.log(`Category fetch result:`, res);
+      } catch (err) {
+        console.log('Category fetch failed, trying general games with category filter');
+        res = await casinoService.getGames({ category: item.apiCategory, limit: 20 });
+        console.log(`General games fetch result:`, res);
+      }
+      
+      if (res.success && res.data.length > 0) {
+        const subs: SubMenuItem[] = res.data.map((game: CasinoGame) => ({
+          label: game.gameName,
+          href: `/sports?game=${game._id}`,
+        }));
+        // Add "All Sports" at the end
+        subs.push({ label: 'All Sports', href: '/sports' });
+        setDynamicItems(prev => ({ ...prev, [item.href]: subs }));
+      } else {
+        console.warn(`No games found for category: ${item.apiCategory}`);
+        // Set empty array so it doesn't keep trying to fetch
+        setDynamicItems(prev => ({ ...prev, [item.href]: [] }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch dynamic submenu:', error);
+      // Set empty array on error
+      setDynamicItems(prev => ({ ...prev, [item.href]: [] }));
+    } finally {
+      setLoadingDynamic(null);
+    }
+  }, [dynamicItems]);
+
+  const toggleDropdown = (href: string, item?: MenuItem) => {
+    const willOpen = !openDropdowns[href];
     setOpenDropdowns(prev => ({
       ...prev,
-      [href]: !prev[href]
+      [href]: willOpen
     }));
+    // Fetch dynamic items when opening a dynamic submenu
+    if (willOpen && item?.dynamicSubmenu) {
+      fetchDynamicSubmenu(item);
+    }
   };
 
   if (!mounted) {
@@ -288,12 +341,18 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
           }
           
           // Menu item with submenu
-          if (item.hasSubmenu && item.submenuItems && item.submenuItems.length > 0) {
+          if (item.hasSubmenu && (item.dynamicSubmenu || (item.submenuItems && item.submenuItems.length > 0))) {
+            // Use dynamic items if available, otherwise fall back to static submenuItems
+            const resolvedSubmenu = item.dynamicSubmenu
+              ? (dynamicItems[item.href] || [])
+              : (item.submenuItems || []);
+            const isDynamicLoading = loadingDynamic === item.href;
+
             return (
               <div key={item.href}>
                 <div className="group relative">
                   <button
-                    onClick={() => toggleDropdown(item.href)}
+                    onClick={() => toggleDropdown(item.href, item)}
                     className={`w-full flex items-center ${isMinimized ? 'justify-center' : 'justify-between'} px-4 py-3 rounded-lg transition ${
                       isActive
                         ? 'bg-[#1A79D3] text-white'
@@ -319,20 +378,29 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
                 
                 {/* Submenu items */}
                 {!isMinimized && isOpen && (
-                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-[#1A79D3] pl-4">
-                    {item.submenuItems.map((subItem) => (
-                      <Link
-                        key={subItem.href}
-                        href={subItem.href}
-                        className={`block px-3 py-2 rounded-lg text-sm transition ${
-                          pathname === subItem.href
-                            ? 'bg-[#1A79D3] text-white font-semibold'
-                            : 'text-gray-300 hover:bg-[#1A79D3]/50 hover:text-white'
-                        }`}
-                      >
-                        {subItem.label}
-                      </Link>
-                    ))}
+                  <div className=" mt-1 space-y-1 border-l-2 border-[#1A79D3] bg-white shadow-sm max-h-64 overflow-y-auto">
+                    {isDynamicLoading ? (
+                      <div className="flex items-center justify-center py-4">
+                        <FaSpinner className="animate-spin text-[#1A79D3] mr-2" />
+                        <span className="text-sm text-gray-500">Loading...</span>
+                      </div>
+                    ) : resolvedSubmenu.length === 0 ? (
+                      <div className="px-3 py-3 text-sm text-gray-400 text-center">No items found</div>
+                    ) : (
+                      resolvedSubmenu.map((subItem) => (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          className={`block px-3 py-2 rounded-md text-sm transition ${
+                            pathname === subItem.href
+                              ? 'bg-white text-[#1A79D3] font-semibold'
+                              : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          {subItem.label}
+                        </Link>
+                      ))
+                    )}
                   </div>
                 )}
               </div>

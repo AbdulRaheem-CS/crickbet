@@ -13,6 +13,7 @@ const Affiliate = require('./Affiliate');
 const { CasinoGame, CasinoSession } = require('./Casino');
 const Promotion = require('./Promotion');
 const { LotteryDraw, LotteryTicket } = require('./Lottery');
+const PaymentMethod = require('./PaymentMethod');
 
 module.exports = {
   User,
@@ -27,4 +28,5 @@ module.exports = {
   Promotion,
   LotteryDraw,
   LotteryTicket,
+  PaymentMethod,
 };

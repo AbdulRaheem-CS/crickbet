@@ -88,7 +88,7 @@ const TransactionSchema = new mongoose.Schema(
     paymentDetails: {
       method: {
         type: String,
-        enum: ['upi', 'bank_transfer', 'card', 'wallet', 'crypto', null],
+        enum: ['upi', 'bank_transfer', 'card', 'wallet', 'crypto', 'jazzcash', 'easypaisa', null],
       },
       gateway: { type: String },
       gatewayTransactionId: { type: String },
@@ -134,7 +134,6 @@ const TransactionSchema = new mongoose.Schema(
     txnRef: {
       type: String,
       unique: true,
-      required: true,
     },
 
     // IP and device info

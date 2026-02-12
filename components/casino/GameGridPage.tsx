@@ -176,22 +176,26 @@ function GameGridContent({
 
     setLaunching(game._id);
     try {
+      console.log(`[GameGrid] Launching game: ${game.gameName} (${game._id})`);
       const res = await casinoService.launchGame(game._id);
-      console.log('Launch response:', res);
-      if (res.success && (res.data.gameUrl || res.data.content)) {
-        console.log('Opening launcher with:', res.data.gameUrl ? 'URL' : 'Content');
+      console.log('[GameGrid] Launch response:', res);
+      
+      if (res.success && (res.data?.gameUrl || res.data?.content)) {
+        console.log('[GameGrid] Opening launcher with:', res.data.gameUrl ? 'URL' : 'Content');
         setLaunchUrl(res.data.gameUrl);
-        setLaunchContent(res.data.content);
+        setLaunchContent(res.data.content || null);
         setLaunchName(game.gameName);
+        setLaunching(null);
       } else {
-        console.error('Launch failed:', res.message);
-        alert(res.message || 'Failed to launch game. Please try again.');
-        setLaunching(null); // Ensure we stop loading state on error
+        console.error('[GameGrid] Launch failed:', res);
+        const errorMsg = res.message || 'Failed to launch game. Please try again.';
+        alert(`❌ ${errorMsg}`);
+        setLaunching(null);
       }
     } catch (err: any) {
+      console.error('[GameGrid] Launch error:', err);
       const message = err?.response?.data?.message || err?.message || 'Failed to launch game';
-      alert(message);
-    } finally {
+      alert(`❌ ${message}`);
       setLaunching(null);
     }
   };
@@ -201,9 +205,9 @@ function GameGridContent({
     setLaunching(game._id);
     try {
       const res = await casinoService.launchDemo(game._id);
-      if (res.success && (res.data.gameUrl || res.data.content)) {
+      if (res.success && (res.data?.gameUrl || res.data?.content)) {
         setLaunchUrl(res.data.gameUrl);
-        setLaunchContent(res.data.content);
+        setLaunchContent(res.data.content || null);
         setLaunchName(`${game.gameName} (Demo)`);
       } else {
         alert(res.message || 'Demo mode is not available for this game.');

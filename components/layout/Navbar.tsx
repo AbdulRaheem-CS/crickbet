@@ -9,6 +9,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useWallet } from '@/context/WalletContext';
+import { useDeposit } from '@/context/DepositContext';
 import { FaWallet, FaMoon, FaSignOutAlt, FaHandshake, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 interface NavbarProps {
@@ -19,6 +20,7 @@ interface NavbarProps {
 export default function Navbar({ isMinimized, onToggleMinimize }: NavbarProps) {
   const { user, logout, openAuthModal } = useAuth();
   const { balance } = useWallet();
+  const { openDepositModal } = useDeposit();
 
   return (
     <nav className="bg-[#005DAC] shadow-md sticky top-0 z-40">
@@ -49,12 +51,12 @@ export default function Navbar({ isMinimized, onToggleMinimize }: NavbarProps) {
                 <span className="text-white font-bold">₹{balance.toFixed(2)}</span>
               </div>
               
-              <Link
-                href="/wallet"
+              <button
+                onClick={openDepositModal}
                 className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-lg transition"
               >
                 Deposit
-              </Link>
+              </button>
 
               {/* Affiliate Link */}
               {/* <Link

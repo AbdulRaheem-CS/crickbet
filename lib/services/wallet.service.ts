@@ -30,4 +30,9 @@ export const walletService = {
   verifyDeposit: async (transactionId: string, paymentId: string) => {
     return await apiClient.post('/wallet/verify-deposit', { transactionId, paymentId });
   },
+
+  // Get payment methods
+  getPaymentMethods: async () => {
+    return await apiClient.get('/wallet/payment-methods');
+  },
 };

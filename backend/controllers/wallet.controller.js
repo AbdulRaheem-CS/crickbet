@@ -1,6 +1,7 @@
 const { asyncHandler } = require("../middleware/error.middleware");
 const walletService = require("../services/wallet.service");
 const Transaction = require("../models/Transaction");
+const PaymentMethod = require("../models/PaymentMethod");
 
 module.exports = {
   /**
@@ -71,7 +72,8 @@ module.exports = {
    */
   initiateDeposit: asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const { amount, paymentMethod = 'manual' } = req.body;
+    const { amount, paymentMethod, method } = req.body;
+    const methodId = paymentMethod || method;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({
@@ -80,10 +82,26 @@ module.exports = {
       });
     }
 
+    if (!methodId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment method is required'
+      });
+    }
+
+    // Look up the payment method from DB to get its type
+    const pmRecord = await PaymentMethod.findOne({ id: methodId, enabled: true });
+    if (!pmRecord) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or disabled payment method'
+      });
+    }
+
     const transaction = await walletService.processDeposit(
       userId,
       parseFloat(amount),
-      paymentMethod,
+      pmRecord.type, // Use the DB type (e.g. 'jazzcash', 'upi', 'bank_transfer')
       {
         ip: req.ip,
         userAgent: req.headers['user-agent']
@@ -255,41 +273,11 @@ module.exports = {
    * GET /api/wallet/payment-methods
    */
   getPaymentMethods: asyncHandler(async (req, res) => {
-    // Available payment methods
-    const paymentMethods = [
-      {
-        id: 'upi',
-        name: 'UPI',
-        icon: 'upi',
-        enabled: true,
-        minAmount: 100,
-        maxAmount: 100000
-      },
-      {
-        id: 'netbanking',
-        name: 'Net Banking',
-        icon: 'bank',
-        enabled: true,
-        minAmount: 500,
-        maxAmount: 200000
-      },
-      {
-        id: 'card',
-        name: 'Debit/Credit Card',
-        icon: 'card',
-        enabled: true,
-        minAmount: 100,
-        maxAmount: 100000
-      },
-      {
-        id: 'manual',
-        name: 'Manual Transfer',
-        icon: 'transfer',
-        enabled: true,
-        minAmount: 1000,
-        maxAmount: 500000
-      }
-    ];
+    // Fetch payment methods from database
+    const paymentMethods = await PaymentMethod.find({ enabled: true })
+      .select('id name icon type enabled minAmount maxAmount processingTime order')
+      .sort({ order: 1 })
+      .lean();
 
     res.status(200).json({
       success: true,

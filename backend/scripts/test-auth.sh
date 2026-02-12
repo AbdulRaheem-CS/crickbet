@@ -1,55 +1,84 @@
 #!/bin/bash
 
-# Test Authentication Fix
-# This script tests if login is working correctly
+##############################################################################
+# Authentication Test Script
+# Tests login and user profile retrieval
+# Saves token to /tmp/test_token.txt for other test scripts
+##############################################################################
 
-echo "🧪 Testing Authentication System"
-echo "================================"
-echo ""
+# Colors for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Test login
-echo "📝 Testing Login..."
-echo ""
+# API Configuration
+API_URL="${API_URL:-http://localhost:5001/api}"
 
-RESPONSE=$(curl -s -X POST http://localhost:5001/api/auth/login \
+echo -e "${BLUE}========================================${NC}"
+echo -e "${BLUE}   AUTHENTICATION API TEST SUITE${NC}"
+echo -e "${BLUE}========================================${NC}\n"
+
+# Test 1: Login
+echo -e "${YELLOW}[1/2] Testing Login...${NC}"
+LOGIN_RESPONSE=$(curl -s -X POST "$API_URL/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
     "emailOrPhone": "john@example.com",
     "password": "Test@123456"
   }')
 
-echo "Response:"
-echo "$RESPONSE" | python3 -m json.tool 2>/dev/null || echo "$RESPONSE"
-echo ""
+echo "$LOGIN_RESPONSE" | python3 -m json.tool 2>/dev/null || echo "$LOGIN_RESPONSE"
 
-# Extract token
-TOKEN=$(echo "$RESPONSE" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+# Extract token using python3 (works without jq) - token may be at top level or nested under data
+TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+token = d.get('token','') or d.get('data',{}).get('token','')
+print(token)
+" 2>/dev/null)
 
 if [ -z "$TOKEN" ]; then
-  echo "❌ Login Failed - No token received"
+  echo -e "${RED}✗ Login Failed - No token received${NC}"
   exit 1
 fi
 
-echo "✅ Login Successful!"
-echo "Token: ${TOKEN:0:50}..."
-echo ""
+echo -e "${GREEN}✓ Login Successful!${NC}"
+echo -e "  Token: ${TOKEN:0:50}..."
 
-# Test /api/auth/me with token
-echo "📝 Testing /api/auth/me with token..."
-echo ""
+# Save token for other test scripts
+echo "$TOKEN" > /tmp/test_token.txt
+echo -e "  ${BLUE}Token saved to /tmp/test_token.txt${NC}\n"
 
-ME_RESPONSE=$(curl -s -X GET http://localhost:5001/api/auth/me \
+# Test 2: Get User Profile (/api/auth/me)
+echo -e "${YELLOW}[2/2] Testing /api/auth/me...${NC}"
+ME_RESPONSE=$(curl -s -X GET "$API_URL/auth/me" \
   -H "Authorization: Bearer $TOKEN")
 
-echo "Response:"
 echo "$ME_RESPONSE" | python3 -m json.tool 2>/dev/null || echo "$ME_RESPONSE"
-echo ""
 
-# Check if successful
-if echo "$ME_RESPONSE" | grep -q '"success":true'; then
-  echo "✅ /api/auth/me Successful!"
-  echo "🎉 Authentication system is working correctly!"
+if echo "$ME_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if d.get('success') else 1)" 2>/dev/null; then
+  USERNAME=$(echo "$ME_RESPONSE" | python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+user = d.get('data',{})
+if isinstance(user, dict) and 'user' in user:
+    user = user['user']
+print(user.get('username',''))
+" 2>/dev/null)
+  echo "$USERNAME" > /tmp/test_username.txt
+  echo -e "${GREEN}✓ Profile retrieved successfully!${NC}"
+  echo -e "  Username: $USERNAME\n"
 else
-  echo "❌ /api/auth/me Failed"
+  echo -e "${RED}✗ /api/auth/me Failed${NC}"
   exit 1
 fi
+
+echo -e "${BLUE}========================================${NC}"
+echo -e "${GREEN}   ALL AUTH TESTS PASSED!${NC}"
+echo -e "${BLUE}========================================${NC}\n"
+echo -e "Summary:"
+echo -e "  - Login: ${GREEN}✓${NC}"
+echo -e "  - Profile: ${GREEN}✓${NC}"
+echo -e "  🎉 Authentication system is working correctly!"
