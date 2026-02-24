@@ -9,6 +9,8 @@ const Bet = require('../models/Bet');
 const Market = require('../models/Market');
 const User = require('../models/User');
 const walletService = require('./wallet.service');
+const commissionService = require('./commission.service');
+const { withTxn } = walletService;
 
 /**
  * Place a bet (Back or Lay)
@@ -43,14 +45,13 @@ exports.placeBet = async (userId, betData) => {
     throw new Error('Minimum stake is ₹1');
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let placedBet;
 
-    await session.withTransaction(async () => {
-      // 1. Get and validate market
-      const market = await Market.findById(marketId).session(session);
+    await withTxn(async (session) => {
+      const market = session
+        ? await Market.findById(marketId).session(session)
+        : await Market.findById(marketId);
       if (!market) {
         throw new Error('Market not found');
       }
@@ -147,34 +148,47 @@ exports.placeBet = async (userId, betData) => {
         },
       });
 
-      await bet.save({ session });
+      await bet.save(session ? { session } : undefined);
 
       // 6. Try to match bet with existing counter bets
-      const matchResult = await this.matchBet(bet, market, session);
+      const matchResult = await exports.matchBet(bet, market, session);
 
       if (matchResult.matched) {
         bet.status = bet.unmatchedAmount === 0 ? 'matched' : 'partially_matched';
         bet.matchedAmount = matchResult.matchedAmount;
         bet.unmatchedAmount = stake - matchResult.matchedAmount;
-        await bet.save({ session });
+        await bet.save(session ? { session } : undefined);
       }
+
+      // Auto-accept: if still unmatched after peer matching, house accepts it immediately
+      if (bet.status === 'unmatched' || bet.status === 'partially_matched') {
+        bet.status = 'matched';
+        bet.matchedAmount = stake;
+        bet.unmatchedAmount = 0;
+        await bet.save(session ? { session } : undefined);
+      }
+
+      // Deduct stake from balance (unlock locked funds and debit the balance)
+      await walletService.unlockFunds(userId, liability, 'bet_placed');
+      await walletService.debit(userId, liability, 'bet_placed', `Stake for bet ${bet.betRef}`, {
+        betId: bet._id,
+        marketId,
+        betRef: bet.betRef,
+      });
 
       // 7. Update market statistics
       market.stats.totalBets = (market.stats.totalBets || 0) + 1;
       market.stats.totalMatched = (market.stats.totalMatched || 0) + matchResult.matchedAmount;
-      await market.save({ session });
+      await market.save(session ? { session } : undefined);
 
       placedBet = bet;
     });
-
-    await session.endSession();
 
     // Return bet with populated data
     return await Bet.findById(placedBet._id)
       .populate('user', 'username email')
       .populate('market', 'marketName event');
   } catch (error) {
-    await session.endSession();
     throw new Error(`Bet placement failed: ${error.message}`);
   }
 };
@@ -211,7 +225,7 @@ exports.matchBet = async (bet, market, session) => {
     })
       .sort({ odds: bet.betType === 'back' ? 1 : -1, createdAt: 1 })
       .limit(50)
-      .session(session);
+      .session(session || undefined);
 
     // Match with counter bets
     for (const counterBet of counterBets) {
@@ -249,7 +263,7 @@ exports.matchBet = async (bet, market, session) => {
           counterBet.status = 'partially_matched';
         }
 
-        await counterBet.save({ session });
+        await counterBet.save(session ? { session } : undefined);
 
         totalMatched += matchAmount;
         remainingStake -= matchAmount;
@@ -329,13 +343,15 @@ exports.cancelBet = async (betId, userId) => {
  * @returns {Object} Settlement result
  */
 exports.settleMarket = async (marketId, winningRunnerId, settledBy) => {
-  const session = await mongoose.startSession();
+  const { withTxn } = walletService;
 
   try {
     let settlementResult;
 
-    await session.withTransaction(async () => {
-      const market = await Market.findById(marketId).session(session);
+    await withTxn(async (session) => {
+      const market = session
+        ? await Market.findById(marketId).session(session)
+        : await Market.findById(marketId);
 
       if (!market) {
         throw new Error('Market not found');
@@ -370,11 +386,17 @@ exports.settleMarket = async (marketId, winningRunnerId, settledBy) => {
       });
 
       // Get all matched bets for this market
-      const bets = await Bet.find({
-        market: marketId,
-        status: { $in: ['matched', 'partially_matched'] },
-        matchedAmount: { $gt: 0 },
-      }).session(session);
+      const bets = session
+        ? await Bet.find({
+            market: marketId,
+            status: { $in: ['matched', 'partially_matched'] },
+            matchedAmount: { $gt: 0 },
+          }).session(session)
+        : await Bet.find({
+            market: marketId,
+            status: { $in: ['matched', 'partially_matched'] },
+            matchedAmount: { $gt: 0 },
+          });
 
       let totalSettled = 0;
       const settlementResults = {
@@ -386,7 +408,7 @@ exports.settleMarket = async (marketId, winningRunnerId, settledBy) => {
 
       // Settle each bet
       for (const bet of bets) {
-        const betResult = await this.settleBet(
+        const betResult = await exports.settleBet(
           bet,
           winningRunnerId,
           settledBy,
@@ -403,27 +425,36 @@ exports.settleMarket = async (marketId, winningRunnerId, settledBy) => {
         settlementResults.totalCommission += betResult.commission;
       }
 
-      // Cancel unmatched/partially matched bets
-      const unmatchedBets = await Bet.find({
-        market: marketId,
-        status: { $in: ['unmatched', 'partially_matched'] },
-        unmatchedAmount: { $gt: 0 },
-      }).session(session);
+      // Cancel unmatched/partially matched bets (should be none since we auto-match)
+      const unmatchedBets = session
+        ? await Bet.find({
+            market: marketId,
+            status: { $in: ['unmatched', 'partially_matched'] },
+            unmatchedAmount: { $gt: 0 },
+          }).session(session)
+        : await Bet.find({
+            market: marketId,
+            status: { $in: ['unmatched', 'partially_matched'] },
+            unmatchedAmount: { $gt: 0 },
+          });
 
       for (const bet of unmatchedBets) {
-        const refundLiability = bet.betType === 'back'
+        // Stake was already deducted at placement — refund it back
+        const refundAmount = bet.betType === 'back'
           ? bet.unmatchedAmount
           : bet.unmatchedAmount * (bet.odds - 1);
 
-        await walletService.unlockFunds(
+        await walletService.credit(
           bet.user.toString(),
-          refundLiability,
-          'bet_void'
+          refundAmount,
+          'bet_void',
+          `Refund for unmatched bet ${bet.betRef}`,
+          { betId: bet._id, betRef: bet.betRef }
         );
 
         bet.unmatchedAmount = 0;
         bet.status = bet.matchedAmount > 0 ? 'matched' : 'void';
-        await bet.save({ session });
+        await bet.save(session ? { session } : undefined);
       }
 
       // Update market
@@ -431,7 +462,7 @@ exports.settleMarket = async (marketId, winningRunnerId, settledBy) => {
       market.winningRunner = winningRunnerId;
       market.settledTime = new Date();
       market.settledBy = settledBy;
-      await market.save({ session });
+      await market.save(session ? { session } : undefined);
 
       settlementResult = {
         marketId,
@@ -441,10 +472,8 @@ exports.settleMarket = async (marketId, winningRunnerId, settledBy) => {
       };
     });
 
-    await session.endSession();
     return settlementResult;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Market settlement failed: ${error.message}`);
   }
 };
@@ -469,82 +498,65 @@ exports.settleBet = async (bet, winningRunnerId, settledBy, session) => {
     if (bet.betType === 'back') {
       // Back bet: wins if selection wins
       if (isWinner) {
-        // Won
+        // Won — stake was already deducted at placement, so only credit the profit
         profitLoss = matchedStake * (bet.odds - 1);
         commission = (profitLoss * bet.commission.rate) / 100;
         profitLoss -= commission;
         result = 'won';
 
-        // Credit winnings + return stake
-        const totalPayout = matchedStake + profitLoss;
-        await walletService.creditWin(
+        // Credit profit only (stake already deducted at bet placement)
+        await walletService.credit(
           bet.user.toString(),
-          matchedStake,
-          totalPayout,
+          matchedStake + profitLoss,
+          'bet_won',
+          `Bet won: ${bet.event?.name || 'Unknown event'} — Payout ₹${(matchedStake + profitLoss).toFixed(2)}`,
           {
             betId: bet._id,
             betRef: bet.betRef,
-            eventName: bet.event.name,
+            eventName: bet.event?.name,
             selection: bet.selection.name,
             odds: bet.odds,
             marketId: bet.market.toString(),
           }
         );
       } else {
-        // Lost
+        // Lost — stake was already deducted at placement, just record the loss
         profitLoss = -matchedStake;
         result = 'lost';
-
-        // Debit loss
-        await walletService.debitLoss(bet.user.toString(), matchedStake, {
-          betId: bet._id,
-          betRef: bet.betRef,
-          eventName: bet.event.name,
-          selection: bet.selection.name,
-          odds: bet.odds,
-          marketId: bet.market.toString(),
-        });
+        // No balance change needed — stake was deducted when bet was placed
       }
     } else {
       // Lay bet: wins if selection loses
       if (!isWinner) {
-        // Won
+        // Won — liability (stake*(odds-1)) was already deducted at placement
         profitLoss = matchedStake;
         commission = (profitLoss * bet.commission.rate) / 100;
         profitLoss -= commission;
         result = 'won';
 
-        // Credit winnings + return liability
+        // Credit liability back + profit
         const liability = matchedStake * (bet.odds - 1);
         const totalPayout = liability + profitLoss;
-        await walletService.creditWin(
+        await walletService.credit(
           bet.user.toString(),
-          liability,
           totalPayout,
+          'bet_won',
+          `Lay bet won: ${bet.event?.name || 'Unknown event'} — Payout ₹${totalPayout.toFixed(2)}`,
           {
             betId: bet._id,
             betRef: bet.betRef,
-            eventName: bet.event.name,
+            eventName: bet.event?.name,
             selection: bet.selection.name,
             odds: bet.odds,
             marketId: bet.market.toString(),
           }
         );
       } else {
-        // Lost
+        // Lost — liability already deducted at placement, just record the loss
         const liability = matchedStake * (bet.odds - 1);
         profitLoss = -liability;
         result = 'lost';
-
-        // Debit loss
-        await walletService.debitLoss(bet.user.toString(), liability, {
-          betId: bet._id,
-          betRef: bet.betRef,
-          eventName: bet.event.name,
-          selection: bet.selection.name,
-          odds: bet.odds,
-          marketId: bet.market.toString(),
-        });
+        // No balance change needed
       }
     }
 
@@ -556,7 +568,10 @@ exports.settleBet = async (bet, winningRunnerId, settledBy, session) => {
     bet.settledAmount = matchedStake;
     bet.settledAt = new Date();
     bet.settledBy = settledBy;
-    await bet.save({ session });
+    await bet.save(session ? { session } : undefined);
+
+    // Process affiliate commission (non-blocking — runs outside the main session)
+    commissionService.processAfterSettlement(bet, result, matchedStake).catch(() => {});
 
     return {
       result,
@@ -577,13 +592,15 @@ exports.settleBet = async (bet, winningRunnerId, settledBy, session) => {
  * @returns {Object} Void result
  */
 exports.voidMarket = async (marketId, reason, voidedBy) => {
-  const session = await mongoose.startSession();
+  const { withTxn } = walletService;
 
   try {
     let voidResult;
 
-    await session.withTransaction(async () => {
-      const market = await Market.findById(marketId).session(session);
+    await withTxn(async (session) => {
+      const market = session
+        ? await Market.findById(marketId).session(session)
+        : await Market.findById(marketId);
 
       if (!market) {
         throw new Error('Market not found');
@@ -594,31 +611,37 @@ exports.voidMarket = async (marketId, reason, voidedBy) => {
       }
 
       // Get all active bets
-      const bets = await Bet.find({
-        market: marketId,
-        status: { $in: ['matched', 'partially_matched', 'unmatched'] },
-      }).session(session);
+      const bets = session
+        ? await Bet.find({
+            market: marketId,
+            status: { $in: ['matched', 'partially_matched', 'unmatched'] },
+          }).session(session)
+        : await Bet.find({
+            market: marketId,
+            status: { $in: ['matched', 'partially_matched', 'unmatched'] },
+          });
 
       let totalRefunded = 0;
 
-      // Refund all bets
+      // Refund all bets — stake was already deducted at placement so credit it back
       for (const bet of bets) {
         const refundAmount = bet.betType === 'back'
           ? bet.stake
           : bet.stake * (bet.odds - 1);
 
-        // Unlock funds
-        await walletService.unlockFunds(
+        await walletService.credit(
           bet.user.toString(),
           refundAmount,
-          'bet_void'
+          'bet_void',
+          `Void refund for bet ${bet.betRef}`,
+          { betId: bet._id, betRef: bet.betRef }
         );
 
         bet.status = 'void';
         bet.result = 'void';
         bet.settledAt = new Date();
         bet.settledBy = voidedBy;
-        await bet.save({ session });
+        await bet.save(session ? { session } : undefined);
 
         totalRefunded++;
       }
@@ -632,7 +655,7 @@ exports.voidMarket = async (marketId, reason, voidedBy) => {
         runner.result = 'void';
         runner.status = 'removed';
       });
-      await market.save({ session });
+      await market.save(session ? { session } : undefined);
 
       voidResult = {
         marketId,
@@ -641,10 +664,8 @@ exports.voidMarket = async (marketId, reason, voidedBy) => {
       };
     });
 
-    await session.endSession();
     return voidResult;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Market void failed: ${error.message}`);
   }
 };
@@ -853,7 +874,7 @@ exports.getUserBets = async (userId, options = {}) => {
  */
 exports.getUserBettingStats = async (userId) => {
   const stats = await Bet.aggregate([
-    { $match: { user: mongoose.Types.ObjectId(userId), status: 'settled' } },
+    { $match: { user: new mongoose.Types.ObjectId(userId), status: 'settled' } },
     {
       $group: {
         _id: '$result',

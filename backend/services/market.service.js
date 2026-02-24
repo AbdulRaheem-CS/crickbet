@@ -5,6 +5,7 @@
 
 const Market = require('../models/Market');
 const Bet = require('../models/Bet');
+const bettingService = require('./betting.service');
 
 class MarketService {
   /**
@@ -544,17 +545,8 @@ class MarketService {
    */
   async settleMarket(marketId, winningRunnerId, settledBy) {
     try {
-      const market = await Market.findOne({ 
-        $or: [{ _id: marketId }, { marketId: marketId }] 
-      });
-
-      if (!market) {
-        throw new Error('Market not found');
-      }
-
-      // Use model method to settle
-      const result = await market.settleMarket(winningRunnerId, settledBy);
-
+      // Delegate to bettingService which handles bet settlement + wallet crediting
+      const result = await bettingService.settleMarket(marketId, winningRunnerId, settledBy);
       return result;
     } catch (error) {
       throw new Error(`Failed to settle market: ${error.message}`);
@@ -570,17 +562,8 @@ class MarketService {
    */
   async voidMarket(marketId, reason, voidedBy) {
     try {
-      const market = await Market.findOne({ 
-        $or: [{ _id: marketId }, { marketId: marketId }] 
-      });
-
-      if (!market) {
-        throw new Error('Market not found');
-      }
-
-      // Use model method to void
-      const result = await market.voidMarket(reason, voidedBy);
-
+      // Delegate to bettingService which handles refunds + wallet crediting
+      const result = await bettingService.voidMarket(marketId, reason, voidedBy);
       return result;
     } catch (error) {
       throw new Error(`Failed to void market: ${error.message}`);

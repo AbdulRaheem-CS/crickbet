@@ -244,7 +244,7 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen bg-[#005DAC] border-r-4 border-gray-500 overflow-y-auto z-40 transition-all duration-300 ${
+      className={`hidden md:block fixed top-0 left-0 h-screen bg-[#005DAC] border-r-4 border-gray-500 overflow-y-auto z-40 transition-all duration-300 ${
         isMinimized ? 'w-20' : 'w-[17%]'
       }`}
     >

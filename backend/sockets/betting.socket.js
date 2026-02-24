@@ -4,7 +4,15 @@
  * Phase 4: Real-time Features Implementation
  */
 
-const { getIO, emitToUser, emitToMarket, emitToAll } = require('./index');
+// Lazy helpers to avoid circular-dependency issues at require time
+const socketHelpers = {
+  getIO: (...args) => require('./index').getIO(...args),
+  emitToUser: (...args) => require('./index').emitToUser(...args),
+  emitToMarket: (...args) => require('./index').emitToMarket(...args),
+  emitToAll: (...args) => require('./index').emitToAll(...args),
+};
+const { getIO, emitToUser, emitToMarket, emitToAll } = socketHelpers;
+
 const bettingService = require('../services/betting.service');
 const marketService = require('../services/market.service');
 const walletService = require('../services/wallet.service');
@@ -338,12 +346,14 @@ exports.emitBetPartiallyMatched = (userId, betData, matchedAmount) => {
 exports.emitBalanceUpdate = (userId, balanceData) => {
   emitToUser(userId, 'balance:update', {
     balance: balanceData.balance,
+    availableBalance: balanceData.availableBalance ?? (balanceData.balance - (balanceData.lockedFunds || 0)),
+    lockedFunds: balanceData.lockedFunds || 0,
     exposure: balanceData.exposure,
     bonusBalance: balanceData.bonusBalance || 0,
     timestamp: new Date().toISOString(),
   });
 
-  console.log(`💰 Balance updated for user ${userId}: ₹${balanceData.balance}`);
+  console.log(`💰 Balance updated for user ${userId}: available=₹${balanceData.availableBalance ?? balanceData.balance}`);
 };
 
 /**

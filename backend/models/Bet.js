@@ -143,6 +143,11 @@ const BetSchema = new mongoose.Schema(
       type: String,
       unique: true,
       required: true,
+      default: function () {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+        return `BET-${timestamp}-${random}`;
+      },
     },
 
     // Additional metadata

@@ -12,8 +12,8 @@ const { bettingLimiter } = require('../middleware/rateLimit.middleware');
 
 // @route   POST /api/bets/place
 // @desc    Place a new bet
-// @access  Private
-router.post('/place', protect, requireKYC, bettingLimiter, betController.placeBet);
+// @access  Private (KYC not required)
+router.post('/place', protect, bettingLimiter, betController.placeBet);
 
 // @route   GET /api/bets
 // @desc    Get user's bets

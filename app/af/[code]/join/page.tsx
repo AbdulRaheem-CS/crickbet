@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import ClientFallbackRedirect from '../ClientFallbackRedirect';
 
-export default function JoinRedirect({ params }: { params?: { code?: string } }) {
-  const code = params?.code || '';
+export default async function JoinRedirect({ params }: { params: Promise<{ code?: string }> }) {
+  const { code = '' } = await params;
 
   // If we have a code on the server, redirect to the dashboard and open the
   // site-wide register popup (so the default player signup link opens the

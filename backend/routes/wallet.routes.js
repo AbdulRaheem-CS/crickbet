@@ -38,7 +38,7 @@ router.post('/deposit/verify', protect, walletController.verifyDeposit);
 // @route   POST /api/wallet/withdrawal
 // @desc    Request withdrawal
 // @access  Private
-router.post('/withdrawal', protect, requireKYC, withdrawalLimiter, checkWithdrawalLimit, walletController.requestWithdrawal);
+router.post('/withdrawal', protect, withdrawalLimiter, checkWithdrawalLimit, walletController.requestWithdrawal);
 
 // @route   GET /api/wallet/withdrawal/:id
 // @desc    Get withdrawal status

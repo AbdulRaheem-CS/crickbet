@@ -9,6 +9,59 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 
 /**
+ * Run `fn` inside a Mongoose session+transaction when the MongoDB deployment
+ * supports it (replica set / mongos).  On a standalone node the very first
+ * real query inside a transaction throws
+ * "Transaction numbers are only allowed on a replica set member or mongos".
+ * We catch that once, remember it, and fall back to running `fn` without any
+ * session so the rest of the call-stack works on standalone deployments.
+ *
+ * Usage:
+ *   const result = await withTxn(async (session) => {
+ *     // use session (may be null on standalone)
+ *     const user = await User.findById(id).session(session);
+ *     ...
+ *     await user.save({ session });
+ *     return something;
+ *   });
+ */
+let _replicaSet = undefined; // true | false | undefined (not yet tested)
+
+const withTxn = async (fn) => {
+  // First call: probe
+  if (_replicaSet === undefined) {
+    const probe = await mongoose.startSession();
+    try {
+      probe.startTransaction();
+      await User.findOne().session(probe).select('_id').lean(); // hits server
+      await probe.abortTransaction();
+      _replicaSet = true;
+    } catch (_e) {
+      try { await probe.abortTransaction(); } catch (_) {}
+      _replicaSet = false;
+    } finally {
+      try { await probe.endSession(); } catch (_) {}
+    }
+  }
+
+  if (_replicaSet) {
+    const session = await mongoose.startSession();
+    try {
+      let result;
+      await session.withTransaction(async () => { result = await fn(session); });
+      return result;
+    } finally {
+      await session.endSession();
+    }
+  } else {
+    // Standalone — run without session
+    return fn(null);
+  }
+};
+
+exports.withTxn = withTxn;
+
+/**
  * Get user wallet balance
  * @param {String} userId - User ID
  * @returns {Object} Wallet information with available balance
@@ -50,12 +103,10 @@ exports.credit = async (userId, amount, type, description, metadata = {}) => {
     throw new Error('Amount must be greater than zero');
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let transaction;
 
-    await session.withTransaction(async () => {
+    await withTxn(async (session) => {
       // Get current user with lock (prevents race conditions)
       const user = await User.findById(userId).session(session);
       if (!user) {
@@ -75,7 +126,7 @@ exports.credit = async (userId, amount, type, description, metadata = {}) => {
       user.wallet.bonus += bonusAmount;
       user.wallet.lastTransactionAt = new Date();
 
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
       // Create transaction record for audit trail
       transaction = new Transaction({
@@ -103,13 +154,11 @@ exports.credit = async (userId, amount, type, description, metadata = {}) => {
         completedAt: new Date(),
       });
 
-      await transaction.save({ session });
+      await transaction.save(session ? { session } : undefined);
     });
 
-    await session.endSession();
     return transaction;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Credit failed: ${error.message}`);
   }
 };
@@ -134,14 +183,14 @@ exports.debit = async (userId, amount, type, description, metadata = {}) => {
     throw new Error('Amount must be greater than zero');
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let transaction;
 
-    await session.withTransaction(async () => {
+    await withTxn(async (session) => {
       // Get current user with lock
-      const user = await User.findById(userId).session(session);
+      const user = session
+        ? await User.findById(userId).session(session)
+        : await User.findById(userId);
       if (!user) {
         throw new Error('User not found');
       }
@@ -163,9 +212,10 @@ exports.debit = async (userId, amount, type, description, metadata = {}) => {
       }
 
       // Check sufficient balance (critical for preventing overdraft)
+      // For bet_stake: funds were already unlocked just before this call, so check full balance
       const availableBalance = balanceBefore - (user.wallet.lockedFunds || 0);
-      if (realMoneyUsed > availableBalance) {
-        throw new Error(`Insufficient balance. Available: ₹${availableBalance}, Required: ₹${realMoneyUsed}`);
+      if (realMoneyUsed > balanceBefore) {
+        throw new Error(`Insufficient balance. Balance: ₹${balanceBefore}, Required: ₹${realMoneyUsed}`);
       }
 
       // Update user wallet atomically
@@ -173,7 +223,7 @@ exports.debit = async (userId, amount, type, description, metadata = {}) => {
       user.wallet.bonus -= bonusUsed;
       user.wallet.lastTransactionAt = new Date();
 
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
       // Create transaction record
       transaction = new Transaction({
@@ -201,13 +251,10 @@ exports.debit = async (userId, amount, type, description, metadata = {}) => {
         completedAt: new Date(),
       });
 
-      await transaction.save({ session });
+      await transaction.save(session ? { session } : undefined);
     });
-
-    await session.endSession();
     return transaction;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Debit failed: ${error.message}`);
   }
 };
@@ -230,13 +277,14 @@ exports.lockFunds = async (userId, amount, reason, reference = {}) => {
     throw new Error('Amount must be greater than zero');
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let user;
 
-    await session.withTransaction(async () => {
-      user = await User.findById(userId).session(session);
+    await withTxn(async (session) => {
+      user = session
+        ? await User.findById(userId).session(session)
+        : await User.findById(userId);
+
       if (!user) {
         throw new Error('User not found');
       }
@@ -257,10 +305,8 @@ exports.lockFunds = async (userId, amount, reason, reference = {}) => {
       }
 
       user.wallet.lastTransactionAt = new Date();
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
     });
-
-    await session.endSession();
 
     return {
       balance: user.wallet.balance,
@@ -269,7 +315,6 @@ exports.lockFunds = async (userId, amount, reason, reference = {}) => {
       exposure: user.wallet.exposure,
     };
   } catch (error) {
-    await session.endSession();
     throw new Error(`Lock funds failed: ${error.message}`);
   }
 };
@@ -290,13 +335,14 @@ exports.unlockFunds = async (userId, amount, reason) => {
     throw new Error('Amount must be greater than zero');
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let user;
 
-    await session.withTransaction(async () => {
-      user = await User.findById(userId).session(session);
+    await withTxn(async (session) => {
+      user = session
+        ? await User.findById(userId).session(session)
+        : await User.findById(userId);
+
       if (!user) {
         throw new Error('User not found');
       }
@@ -310,10 +356,8 @@ exports.unlockFunds = async (userId, amount, reason) => {
       }
 
       user.wallet.lastTransactionAt = new Date();
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
     });
-
-    await session.endSession();
 
     return {
       balance: user.wallet.balance,
@@ -322,7 +366,6 @@ exports.unlockFunds = async (userId, amount, reason) => {
       exposure: user.wallet.exposure,
     };
   } catch (error) {
-    await session.endSession();
     throw new Error(`Unlock funds failed: ${error.message}`);
   }
 };
@@ -341,12 +384,10 @@ exports.creditWin = async (userId, stakeAmount, winAmount, betDetails = {}) => {
     throw new Error('Missing required parameters: userId, stakeAmount, winAmount');
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let transaction;
 
-    await session.withTransaction(async () => {
+    await withTxn(async (session) => {
       const user = await User.findById(userId).session(session);
       if (!user) {
         throw new Error('User not found');
@@ -363,7 +404,7 @@ exports.creditWin = async (userId, stakeAmount, winAmount, betDetails = {}) => {
       user.wallet.balance += winAmount;
       user.wallet.lastTransactionAt = new Date();
 
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
       // 3. Create transaction record
       transaction = new Transaction({
@@ -389,13 +430,11 @@ exports.creditWin = async (userId, stakeAmount, winAmount, betDetails = {}) => {
         completedAt: new Date(),
       });
 
-      await transaction.save({ session });
+      await transaction.save(session ? { session } : undefined);
     });
 
-    await session.endSession();
     return transaction;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Credit win failed: ${error.message}`);
   }
 };
@@ -413,12 +452,10 @@ exports.debitLoss = async (userId, stakeAmount, betDetails = {}) => {
     throw new Error('Missing required parameters: userId, stakeAmount');
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let transaction;
 
-    await session.withTransaction(async () => {
+    await withTxn(async (session) => {
       const user = await User.findById(userId).session(session);
       if (!user) {
         throw new Error('User not found');
@@ -431,7 +468,7 @@ exports.debitLoss = async (userId, stakeAmount, betDetails = {}) => {
       user.wallet.exposure = Math.max(0, (user.wallet.exposure || 0) - stakeAmount);
       user.wallet.lastTransactionAt = new Date();
 
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
       // Create transaction record for audit
       transaction = new Transaction({
@@ -457,13 +494,11 @@ exports.debitLoss = async (userId, stakeAmount, betDetails = {}) => {
         completedAt: new Date(),
       });
 
-      await transaction.save({ session });
+      await transaction.save(session ? { session } : undefined);
     });
 
-    await session.endSession();
     return transaction;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Debit loss failed: ${error.message}`);
   }
 };
@@ -539,34 +574,83 @@ exports.verifyDeposit = async (transactionId, gatewayResponse = {}) => {
     throw new Error('Transaction already completed');
   }
 
-  const session = await mongoose.startSession();
+  // Attempt to use a MongoDB session/transaction (requires replica set).
+  // On standalone MongoDB the first query with lsid fails — detect that and
+  // fall back to plain sequential updates.
+  let useSession = false;
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction(); // client-side only — does NOT hit the server yet
+
+    // Fire a real server-round-trip inside the session to verify replica-set support.
+    await User.findById(transaction.user).session(session).select('_id').lean();
+    useSession = true; // replica set confirmed
+  } catch (probeErr) {
+    if (session) { try { session.endSession(); } catch (_) {} }
+    session = null;
+    useSession = false;
+  }
 
   try {
-    await session.withTransaction(async () => {
-      // Update user balance
+    if (useSession) {
+      // ── Replica-set path (atomic) ──────────────────────────
       const user = await User.findById(transaction.user).session(session);
-      if (!user) {
-        throw new Error('User not found');
-      }
-
+      if (!user) throw new Error('User not found');
       user.wallet.balance += transaction.amount;
       user.wallet.lastTransactionAt = new Date();
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
-      // Update transaction
       transaction.balanceAfter = user.wallet.balance;
       transaction.status = 'completed';
       transaction.completedAt = new Date();
-      transaction.paymentDetails.gatewayTransactionId = gatewayResponse.gatewayTransactionId;
-      transaction.paymentDetails.gateway = gatewayResponse.gateway;
+      if (gatewayResponse.gatewayTransactionId)
+        transaction.paymentDetails.gatewayTransactionId = gatewayResponse.gatewayTransactionId;
+      if (gatewayResponse.gateway)
+        transaction.paymentDetails.gateway = gatewayResponse.gateway;
+      await transaction.save(session ? { session } : undefined);
 
-      await transaction.save({ session });
-    });
+      await session.commitTransaction();
+      } else {
+      // ── Standalone path — use findByIdAndUpdate (no sessions needed) ──
+      const user = await User.findById(transaction.user);
+      if (!user) throw new Error('User not found');
 
-    await session.endSession();
+      const newBalance = user.wallet.balance + transaction.amount;
+
+      // Atomically credit the wallet
+      await User.findByIdAndUpdate(transaction.user, {
+        $inc: { 'wallet.balance': transaction.amount },
+        $set:  { 'wallet.lastTransactionAt': new Date() },
+      });
+
+      // Atomically complete the transaction record
+      const paymentDetailsUpdate = {};
+      if (gatewayResponse.gatewayTransactionId)
+        paymentDetailsUpdate['paymentDetails.gatewayTransactionId'] = gatewayResponse.gatewayTransactionId;
+      if (gatewayResponse.gateway)
+        paymentDetailsUpdate['paymentDetails.gateway'] = gatewayResponse.gateway;
+
+      await Transaction.findByIdAndUpdate(transaction._id, {
+        $set: {
+          status: 'completed',
+          balanceAfter: newBalance,
+          completedAt: new Date(),
+          ...paymentDetailsUpdate,
+        },
+      });
+
+      // Refresh the local object so the caller gets the updated doc
+      transaction.status = 'completed';
+      transaction.balanceAfter = newBalance;
+      transaction.completedAt = new Date();
+    }
+
     return transaction;
   } catch (error) {
-    await session.endSession();
+    if (useSession && session) {
+      await session.abortTransaction();
+      }
     throw new Error(`Verify deposit failed: ${error.message}`);
   }
 };
@@ -594,12 +678,10 @@ exports.processWithdrawal = async (userId, amount, paymentMethod, paymentDetails
     throw new Error(`Withdrawal not allowed: ${eligibility.reason}`);
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let transaction;
 
-    await session.withTransaction(async () => {
+    await withTxn(async (session) => {
       const user = await User.findById(userId).session(session);
       if (!user) {
         throw new Error('User not found');
@@ -612,7 +694,7 @@ exports.processWithdrawal = async (userId, amount, paymentMethod, paymentDetails
       user.wallet.lockedFunds = (user.wallet.lockedFunds || 0) + amount;
       user.wallet.lastTransactionAt = new Date();
 
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
       // Create pending withdrawal transaction
       transaction = new Transaction({
@@ -630,13 +712,11 @@ exports.processWithdrawal = async (userId, amount, paymentMethod, paymentDetails
         },
       });
 
-      await transaction.save({ session });
+      await transaction.save(session ? { session } : undefined);
     });
 
-    await session.endSession();
     return transaction;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Process withdrawal failed: ${error.message}`);
   }
 };
@@ -663,10 +743,8 @@ exports.approveWithdrawal = async (transactionId, adminId, gatewayResponse = {})
     throw new Error(`Cannot approve withdrawal with status: ${transaction.status}`);
   }
 
-  const session = await mongoose.startSession();
-
   try {
-    await session.withTransaction(async () => {
+    await withTxn(async (session) => {
       const user = await User.findById(transaction.user).session(session);
       if (!user) {
         throw new Error('User not found');
@@ -677,7 +755,7 @@ exports.approveWithdrawal = async (transactionId, adminId, gatewayResponse = {})
       user.wallet.lockedFunds = Math.max(0, (user.wallet.lockedFunds || 0) - withdrawalAmount);
       user.wallet.lastTransactionAt = new Date();
 
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
       // Complete transaction
       transaction.status = 'completed';
@@ -686,13 +764,11 @@ exports.approveWithdrawal = async (transactionId, adminId, gatewayResponse = {})
       transaction.paymentDetails.gatewayTransactionId = gatewayResponse.gatewayTransactionId;
       transaction.paymentDetails.gateway = gatewayResponse.gateway;
 
-      await transaction.save({ session });
+      await transaction.save(session ? { session } : undefined);
     });
 
-    await session.endSession();
     return transaction;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Approve withdrawal failed: ${error.message}`);
   }
 };
@@ -719,10 +795,8 @@ exports.rejectWithdrawal = async (transactionId, adminId, reason) => {
     throw new Error(`Cannot reject withdrawal with status: ${transaction.status}`);
   }
 
-  const session = await mongoose.startSession();
-
   try {
-    await session.withTransaction(async () => {
+    await withTxn(async (session) => {
       const user = await User.findById(transaction.user).session(session);
       if (!user) {
         throw new Error('User not found');
@@ -734,7 +808,7 @@ exports.rejectWithdrawal = async (transactionId, adminId, reason) => {
       user.wallet.lockedFunds = Math.max(0, (user.wallet.lockedFunds || 0) - withdrawalAmount);
       user.wallet.lastTransactionAt = new Date();
 
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
       // Mark transaction as failed
       transaction.status = 'failed';
@@ -742,13 +816,11 @@ exports.rejectWithdrawal = async (transactionId, adminId, reason) => {
       transaction.failureReason = reason;
       transaction.processedBy = adminId;
 
-      await transaction.save({ session });
+      await transaction.save(session ? { session } : undefined);
     });
 
-    await session.endSession();
     return transaction;
   } catch (error) {
-    await session.endSession();
     throw new Error(`Reject withdrawal failed: ${error.message}`);
   }
 };
@@ -774,12 +846,10 @@ exports.transfer = async (fromUserId, toUserId, amount, description = 'Transfer'
     throw new Error('Cannot transfer to same user');
   }
 
-  const session = await mongoose.startSession();
-
   try {
     let debitTxn, creditTxn;
 
-    await session.withTransaction(async () => {
+    await withTxn(async (session) => {
       // Get both users
       const fromUser = await User.findById(fromUserId).session(session);
       const toUser = await User.findById(toUserId).session(session);
@@ -800,12 +870,12 @@ exports.transfer = async (fromUserId, toUserId, amount, description = 'Transfer'
       // Debit from sender
       fromUser.wallet.balance -= amount;
       fromUser.wallet.lastTransactionAt = new Date();
-      await fromUser.save({ session });
+      await fromUser.save(session ? { session } : undefined);
 
       // Credit to receiver
       toUser.wallet.balance += amount;
       toUser.wallet.lastTransactionAt = new Date();
-      await toUser.save({ session });
+      await toUser.save(session ? { session } : undefined);
 
       // Create debit transaction
       debitTxn = new Transaction({
@@ -835,14 +905,12 @@ exports.transfer = async (fromUserId, toUserId, amount, description = 'Transfer'
         completedAt: new Date(),
       });
 
-      await debitTxn.save({ session });
-      await creditTxn.save({ session });
+      await debitTxn.save(session ? { session } : undefined);
+      await creditTxn.save(session ? { session } : undefined);
     });
 
-    await session.endSession();
     return { debitTxn, creditTxn };
   } catch (error) {
-    await session.endSession();
     throw new Error(`Transfer failed: ${error.message}`);
   }
 };
@@ -873,11 +941,6 @@ exports.checkWithdrawalEligibility = async (userId, amount) => {
   
   if (!user) {
     return { eligible: false, reason: 'User not found' };
-  }
-
-  // Check KYC status
-  if (user.kyc?.status !== 'verified') {
-    return { eligible: false, reason: 'KYC verification required' };
   }
 
   // Check available balance

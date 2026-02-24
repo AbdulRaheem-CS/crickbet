@@ -694,10 +694,7 @@ exports.settleMarket = asyncHandler(async (req, res) => {
     });
   }
 
-  const settled = await marketService.settleMarket(req.params.id, {
-    winner,
-    result,
-  });
+  const settled = await marketService.settleMarket(req.params.id, winner, req.user?._id);
 
   // Emit socket event
   emitMarketSettled(req.params.id, {
@@ -755,7 +752,7 @@ exports.getPendingWithdrawals = asyncHandler(async (req, res) => {
       type: 'withdrawal',
       status: 'pending',
     })
-      .populate('userId', 'username email phone')
+      .populate('user', 'username email phone')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))

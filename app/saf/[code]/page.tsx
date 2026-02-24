@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function SafRedirect({ params }: { params?: { code?: string } }) {
-  const code = params?.code || '';
+export default function SafRedirect({ params }: { params: Promise<{ code?: string }> }) {
+  const { code = '' } = use(params);
   const router = useRouter();
 
   useEffect(() => {

@@ -7,6 +7,7 @@
 
 import { useBetSlip } from '@/context/BetSlipContext';
 import { bettingService } from '@/lib/services/betting.service';
+import { useWallet } from '@/context/WalletContext';
 import { useState } from 'react';
 
 interface BetSlipProps {
@@ -16,6 +17,7 @@ interface BetSlipProps {
 
 export default function BetSlip({ isOpen, onClose }: BetSlipProps) {
   const { selections, updateStake, removeSelection, clearBetSlip, totalStake, potentialWin } = useBetSlip();
+  const { availableBalance, refreshBalance } = useWallet();
   const [loading, setLoading] = useState(false);
 
   const handlePlaceBets = async () => {
@@ -32,6 +34,7 @@ export default function BetSlip({ isOpen, onClose }: BetSlipProps) {
         });
       }
       clearBetSlip();
+      await refreshBalance(); // ← update navbar balance immediately
       alert('Bets placed successfully!');
     } catch (error: any) {
       alert('Failed to place bets: ' + error);

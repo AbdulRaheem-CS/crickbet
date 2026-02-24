@@ -120,16 +120,24 @@ module.exports = {
    * POST /api/wallet/deposit/verify
    */
   verifyDeposit: asyncHandler(async (req, res) => {
-    const { transactionId, paymentId } = req.body;
+    const { transactionId, paymentId, status, reference, adminNote } = req.body;
 
-    if (!transactionId || !paymentId) {
+    if (!transactionId) {
       return res.status(400).json({
         success: false,
-        message: 'Transaction ID and Payment ID are required'
+        message: 'Transaction ID is required'
       });
     }
 
-    const transaction = await walletService.verifyDeposit(transactionId, paymentId);
+    // Build optional gateway response object from any extra fields provided
+    const gatewayResponse = {
+      ...(paymentId   && { gatewayTransactionId: paymentId }),
+      ...(reference   && { gatewayTransactionId: reference }),
+      ...(adminNote   && { adminNote }),
+      ...(status      && { status }),
+    };
+
+    const transaction = await walletService.verifyDeposit(transactionId, gatewayResponse);
 
     res.status(200).json({
       success: true,
@@ -144,7 +152,7 @@ module.exports = {
    */
   requestWithdrawal: asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const { amount, bankDetails } = req.body;
+    const { amount, paymentMethod, paymentDetails, bankDetails } = req.body;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({
@@ -153,17 +161,22 @@ module.exports = {
       });
     }
 
-    if (!bankDetails || !bankDetails.accountNumber || !bankDetails.ifsc) {
+    // Accept either paymentMethod/paymentDetails OR legacy bankDetails shape
+    const method  = paymentMethod || (bankDetails ? 'bank_transfer' : null);
+    const details = paymentDetails || bankDetails || {};
+
+    if (!method) {
       return res.status(400).json({
         success: false,
-        message: 'Bank details (accountNumber, ifsc, accountName) are required'
+        message: 'paymentMethod is required'
       });
     }
 
     const transaction = await walletService.processWithdrawal(
       userId,
       parseFloat(amount),
-      bankDetails
+      method,
+      details
     );
 
     res.status(201).json({

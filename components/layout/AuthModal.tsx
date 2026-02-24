@@ -7,13 +7,14 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { FaTimes } from 'react-icons/fa';
 
 export default function AuthModal() {
   const { user, showAuthModal, authModalTab, openAuthModal, closeAuthModal, login, register } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<'login' | 'register'>(authModalTab || 'login');
 
   // Keep local tab in sync with context
@@ -36,6 +37,18 @@ export default function AuthModal() {
     confirmPassword: '', 
     refCode: '' 
   });
+
+  // Pre-fill referral code from URL (?ref=) or localStorage when modal opens on register tab
+  useEffect(() => {
+    if (showAuthModal && tab === 'register') {
+      const urlRef = searchParams?.get('ref') || '';
+      const storedRef = (typeof window !== 'undefined' && localStorage.getItem('affiliateRef')) || '';
+      const code = urlRef || storedRef;
+      if (code) {
+        setRegForm(prev => ({ ...prev, refCode: code }));
+      }
+    }
+  }, [showAuthModal, tab, searchParams]);
   const [regError, setRegError] = useState('');
   const [regLoading, setRegLoading] = useState(false);
 
@@ -71,7 +84,15 @@ export default function AuthModal() {
         refCode: regForm.refCode || undefined,
       });
       closeAuthModal();
-      router.refresh();
+      // Clean up referral code from localStorage and URL after successful registration
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('affiliateRef');
+        const url = new URL(window.location.href);
+        url.searchParams.delete('ref');
+        router.replace(url.pathname + url.search, { scroll: false });
+      } else {
+        router.refresh();
+      }
     } catch (err: any) {
       setRegError(err?.message || String(err));
     } finally {

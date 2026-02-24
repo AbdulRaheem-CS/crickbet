@@ -10,7 +10,7 @@ export default function PublicLayout({
   children: ReactNode;
 }) {
   return (
-  <div className="min-h-screen flex flex-col bg-[#1E549C]">
+  <div className="min-h-screen flex flex-col bg-[#1E549C] text-white">
       {/* Public Header */}
       <PublicHeader />
       

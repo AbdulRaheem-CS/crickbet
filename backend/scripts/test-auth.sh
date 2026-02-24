@@ -25,18 +25,17 @@ echo -e "${YELLOW}[1/2] Testing Login...${NC}"
 LOGIN_RESPONSE=$(curl -s -X POST "$API_URL/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "emailOrPhone": "john@example.com",
-    "password": "Test@123456"
+    "emailOrPhone": "michel123@gmail.com",
+    "password": "Michel@123"
   }')
 
 echo "$LOGIN_RESPONSE" | python3 -m json.tool 2>/dev/null || echo "$LOGIN_RESPONSE"
 
-# Extract token using python3 (works without jq) - token may be at top level or nested under data
+# Extract token — response shape: { data: { token, user } }
 TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "
 import sys,json
 d=json.load(sys.stdin)
-token = d.get('token','') or d.get('data',{}).get('token','')
-print(token)
+print(d.get('data',{}).get('token') or d.get('token',''))
 " 2>/dev/null)
 
 if [ -z "$TOKEN" ]; then
@@ -59,14 +58,7 @@ ME_RESPONSE=$(curl -s -X GET "$API_URL/auth/me" \
 echo "$ME_RESPONSE" | python3 -m json.tool 2>/dev/null || echo "$ME_RESPONSE"
 
 if echo "$ME_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if d.get('success') else 1)" 2>/dev/null; then
-  USERNAME=$(echo "$ME_RESPONSE" | python3 -c "
-import sys,json
-d=json.load(sys.stdin)
-user = d.get('data',{})
-if isinstance(user, dict) and 'user' in user:
-    user = user['user']
-print(user.get('username',''))
-" 2>/dev/null)
+  USERNAME=$(echo "$ME_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data',{}).get('username',''))" 2>/dev/null)
   echo "$USERNAME" > /tmp/test_username.txt
   echo -e "${GREEN}✓ Profile retrieved successfully!${NC}"
   echo -e "  Username: $USERNAME\n"

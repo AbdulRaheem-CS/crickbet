@@ -109,13 +109,14 @@ module.exports = {
     const referredUsers = await User.find({ referredBy: affiliateId }).select('_id createdAt').lean();
     const referredUserIds = referredUsers.map(u => u._id);
 
-    // Commission stats
+    // Commission stats — match both 'commission' and 'affiliate_commission' types
+    const COMMISSION_TYPES = { $in: ['commission', 'affiliate_commission'] };
     const [thisMonthCommission, lastMonthCommission] = await Promise.all([
       Transaction.aggregate([
         {
           $match: {
-        user: affiliateId,
-            type: 'commission',
+            user: affiliateId,
+            type: COMMISSION_TYPES,
             status: 'completed',
             createdAt: { $gte: thisMonthStart }
           }
@@ -130,8 +131,8 @@ module.exports = {
       Transaction.aggregate([
         {
           $match: {
-        user: affiliateId,
-            type: 'commission',
+            user: affiliateId,
+            type: COMMISSION_TYPES,
             status: 'completed',
             createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd }
           }
@@ -366,7 +367,7 @@ module.exports = {
       {
         $match: {
           user: affiliateId,
-          type: 'commission',
+          type: { $in: ['commission', 'affiliate_commission'] },
           status: 'completed'
         }
       },
@@ -671,7 +672,7 @@ module.exports = {
         {
           $match: {
             user: affiliateId,
-            type: 'commission',
+            type: { $in: ['commission', 'affiliate_commission'] },
             createdAt: { $gte: thisMonthStart },
             status: 'completed'
           }
@@ -737,7 +738,7 @@ module.exports = {
         {
           $match: {
             user: affiliateId,
-            type: 'commission',
+            type: { $in: ['commission', 'affiliate_commission'] },
             status: 'pending'
           }
         },
@@ -752,7 +753,7 @@ module.exports = {
         {
           $match: {
             user: affiliateId,
-            type: 'commission',
+            type: { $in: ['commission', 'affiliate_commission'] },
             status: 'completed'
           }
         },
@@ -1104,8 +1105,7 @@ module.exports = {
             }
           ]),
           Bet.countDocuments({
-            user: referralUser._id,
-            status: { $in: ['settled', 'won', 'lost'] }
+            user: referralUser._id
           })
         ]);
 
@@ -1125,7 +1125,7 @@ module.exports = {
         {
           $match: {
             user: affiliateId,
-            type: 'commission',
+            type: { $in: ['commission', 'affiliate_commission'] },
             status: 'completed'
           }
         },

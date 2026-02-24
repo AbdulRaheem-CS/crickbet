@@ -1,6 +1,8 @@
 const { asyncHandler } = require("../middleware/error.middleware");
 const bettingService = require("../services/betting.service");
+const walletService = require("../services/wallet.service");
 const Bet = require("../models/Bet");
+const { emitBalanceUpdate } = require("../sockets/betting.socket");
 
 module.exports = {
   /**
@@ -45,6 +47,12 @@ module.exports = {
         }
       }
     });
+
+    // Push updated balance to client via socket (non-blocking)
+    try {
+      const walletData = await walletService.getBalance(userId.toString());
+      emitBalanceUpdate(userId.toString(), walletData);
+    } catch (_) {}
   }),
 
   /**

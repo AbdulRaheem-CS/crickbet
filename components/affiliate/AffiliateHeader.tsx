@@ -12,7 +12,7 @@ interface AffiliateHeaderProps {
 
 export default function AffiliateHeader({ onToggleSidebar }: AffiliateHeaderProps) {
   const { user, logout } = useAuth();
-  const { balance: walletBalance } = useWallet();
+  const { availableBalance: walletBalance } = useWallet();
 
   const [balance, setBalance] = useState('0.00');
   const [currency, setCurrency] = useState('BDT');

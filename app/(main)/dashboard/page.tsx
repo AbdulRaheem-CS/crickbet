@@ -26,15 +26,12 @@ export default function DashboardPage() {
       const open = searchParams?.get('open');
       if (open === 'register') {
         openAuthModal('register');
-        // Clear query parameters without adding a history entry
+        // Only remove the 'open' param — keep 'ref' in the URL so AuthModal can read it
         const url = new URL(window.location.href);
         url.searchParams.delete('open');
-        url.searchParams.delete('ref');
         router.replace(url.pathname + url.search, { scroll: false });
       }
     } catch (err) {
-      // If something goes wrong, silently ignore — modal still works via
-      // programmatic calls elsewhere.
       console.error('Failed to auto-open register modal from URL params', err);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
