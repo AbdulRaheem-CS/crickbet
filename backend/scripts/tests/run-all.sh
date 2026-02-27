@@ -48,7 +48,7 @@ cd - >/dev/null
 rm -f /tmp/cb_user_token.txt /tmp/cb_admin_token.txt /tmp/cb_username.txt
 
 # ── Determine which suites to run ─────────────────────────────────────────────
-ALL_SUITES=("auth" "deposit" "betting" "withdrawal")
+ALL_SUITES=("auth" "deposit" "betting" "withdrawal" "commission")
 
 if [ $# -gt 0 ]; then
   SUITES=("$@")

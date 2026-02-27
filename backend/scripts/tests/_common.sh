@@ -1,4 +1,4 @@
-#!/bin/bash
+                                                                    #!/bin/bash
 # ─────────────────────────────────────────────────────────────────────────────
 # _common.sh  —  Shared helpers for all CrickBet test scripts
 # Source this file at the top of every test:   source "$(dirname "$0")/_common.sh"
@@ -63,7 +63,6 @@ login_user() {
   pass "User logged in: $USERNAME"
   return 0
 }
-
 login_admin() {
   local RESP
   RESP=$(curl -s -X POST "$API_URL/auth/login" \

@@ -125,7 +125,7 @@ export default function CategoryNav() {
   if (!mounted) {
     return (
       <div className="bg-white overflow-x-auto">
-        <div className="bg-[#004179] mx-4 md:mx-8 h-28 rounded-lg" />
+        <div className="bg-[#004179] mx-0 md:mx-8 h-28 rounded-none md:rounded-lg" />
       </div>
     );
   }
@@ -145,7 +145,7 @@ export default function CategoryNav() {
       )}
 
       <div className="bg-white">
-        <div className="bg-[#004179] mx-4 md:mx-8 flex items-center gap-1 py-0 rounded-lg overflow-hidden">
+        <div className="bg-[#004179] mx-0 md:mx-8 flex items-center gap-1 py-0 rounded-none md:rounded-lg overflow-x-auto md:overflow-hidden scrollbar-hide">
           {categories.map((cat) => {
             const Icon = cat.icon;
             const active = selected === cat.key;
@@ -153,7 +153,7 @@ export default function CategoryNav() {
               <button
                 key={cat.key}
                 onClick={() => setSelected(cat.key)}
-                className={`flex flex-col items-center justify-center h-20 shrink-4 rounded-lg px-2 transition ${
+                className={`flex flex-col items-center justify-center h-20 shrink-0 rounded-lg px-2 transition ${
                   active ? 'bg-[#005DAC] text-white' : 'text-gray-200 hover:bg-[#005DAC] hover:text-white'
                 }`}
                 style={{ minWidth: 88 }}
@@ -165,11 +165,11 @@ export default function CategoryNav() {
           })}
         </div>
 
-        <div className="mx-4 md:mx-8 mt-6">
+        <div className="mx-0 md:mx-8 mt-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-8 bg-[#005DAC] rounded" />
-              <h3 className="text-2xl font-extrabold">{selected}</h3>
+              <div className="w-2 h-4 bg-[#005DAC] rounded" />
+              <h3 className="text-xl font-extrabold">{selected}</h3>
             </div>
             {selectedCat && (
               <button

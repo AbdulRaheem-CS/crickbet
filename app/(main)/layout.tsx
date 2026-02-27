@@ -1,6 +1,6 @@
 'use client';
 
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { WalletProvider } from '@/context/WalletContext';
 import { DepositProvider } from '@/context/DepositContext';
 import { BetSlipProvider } from '@/context/BetSlipContext';
@@ -18,6 +18,7 @@ import { useState, useEffect, useRef } from 'react';
 
 // Inner component so we can use useEffect with correct values
 function MainContent({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [sidebarMinimized, setSidebarMinimized] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [betSlipOpen, setBetSlipOpen] = useState(false);
@@ -64,7 +65,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
           onToggleMinimize={() => setSidebarMinimized(v => !v)}
           onMobileMenuOpen={() => setMobileNavOpen(true)}
         />
-        <main className="flex-1 bg-[#F6F6F6] overflow-auto">
+        <main className={`flex-1 bg-[#F6F6F6] overflow-auto ${!user ? 'pb-16 md:pb-0' : ''}`}>
           {children}
         </main>
       </div>
@@ -87,12 +88,103 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <SocketProvider>
               <WinnerBoardProvider>
                 <MainContent>{children}</MainContent>
+                <MobileBottomBarInline />
               </WinnerBoardProvider>
             </SocketProvider>
           </BetSlipProvider>
         </DepositProvider>
       </WalletProvider>
     </AuthProvider>
+  );
+}
+
+/** Inline bottom bar — lives at the absolute top of the React tree, no parent transforms */
+function MobileBottomBarInline() {
+  const { user, openAuthModal } = useAuth();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  if (user || !isMobile) return null;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        height: '56px',
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderTop: '1px solid #e5e7eb',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+      }}
+    >
+      {/* Currency & Language */}
+      <button
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '0 12px',
+          height: '100%',
+          borderRight: '1px solid #e5e7eb',
+          flexShrink: 0,
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+        }}
+      >
+        <span style={{ fontSize: '18px' }}>🇮🇳</span>
+        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1, textAlign: 'left' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: '#1f2937' }}>INR</span>
+          <span style={{ fontSize: '10px', color: '#6b7280' }}>English</span>
+        </div>
+      </button>
+
+      {/* Sign up */}
+      <button
+        onClick={() => openAuthModal('register')}
+        style={{
+          flex: 1,
+          height: '100%',
+          background: '#fff',
+          color: '#1f2937',
+          fontWeight: 700,
+          fontSize: '14px',
+          border: 'none',
+          borderRight: '1px solid #e5e7eb',
+          cursor: 'pointer',
+        }}
+      >
+        Sign up
+      </button>
+
+      {/* Login */}
+      <button
+        onClick={() => openAuthModal('login')}
+        style={{
+          flex: 1,
+          height: '100%',
+          background: '#005DAC',
+          color: '#fff',
+          fontWeight: 700,
+          fontSize: '14px',
+          border: 'none',
+          cursor: 'pointer',
+        }}
+      >
+        Login
+      </button>
+    </div>
   );
 }
 

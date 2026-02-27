@@ -244,7 +244,7 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
 
   return (
     <aside
-      className={`hidden md:block fixed top-0 left-0 h-screen bg-[#005DAC] border-r-4 border-gray-500 overflow-y-auto z-40 transition-all duration-300 ${
+      className={`hidden md:block fixed top-0 left-0 h-screen bg-[#005DAC] border-r-4 border-gray-500 overflow-y-auto scrollbar-hide z-40 transition-all duration-300 ${
         isMinimized ? 'w-20' : 'w-[17%]'
       }`}
     >
@@ -378,7 +378,7 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
                 
                 {/* Submenu items */}
                 {!isMinimized && isOpen && (
-                  <div className=" mt-1 space-y-1 border-l-2 border-[#1A79D3] bg-white shadow-sm max-h-64 overflow-y-auto">
+                  <div className=" mt-1 space-y-1 border-l-2 border-[#1A79D3] bg-white shadow-sm max-h-64 overflow-y-auto scrollbar-hide">
                     {isDynamicLoading ? (
                       <div className="flex items-center justify-center py-4">
                         <FaSpinner className="animate-spin text-[#1A79D3] mr-2" />

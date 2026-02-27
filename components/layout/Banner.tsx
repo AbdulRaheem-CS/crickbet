@@ -35,12 +35,12 @@ export default function Banner() {
 
   if (!mounted) {
     return (
-      <div className="relative overflow-hidden rounded-lg h-64 md:h-80 bg-gray-100 p-8" />
+      <div className="relative overflow-hidden rounded-none md:rounded-lg h-64 md:h-80 bg-gray-100 p-8" />
     );
   }
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
+    <div className="relative overflow-hidden rounded-none md:rounded-lg">
       <div className="relative h-64 md:h-80">
         {banners.map((banner, index) => (
           <div

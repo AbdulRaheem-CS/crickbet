@@ -10,7 +10,7 @@ import { FaCheck, FaGift } from 'react-icons/fa';
 
 export default function LuckySpin() {
   return (
-    <div className="fixed bottom-6 right-6 z-30">
+    <div className="fixed bottom-6 right-6 z-30 mb-8">
       <button className="relative group">
         {/* Spinning Wheel (GIF) */}
         <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden bg-white">
