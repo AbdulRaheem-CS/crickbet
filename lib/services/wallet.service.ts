@@ -18,7 +18,7 @@ export const walletService = {
 
   // Request withdrawal
   withdraw: async (amount: number, method: string, bankDetails?: any) => {
-    return await apiClient.post('/wallet/withdraw', { amount, method, bankDetails });
+    return await apiClient.post('/wallet/withdrawal', { amount, method, bankDetails });
   },
 
   // Get transactions

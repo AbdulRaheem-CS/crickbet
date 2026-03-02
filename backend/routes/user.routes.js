@@ -48,4 +48,28 @@ router.post('/self-exclude', protect, userController.selfExclude);
 // @access  Private
 router.post('/upload-avatar', protect, userController.uploadAvatar);
 
+// ==============================
+// Player KYC Routes (Phone OTP)
+// ==============================
+
+// @route   GET /api/users/kyc-status
+// @desc    Get player KYC status (full name, phone verified, etc.)
+// @access  Private
+router.get('/kyc-status', protect, userController.getPlayerKYCStatus);
+
+// @route   POST /api/users/update-fullname
+// @desc    Update player's full name for KYC
+// @access  Private
+router.post('/update-fullname', protect, userController.updateFullName);
+
+// @route   POST /api/users/send-phone-otp
+// @desc    Send OTP to player's phone for verification
+// @access  Private
+router.post('/send-phone-otp', protect, userController.sendPhoneOTP);
+
+// @route   POST /api/users/verify-phone-otp
+// @desc    Verify OTP and mark phone as verified
+// @access  Private
+router.post('/verify-phone-otp', protect, userController.verifyPhoneOTP);
+
 module.exports = router;

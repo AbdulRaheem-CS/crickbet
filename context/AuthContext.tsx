@@ -14,6 +14,14 @@ interface User {
   email: string;
   phone: string;
   role: string;
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
+  kycStatus?: string;
+  kycVerifiedAt?: string;
+  createdAt?: string;
   wallet: {
     balance: number;
   };

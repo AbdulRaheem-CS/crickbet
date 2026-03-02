@@ -11,7 +11,14 @@ import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useWallet } from '@/context/WalletContext';
 import { useDeposit } from '@/context/DepositContext';
-import { FaWallet, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaBars, FaHeadset, FaGlobe } from 'react-icons/fa';
+import { useState, useRef, useEffect } from 'react';
+import { 
+  FaWallet, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaBars, FaHeadset, FaGlobe,
+  FaUserCircle, FaMoneyBillWave, FaGift, FaDice, FaTrophy, FaClipboardList,
+  FaSyncAlt, FaExchangeAlt, FaUser, FaLock, FaEnvelope, FaSpinner
+} from 'react-icons/fa';
+import { useWithdrawal } from '@/context/WithdrawalContext';
+import { useRouter } from 'next/navigation';
 
 interface NavbarProps {
   isMinimized: boolean;
@@ -23,6 +30,47 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
   const { user, logout, openAuthModal } = useAuth();
   const { balance, availableBalance, lockedFunds } = useWallet();
   const { openDepositModal } = useDeposit();
+  const { openWithdrawalModal } = useWithdrawal();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const profileMenuItems: { label: string; icon: React.ReactNode; href: string; disabled?: boolean; action?: () => void }[] = [
+    { label: 'Deposit', icon: <FaMoneyBillWave />, href: '#', action: () => openDepositModal() },
+    { label: 'Withdrawal', icon: <FaWallet />, href: '#', action: () => openWithdrawalModal() },
+    { label: 'Bonus Wallet', icon: <FaGift />, href: '#', disabled: true },
+    { label: 'Free Spin', icon: <FaSpinner />, href: '#', disabled: true },
+    { label: 'Real-Time Bonus', icon: <FaGift />, href: '#', disabled: true },
+    { label: 'Refer Bonus', icon: <FaGift />, href: '#', disabled: true },
+    { label: 'Winner Board', icon: <FaTrophy />, href: '/winner-board' },
+    { label: 'Betting Records', icon: <FaClipboardList />, href: '#', disabled: true },
+    { label: 'Turnover', icon: <FaSyncAlt />, href: '#', disabled: true },
+    { label: 'Transaction Records', icon: <FaExchangeAlt />, href: '#', disabled: true },
+    { label: 'Personal Info', icon: <FaUser />, href: '#', disabled: true },
+    { label: 'Change Password', icon: <FaLock />, href: '#', disabled: true },
+    { label: 'Inbox', icon: <FaEnvelope />, href: '#', disabled: true },
+  ];
+
+  const handleMenuClick = (item: typeof profileMenuItems[0]) => {
+    if (item.disabled) return;
+    setProfileOpen(false);
+    if (item.action) {
+      item.action();
+    } else {
+      router.push(item.href);
+    }
+  };
 
   return (
     <>
@@ -94,14 +142,53 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
                   Deposit
                 </button>
 
-                <div className="flex items-center gap-2">
-                  <p className="text-white font-medium text-sm">{user?.username}</p>
+                {/* Profile Icon with Dropdown */}
+                <div className="relative" ref={profileRef}>
                   <button
-                    onClick={() => logout()}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition text-sm"
+                    onClick={() => setProfileOpen(!profileOpen)}
+                    className="flex items-center gap-2 bg-[#1A79D3] hover:bg-blue-400 text-white px-3 py-2 rounded-full transition"
                   >
-                    Logout
+                    <FaUserCircle className="w-6 h-6" />
+                    <span className="text-sm font-medium hidden lg:inline">{user?.username}</span>
                   </button>
+
+                  {/* Dropdown Menu */}
+                  {profileOpen && (
+                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 max-h-[50vh] overflow-y-auto">
+                      {/* User Info Header */}
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-bold text-gray-800">{user?.username}</p>
+                        <p className="text-xs text-gray-500">₹{availableBalance.toFixed(2)}</p>
+                      </div>
+
+                      {profileMenuItems.map((item) => (
+                        <button
+                          key={item.label}
+                          onClick={() => handleMenuClick(item)}
+                          disabled={item.disabled}
+                          className={`w-full flex items-center gap-3 px-4 py-1.5 text-sm transition ${
+                            item.disabled
+                              ? 'text-gray-400 cursor-default opacity-50'
+                              : 'text-gray-700 hover:bg-blue-50 hover:text-[#005DAC] cursor-pointer'
+                          }`}
+                        >
+                          <span className={`text-base ${item.disabled ? 'text-gray-400' : 'text-[#005DAC]'}`}>{item.icon}</span>
+                          {item.label}
+                        </button>
+                      ))}
+
+                      {/* Logout */}
+                      <div className="border-t border-gray-100 mt-1">
+                        <button
+                          onClick={() => { setProfileOpen(false); logout(); }}
+                          className="w-full flex items-center gap-3 px-4 py-1.5 text-sm text-red-600 hover:bg-red-50 transition"
+                        >
+                          <FaSignOutAlt className="text-base" />
+                          Log out
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -132,32 +219,6 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
 
           {/* ── Mobile logged-in right section (< md) ── hide the live-chat area above via conditional ── */}
         </div>
-
-        {/* Mobile logged-in mini-bar (balance + deposit) — sits below the header row */}
-        {user && (
-          <div className="md:hidden flex items-center justify-between px-4 pb-2 gap-2">
-            <div className="flex items-center gap-1 bg-blue-600 px-2 py-1.5 rounded-lg">
-              <FaWallet className="text-yellow-400 text-sm" />
-              <span className="text-white font-bold text-xs">₹{availableBalance.toFixed(0)}</span>
-              {lockedFunds > 0 && (
-                <span className="text-yellow-300 text-[10px]">(₹{lockedFunds.toFixed(0)} in bets)</span>
-              )}
-            </div>
-            <button
-              onClick={openDepositModal}
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-1.5 rounded-lg transition text-xs"
-            >
-              Deposit
-            </button>
-            <span className="text-white text-xs font-medium">{user?.username}</span>
-            <button
-              onClick={() => logout()}
-              className="bg-blue-600 hover:bg-blue-500 text-white p-1.5 rounded-lg transition"
-            >
-              <FaSignOutAlt className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
       </nav>
     </>
   );
