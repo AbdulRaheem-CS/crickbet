@@ -5,13 +5,21 @@
  * Renders login/register modal that can be triggered from anywhere
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { FaTimes } from 'react-icons/fa';
 
 export default function AuthModal() {
+  return (
+    <Suspense fallback={null}>
+      <AuthModalInner />
+    </Suspense>
+  );
+}
+
+function AuthModalInner() {
   const { user, showAuthModal, authModalTab, openAuthModal, closeAuthModal, login, register } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

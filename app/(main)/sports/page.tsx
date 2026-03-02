@@ -5,7 +5,7 @@
  * Display sports betting games and handle game launches
  */
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { casinoService } from '@/lib/services/casino.service';
 import type { CasinoGame } from '@/lib/services/casino.service';
@@ -14,6 +14,23 @@ import { FaPlay, FaSpinner } from 'react-icons/fa';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SportsPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="min-h-screen bg-white flex items-center justify-center">
+					<div className="flex items-center gap-2 text-gray-400">
+						<FaSpinner className="animate-spin" />
+						<span className="text-sm">Loading sports games...</span>
+					</div>
+				</div>
+			}
+		>
+			<SportsPageContent />
+		</Suspense>
+	);
+}
+
+function SportsPageContent() {
 	const searchParams = useSearchParams();
 	const { user, openAuthModal } = useAuth();
 	const [games, setGames] = useState<CasinoGame[]>([]);

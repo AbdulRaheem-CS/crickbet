@@ -9,12 +9,24 @@ import Banner from '@/components/layout/Banner';
 import { FavouritesSection, PopularGamesSection } from '@/components/casino';
 import CategoryNav from '@/components/layout/CategoryNav';
 import ScrollingHeadline from '@/components/layout/ScrollingHeadline';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F6F6F6] flex items-center justify-center">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    }>
+      <DashboardPageContent />
+    </Suspense>
+  );
+}
+
+function DashboardPageContent() {
   const { openAuthModal } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

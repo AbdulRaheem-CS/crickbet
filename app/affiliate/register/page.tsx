@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { affiliateAPI } from '@/lib/api-client';
@@ -17,6 +17,18 @@ type FormState = {
 };
 
 export default function AffiliateRegister() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <AffiliateRegisterContent />
+    </Suspense>
+  );
+}
+
+function AffiliateRegisterContent() {
   const [form, setForm] = useState<FormState>({
     username: '',
     firstName: '',
