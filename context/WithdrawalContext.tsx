@@ -11,11 +11,17 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 interface WithdrawalContextType {
   showWithdrawalModal: boolean;
   showKYCModal: boolean;
+  kycInitialView: 'kyc-check' | 'personal-info';
+  kycDisableAutoComplete: boolean;
+  showChangePasswordModal: boolean;
   openWithdrawalModal: () => void;
   closeWithdrawalModal: () => void;
   openKYCModal: () => void;
   closeKYCModal: () => void;
   onKYCComplete: () => void;
+  openPersonalInfoModal: () => void;
+  openChangePasswordModal: () => void;
+  closeChangePasswordModal: () => void;
 }
 
 const WithdrawalContext = createContext<WithdrawalContextType | undefined>(undefined);
@@ -23,9 +29,14 @@ const WithdrawalContext = createContext<WithdrawalContextType | undefined>(undef
 export function WithdrawalProvider({ children }: { children: ReactNode }) {
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
+  const [kycInitialView, setKycInitialView] = useState<'kyc-check' | 'personal-info'>('kyc-check');
+  const [kycDisableAutoComplete, setKycDisableAutoComplete] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // When user clicks "Withdraw", always open KYC check first
   const openWithdrawalModal = () => {
+    setKycInitialView('kyc-check');
+    setKycDisableAutoComplete(false);
     setShowKYCModal(true);
   };
 
@@ -34,6 +45,8 @@ export function WithdrawalProvider({ children }: { children: ReactNode }) {
   };
 
   const openKYCModal = () => {
+    setKycInitialView('kyc-check');
+    setKycDisableAutoComplete(false);
     setShowKYCModal(true);
   };
 
@@ -47,16 +60,32 @@ export function WithdrawalProvider({ children }: { children: ReactNode }) {
     setShowWithdrawalModal(true);
   };
 
+  // Open KYC modal at Personal Info view (no auto-redirect to withdrawal)
+  const openPersonalInfoModal = () => {
+    setKycInitialView('personal-info');
+    setKycDisableAutoComplete(true);
+    setShowKYCModal(true);
+  };
+
+  const openChangePasswordModal = () => setShowChangePasswordModal(true);
+  const closeChangePasswordModal = () => setShowChangePasswordModal(false);
+
   return (
     <WithdrawalContext.Provider
       value={{
         showWithdrawalModal,
         showKYCModal,
+        kycInitialView,
+        kycDisableAutoComplete,
+        showChangePasswordModal,
         openWithdrawalModal,
         closeWithdrawalModal,
         openKYCModal,
         closeKYCModal,
         onKYCComplete,
+        openPersonalInfoModal,
+        openChangePasswordModal,
+        closeChangePasswordModal,
       }}
     >
       {children}

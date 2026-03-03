@@ -36,11 +36,13 @@ interface PlayerKYCModalProps {
   isOpen: boolean;
   onClose: () => void;
   onKYCComplete: () => void; // Called when KYC is done → open withdrawal modal
+  initialView?: ModalView;       // Optional: force a starting view
+  disableAutoComplete?: boolean; // Optional: skip the auto-proceed-on-KYC-complete behaviour
 }
 
 type ModalView = 'kyc-check' | 'personal-info';
 
-export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: PlayerKYCModalProps) {
+export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete, initialView, disableAutoComplete }: PlayerKYCModalProps) {
   const { user, refreshUser } = useAuth();
   const { availableBalance } = useWallet();
 
@@ -82,7 +84,7 @@ export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: Playe
   useEffect(() => {
     if (isOpen) {
       fetchKYCStatus();
-      setView('kyc-check');
+      setView(initialView ?? 'kyc-check');
       setError('');
       setNameSuccess('');
       setOtpError('');
@@ -91,7 +93,7 @@ export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: Playe
       setOtp('');
       setDevOtp('');
     }
-  }, [isOpen, fetchKYCStatus]);
+  }, [isOpen, fetchKYCStatus, initialView]);
 
   // Countdown timer for OTP resend
   useEffect(() => {
@@ -101,12 +103,12 @@ export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: Playe
     }
   }, [countdown]);
 
-  // If KYC is already complete, auto-proceed to withdrawal
+  // If KYC is already complete, auto-proceed to withdrawal (unless disabled)
   useEffect(() => {
-    if (isOpen && kycStatus?.isKYCComplete && !loading) {
+    if (isOpen && kycStatus?.isKYCComplete && !loading && !disableAutoComplete) {
       onKYCComplete();
     }
-  }, [isOpen, kycStatus, loading, onKYCComplete]);
+  }, [isOpen, kycStatus, loading, onKYCComplete, disableAutoComplete]);
 
   const handleSaveName = async () => {
     if (!firstName.trim() || !lastName.trim()) {
@@ -184,8 +186,8 @@ export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: Playe
         backgroundColor: 'rgba(0,0,0,0.6)', padding: '16px',
       }}>
         <div style={{
-          backgroundColor: '#fff', borderRadius: '16px', width: '100%', maxWidth: '460px',
-          maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+          backgroundColor: '#fff', borderRadius: '16px', width: '376px', height: '670px',
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         }}>
           {/* Header */}
@@ -209,28 +211,42 @@ export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: Playe
           <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
             {/* Profile Card */}
             <div style={{
-              background: 'linear-gradient(135deg, #f0f7ff 0%, #e0efff 100%)',
-              borderRadius: '12px', padding: '20px', marginBottom: '16px',
-              textAlign: 'center', position: 'relative',
+              backgroundImage: 'url(/levels/vip-card-bg-1.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              borderRadius: '12px',
+              marginBottom: '16px',
+              textAlign: 'center',
+              position: 'relative',
+              paddingTop: '16px',
+              paddingBottom: '16px',
             }}>
+              {/* Subtle dark overlay so text stays readable */}
               <div style={{
-                width: '70px', height: '70px', borderRadius: '50%',
-                backgroundColor: '#d1d5db', margin: '0 auto 10px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                border: '3px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              }}>
-                <FaUser style={{ fontSize: '28px', color: '#9ca3af' }} />
-              </div>
-              <div style={{ fontSize: '15px', fontWeight: 600, color: '#1f2937' }}>
-                {kycStatus?.phone || kycStatus?.username}
-              </div>
-              <span style={{
-                display: 'inline-block', marginTop: '4px', padding: '2px 10px',
-                borderRadius: '10px', fontSize: '11px', fontWeight: 600,
-                backgroundColor: '#015DAC', color: '#fff',
-              }}>Bronze</span>
-              <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                Date Registered : {registeredDate}
+                position: 'absolute', inset: 0, borderRadius: '12px',
+                background: 'rgba(0,0,0,0.18)',
+              }} />
+              {/* Content above overlay */}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  width: '70px', height: '70px', borderRadius: '50%',
+                  backgroundColor: '#d1d5db', margin: '0 auto 10px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '3px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                }}>
+                  <FaUser style={{ fontSize: '28px', color: '#9ca3af' }} />
+                </div>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                  {kycStatus?.phone || kycStatus?.username}
+                </div>
+                <span style={{
+                  display: 'inline-block', marginTop: '4px', padding: '2px 10px',
+                  borderRadius: '10px', fontSize: '11px', fontWeight: 600,
+                  backgroundColor: '#8B6914', color: '#fff', letterSpacing: '0.5px',
+                }}>Bronze</span>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', marginTop: '4px', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
+                  Date Registered : {registeredDate}
+                </div>
               </div>
             </div>
 
@@ -247,7 +263,7 @@ export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: Playe
 
             {/* Info Required Boxes */}
             <div style={{
-              border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px',
+              border: '1px solid #64B5F6', borderRadius: '12px', padding: '14px', backgroundColor: '#f0f9ff',
               marginBottom: '12px',
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
@@ -272,7 +288,7 @@ export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: Playe
             </div>
 
             <div style={{
-              border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px',
+              border: '1px solid #64B5F6', borderRadius: '12px', padding: '14px', backgroundColor: '#f0f9ff',
               marginBottom: '16px',
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
@@ -556,8 +572,8 @@ export default function PlayerKYCModal({ isOpen, onClose, onKYCComplete }: Playe
       backgroundColor: 'rgba(0,0,0,0.6)', padding: '16px',
     }}>
       <div style={{
-        backgroundColor: '#fff', borderRadius: '16px', width: '100%', maxWidth: '460px',
-        maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+        backgroundColor: '#fff', borderRadius: '16px', width: '376px', height: '670px',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
       }}>
         {/* Header — Funds */}

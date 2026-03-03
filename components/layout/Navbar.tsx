@@ -19,6 +19,8 @@ import {
 } from 'react-icons/fa';
 import { useWithdrawal } from '@/context/WithdrawalContext';
 import { useRouter } from 'next/navigation';
+import CurrencyLanguageModal from './CurrencyLanguageModal';
+import BD from 'country-flag-icons/react/1x1/BD';
 
 interface NavbarProps {
   isMinimized: boolean;
@@ -30,8 +32,9 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
   const { user, logout, openAuthModal } = useAuth();
   const { balance, availableBalance, lockedFunds } = useWallet();
   const { openDepositModal } = useDeposit();
-  const { openWithdrawalModal } = useWithdrawal();
+  const { openWithdrawalModal, openPersonalInfoModal, openChangePasswordModal } = useWithdrawal();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [currencyLanguageOpen, setCurrencyLanguageOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -57,8 +60,8 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
     { label: 'Betting Records', icon: <FaClipboardList />, href: '#', disabled: true },
     { label: 'Turnover', icon: <FaSyncAlt />, href: '#', disabled: true },
     { label: 'Transaction Records', icon: <FaExchangeAlt />, href: '#', disabled: true },
-    { label: 'Personal Info', icon: <FaUser />, href: '#', disabled: true },
-    { label: 'Change Password', icon: <FaLock />, href: '#', disabled: true },
+    { label: 'Personal Info', icon: <FaUser />, href: '#', action: () => openPersonalInfoModal() },
+    { label: 'Change Password', icon: <FaLock />, href: '#', action: () => openChangePasswordModal() },
     { label: 'Inbox', icon: <FaEnvelope />, href: '#', disabled: true },
   ];
 
@@ -125,31 +128,29 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
-                {/* Balance */}
-                <div className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded-lg">
-                  <FaWallet className="text-yellow-400" />
-                  <span className="text-gray-200 text-sm">Balance:</span>
-                  <span className="text-white font-bold">₹{availableBalance.toFixed(2)}</span>
-                  {lockedFunds > 0 && (
-                    <span className="text-yellow-300 text-xs">(₹{lockedFunds.toFixed(0)} in bets)</span>
-                  )}
-                </div>
-
+                {/* Deposit Button - blurry white bg */}
                 <button
                   onClick={openDepositModal}
-                  className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-lg transition text-sm"
+                  className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white font-semibold px-5 py-2 rounded transition text-sm flex items-center gap-2 whitespace-nowrap"
                 >
+                  <FaMoneyBillWave className="w-4 h-4" />
                   Deposit
                 </button>
+
+                {/* Main Wallet */}
+                <div className="flex items-center gap-2 bg-green-500 hover:bg-green-700 px-4 py-2 rounded-sm cursor-pointer whitespace-nowrap transition">
+                  <FaWallet className="text-white w-4 h-4" />
+                  <span className="text-white font-semibold text-sm">Main Wallet</span>
+                  <span className="text-white font-bold text-sm">৳{availableBalance.toFixed(0)}</span>
+                </div>
 
                 {/* Profile Icon with Dropdown */}
                 <div className="relative" ref={profileRef}>
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="flex items-center gap-2 bg-[#1A79D3] hover:bg-blue-400 text-white px-3 py-2 rounded-full transition"
+                    className="flex items-center justify-center w-9 h-9 rounded-full bg-white hover:bg-gray-100 text-[#005DAC] transition"
                   >
                     <FaUserCircle className="w-6 h-6" />
-                    <span className="text-sm font-medium hidden lg:inline">{user?.username}</span>
                   </button>
 
                   {/* Dropdown Menu */}
@@ -190,37 +191,53 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
                     </div>
                   )}
                 </div>
+
+                {/* Currency / Language icon - BD flag SVG in circle */}
+                <button
+                  onClick={() => setCurrencyLanguageOpen(true)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden bg-[#e0e0e0] hover:bg-gray-300 transition"
+                  aria-label="Language & Currency"
+                  title="Currency & Language"
+                >
+                  <BD className="w-full h-full object-cover" />
+                </button>
               </>
             ) : (
               <>
                 <button
                   onClick={() => openAuthModal('register')}
-                  className="bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-2.5 rounded-full transition text-sm"
+                  className="bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-2.5 rounded-sm transition text-sm"
                 >
                   Sign up
                 </button>
                 <button
                   onClick={() => openAuthModal('login')}
-                  className="bg-[#1A79D3] hover:bg-blue-400 text-white font-semibold px-8 py-2.5 rounded-full transition text-sm"
+                  className="bg-[#1A79D3] hover:bg-blue-400 text-white font-semibold px-8 py-2.5 rounded-sm transition text-sm"
                 >
                   Login
                 </button>
+
+                {/* Currency / Language globe icon */}
+                <button
+                  onClick={() => setCurrencyLanguageOpen(true)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full bg-[#1A79D3] hover:bg-blue-400 text-white transition"
+                  aria-label="Language & Currency"
+                >
+                  <FaGlobe className="w-4 h-4" />
+                </button>
               </>
             )}
-
-            {/* Currency / Language globe icon */}
-            <button
-              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#1A79D3] hover:bg-blue-400 text-white transition"
-              aria-label="Language & Currency"
-            >
-              <FaGlobe className="w-4 h-4" />
-            </button>
           </div>
 
           {/* ── Mobile logged-in right section (< md) ── hide the live-chat area above via conditional ── */}
         </div>
       </nav>
+
+      {/* Currency & Language Modal */}
+      <CurrencyLanguageModal 
+        isOpen={currencyLanguageOpen}
+        onClose={() => setCurrencyLanguageOpen(false)}
+      />
     </>
   );
 }
-

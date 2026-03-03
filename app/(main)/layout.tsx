@@ -17,12 +17,13 @@ import AuthModal from '@/components/layout/AuthModal';
 import DepositModal from '@/components/layout/DepositModal';
 import WithdrawalModal from '@/components/layout/WithdrawalModal';
 import PlayerKYCModal from '@/components/layout/PlayerKYCModal';
+import ChangePasswordModal from '@/components/layout/ChangePasswordModal';
 import { useState, useEffect, useRef } from 'react';
 
 // Inner component so we can use useEffect with correct values
 function MainContent({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const { showKYCModal, closeKYCModal, onKYCComplete } = useWithdrawal();
+  const { showKYCModal, closeKYCModal, onKYCComplete, kycInitialView, kycDisableAutoComplete, showChangePasswordModal, closeChangePasswordModal } = useWithdrawal();
   const [sidebarMinimized, setSidebarMinimized] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [betSlipOpen, setBetSlipOpen] = useState(false);
@@ -84,6 +85,12 @@ function MainContent({ children }: { children: React.ReactNode }) {
         isOpen={showKYCModal}
         onClose={closeKYCModal}
         onKYCComplete={onKYCComplete}
+        initialView={kycInitialView}
+        disableAutoComplete={kycDisableAutoComplete}
+      />
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={closeChangePasswordModal}
       />
     </div>
   );
@@ -114,7 +121,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 function MobileBottomBarInline() {
   const { user, logout, openAuthModal } = useAuth();
   const { openDepositModal } = useDeposit();
-  const { openWithdrawalModal } = useWithdrawal();
+  const { openWithdrawalModal, openPersonalInfoModal, openChangePasswordModal } = useWithdrawal();
   const { availableBalance } = useWallet();
   const [isMobile, setIsMobile] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -271,8 +278,8 @@ function MobileBottomBarInline() {
 
               {/* Profile Section */}
               <AccountSection title="Profile" items={[
-                { label: 'Personal Info', href: '', color: '#22c55e', icon: '👤', disabled: true },
-                { label: 'Change Password', href: '', color: '#22c55e', icon: '🔒', disabled: true },
+                { label: 'Personal Info', href: '', color: '#22c55e', icon: '👤', action: () => { setAccountOpen(false); openPersonalInfoModal(); } },
+                { label: 'Change Password', href: '', color: '#22c55e', icon: '🔒', action: () => { setAccountOpen(false); openChangePasswordModal(); } },
                 { label: 'Inbox', href: '', color: '#22c55e', icon: '✉️', disabled: true },
               ]} onClose={() => setAccountOpen(false)} />
 
