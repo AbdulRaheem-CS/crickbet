@@ -25,7 +25,7 @@ interface CurrencyOption {
   languages: { label: string; value: string }[];
 }
 
-const currencyOptions: CurrencyOption[] = [
+export const currencyOptions: CurrencyOption[] = [
   {
     FlagIcon: IN,
     symbol: '₹',
@@ -83,18 +83,28 @@ const currencyOptions: CurrencyOption[] = [
 interface CurrencyLanguageModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSelect?: (currency: string, language: string) => void;
 }
 
-export default function CurrencyLanguageModal({ isOpen, onClose }: CurrencyLanguageModalProps) {
-  const [selectedCurrency, setSelectedCurrency] = useState('BDT');
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+export default function CurrencyLanguageModal({ isOpen, onClose, onSelect }: CurrencyLanguageModalProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('selectedCurrency') || 'INR';
+    return 'INR';
+  });
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('selectedLanguage') || 'en';
+    return 'en';
+  });
 
   if (!isOpen) return null;
 
   const handleSelect = (currencyCode: string, langValue: string) => {
     setSelectedCurrency(currencyCode);
     setSelectedLanguage(langValue);
-    // TODO: persist to backend / localStorage
+    localStorage.setItem('selectedCurrency', currencyCode);
+    localStorage.setItem('selectedLanguage', langValue);
+    onSelect?.(currencyCode, langValue);
+    onClose();
   };
 
   return (

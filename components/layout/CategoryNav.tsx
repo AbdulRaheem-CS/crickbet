@@ -199,9 +199,9 @@ export default function CategoryNav() {
           }
         `}</style>
 
-        {/* Sticky compact bar - appears when original nav is scrolled out */}
+        {/* Sticky compact bar - appears when original nav is scrolled out (mobile only) */}
         {isSticky && (
-          <div className="category-sticky-bar fixed top-13 left-0 right-0 z-30 bg-[#004179] flex items-center gap-0 overflow-x-auto scrollbar-hide shadow-md" style={{ height: 40 }}>
+          <div className="category-sticky-bar fixed top-13 left-0 right-0 z-30 bg-[#004179] flex md:hidden items-center gap-0 overflow-x-auto scrollbar-hide shadow-md" style={{ height: 40 }}>
             {categories.map((cat) => {
               const active = selected === cat.key;
               return (

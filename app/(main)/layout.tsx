@@ -18,6 +18,7 @@ import DepositModal from '@/components/layout/DepositModal';
 import WithdrawalModal from '@/components/layout/WithdrawalModal';
 import PlayerKYCModal from '@/components/layout/PlayerKYCModal';
 import ChangePasswordModal from '@/components/layout/ChangePasswordModal';
+import CurrencyLanguageModal, { currencyOptions } from '@/components/layout/CurrencyLanguageModal';
 import { useState, useEffect, useRef } from 'react';
 
 // Inner component so we can use useEffect with correct values
@@ -126,6 +127,15 @@ function MobileBottomBarInline() {
   const { availableBalance } = useWallet();
   const [isMobile, setIsMobile] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
+  const [selCurrency, setSelCurrency] = useState('INR');
+  const [selLanguage, setSelLanguage] = useState('en');
+
+  // Load saved currency/language from localStorage
+  useEffect(() => {
+    setSelCurrency(localStorage.getItem('selectedCurrency') || 'INR');
+    setSelLanguage(localStorage.getItem('selectedLanguage') || 'en');
+  }, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -322,6 +332,7 @@ function MobileBottomBarInline() {
 
   // Guest bottom bar: INR/English | Sign up | Login
   return (
+    <>
     <div
       style={{
         position: 'fixed',
@@ -339,6 +350,7 @@ function MobileBottomBarInline() {
     >
       {/* Currency & Language */}
       <button
+        onClick={() => setCurrencyModalOpen(true)}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -352,10 +364,14 @@ function MobileBottomBarInline() {
           cursor: 'pointer',
         }}
       >
-        <span style={{ fontSize: '18px' }}>🇮🇳</span>
+        <span style={{ fontSize: '18px' }}>
+          {({'INR':'🇮🇳','BDT':'🇧🇩','PKR':'🇵🇰','USDT':'🪙','NPR':'🇳🇵','LKR':'🇱🇰','AED':'🇦🇪'} as Record<string,string>)[selCurrency] || '🌐'}
+        </span>
         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1, textAlign: 'left' }}>
-          <span style={{ fontSize: '11px', fontWeight: 600, color: '#1f2937' }}>INR</span>
-          <span style={{ fontSize: '10px', color: '#6b7280' }}>English</span>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: '#1f2937' }}>{selCurrency}</span>
+          <span style={{ fontSize: '10px', color: '#6b7280' }}>
+            {currencyOptions.find(o => o.code === selCurrency)?.languages.find(l => l.value === selLanguage)?.label || 'English'}
+          </span>
         </div>
       </button>
 
@@ -394,6 +410,13 @@ function MobileBottomBarInline() {
       Login
       </button>
     </div>
+
+    <CurrencyLanguageModal
+      isOpen={currencyModalOpen}
+      onClose={() => setCurrencyModalOpen(false)}
+      onSelect={(currency, language) => { setSelCurrency(currency); setSelLanguage(language); }}
+    />
+    </>
   );
 }
 
