@@ -5,7 +5,7 @@
  * Horizontal category navigation with real game cards from GSC+
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { IconType } from 'react-icons';
 import {
@@ -57,10 +57,26 @@ export default function CategoryNav() {
   const [launchUrl, setLaunchUrl] = useState<string | null>(null);
   const [launchName, setLaunchName] = useState('');
   const [launching, setLaunching] = useState<string | null>(null);
+  const [isSticky, setIsSticky] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Intersection Observer for sticky behavior
+  useEffect(() => {
+    if (!mounted || !navRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // When the original nav is not intersecting (scrolled past), show sticky
+        setIsSticky(!entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: '-60px 0px 0px 0px' } // account for navbar height
+    );
+    observer.observe(navRef.current);
+    return () => observer.disconnect();
+  }, [mounted]);
 
   // Fetch games for a category
   const fetchCategoryGames = useCallback(async (catKey: string) => {
@@ -125,7 +141,7 @@ export default function CategoryNav() {
   if (!mounted) {
     return (
       <div className="bg-[#F6F6F6] overflow-x-auto">
-        <div className="category-nav-bar bg-[#004179] h-28" />
+        <div className="category-nav-bar bg-[#004179]" style={{ height: 100 }} />
         <style>{`
           .category-nav-bar {
             border-radius: 0;
@@ -174,8 +190,38 @@ export default function CategoryNav() {
               overflow: hidden;
             }
           }
+          .category-sticky-bar {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .category-sticky-bar::-webkit-scrollbar {
+            display: none;
+          }
         `}</style>
-        <div className="category-nav-bar bg-[#004179] flex items-center gap-1 py-0 scrollbar-hide">
+
+        {/* Sticky compact bar - appears when original nav is scrolled out */}
+        {isSticky && (
+          <div className="category-sticky-bar fixed top-13 left-0 right-0 z-30 bg-[#004179] flex items-center gap-0 overflow-x-auto scrollbar-hide shadow-md" style={{ height: 40 }}>
+            {categories.map((cat) => {
+              const active = selected === cat.key;
+              return (
+                <button
+                  key={cat.key}
+                  onClick={() => setSelected(cat.key)}
+                  className={`flex items-center justify-center h-full shrink-0 transition ${
+                    active ? 'bg-[#005DAC] text-white' : 'text-gray-200 hover:bg-[#005DAC] hover:text-white'
+                  }`}
+                  style={{ minWidth: 70, fontSize: 13.5, fontWeight: 700 }}
+                >
+                  {cat.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Original nav bar */}
+        <div ref={navRef} className="category-nav-bar bg-[#004179] flex items-center gap-0 md:gap-2 py-0 scrollbar-hide" style={{ height: 100 }}>
           {categories.map((cat) => {
             const Icon = cat.icon;
             const active = selected === cat.key;
@@ -183,10 +229,10 @@ export default function CategoryNav() {
               <button
                 key={cat.key}
                 onClick={() => setSelected(cat.key)}
-                className={`flex flex-col items-center justify-center h-20 shrink-0 rounded-lg px-2 transition ${
+                className={`flex flex-col items-center justify-center h-full shrink-0 rounded-lg px-1.5 md:px-4 transition ${
                   active ? 'bg-[#005DAC] text-white' : 'text-gray-200 hover:bg-[#005DAC] hover:text-white'
                 }`}
-                style={{ minWidth: 88 }}
+                style={{ minWidth: 70 }}
               >
                 <Icon className="text-2xl md:text-3xl mb-0" />
                 <span className="text-sm font-extrabold">{cat.name}</span>
@@ -195,11 +241,11 @@ export default function CategoryNav() {
           })}
         </div>
 
-        <div className="mx-0 md:mx-8 mt-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mx-0 md:mx-8 mt-0 p-2">
+          <div className="flex items-center justify-between mb-4 py-[11px] md:py-0">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-5 bg-[#005DAC] rounded" />
-              <h3 className="text-xl font-extrabold">{selected}</h3>
+              <div className="w-1 h-4 bg-[#005DAC] rounded" />
+              <h3 className="font-extrabold text-[17.2px] md:text-[17.2px]">{selected}</h3>
             </div>
             {selectedCat && (
               <button

@@ -108,7 +108,7 @@ function DashboardPageContent() {
       </div>
 
       {/* Footer Section */}
-      <div className="mt-10 bg-[#F5F6F5] px-0 md:px-8 py-6">
+      <div className="mt-2 bg-[#F5F6F5] px-0 md:px-8 py-6">
 
 
 <div className=" bg-[#F5F6F5] px-2 md:px-8 py-6">
@@ -120,7 +120,7 @@ function DashboardPageContent() {
       grid-template-columns: repeat(3, auto);
       gap: 8px 4px;
       justify-content: start;
-      font-size: 12px; /* smaller on mobile */
+      font-size: 15px;
     }
     @media (min-width: 768px) {
       .footer-links {
@@ -132,8 +132,9 @@ function DashboardPageContent() {
     }
   `}</style>
   <div className="footer-links font-normal text-[#005DAC] mb-6 px-2 md:px-0">
-    <span className="mr-2 md:mr-3">
-      <a href="/about-us" className="hover:underline">About Us</a>
+    <span className="flex items-center">
+      <span className="border-l-2 border-[#005DAC] h-4 mr-2 md:mr-3"></span>
+      <a href="/about-us" className="hover:underline mr-2 md:mr-3">About Us</a>
     </span>
     
     <span className="flex items-center">

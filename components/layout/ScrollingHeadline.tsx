@@ -18,7 +18,7 @@ export default function ScrollingHeadline() {
   const duplicatedHeadlines = [...headlines, ...headlines];
 
   return (
-    <div className="bg-gradient-to-r from-[#F6F6F6] to-[#F6F6F6] text-black py-3 overflow-hidden relative p-8">
+    <div className="bg-[#1E5DAC] md:bg-gradient-to-r md:from-[#F6F6F6] md:to-[#F6F6F6] text-white md:text-black py-3 overflow-hidden relative px-1 md:p-8">
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
@@ -28,12 +28,12 @@ export default function ScrollingHeadline() {
       <div className="flex items-center">
         {/* Icon - Fixed on the left */}
         <div className="shrink-0 pl-4 pr-4 z-10">
-          <FaBullhorn className="text-yellow-400 text-xl animate-pulse" />
+          <FaBullhorn className="text-white md:text-yellow-400 text-xl animate-pulse" />
         </div>
 
         {/* Scrolling Content Container - Takes remaining width */}
         <div className="flex-1 overflow-hidden relative">
-          <div className="flex whitespace-nowrap" style={{ animation: 'marquee 10s linear infinite' }}>
+          <div className="flex whitespace-nowrap" style={{ animation: 'marquee 5s linear infinite' }}>
             {duplicatedHeadlines.map((headline, index) => (
               <span
                 key={index}

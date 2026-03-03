@@ -100,13 +100,13 @@ export default function PublicHeader() {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/login"
+              href="/"
               className="px-6 py-1.5 bg-white border border-white text-[#0F3D91] rounded hover:bg-gray-200 hover:text-[#0F3D91] transition font-medium"
             >
               Login
             </Link>
             <Link
-              href="/register"
+              href="/"
               className="px-6 py-1.5 bg-[#7FFF00] text-[#0F3D91] rounded hover:bg-[#6BE000] transition font-bold"
             >
               Register

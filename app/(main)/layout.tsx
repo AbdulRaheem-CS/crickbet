@@ -188,41 +188,31 @@ function MobileBottomBarInline() {
           </button>
         </div>
 
-        {/* My Account Drawer — slides up from bottom */}
+        {/* My Account Drawer — full screen overlay */}
         {accountOpen && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 10000 }}>
-            {/* Overlay */}
-            <div
-              onClick={() => setAccountOpen(false)}
-              style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)' }}
-            />
-            {/* Drawer */}
+            {/* Drawer — full screen */}
             <div
               style={{
                 position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                maxHeight: '92vh',
-                backgroundColor: '#f3f4f6',
-                borderTopLeftRadius: '16px',
-                borderTopRightRadius: '16px',
+                inset: 0,
+                backgroundColor: '#e8edf2',
                 overflowY: 'auto',
                 animation: 'slideUp 0.3s ease-out',
               }}
             >
               {/* Header with profile info */}
-              <div style={{ backgroundColor: '#fff', padding: '20px 16px', display: 'flex', alignItems: 'center', gap: '14px', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', position: 'relative' }}>
+              <div style={{ backgroundColor: '#fff', padding: '20px 16px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
                 {/* Close button */}
                 <button
                   onClick={() => setAccountOpen(false)}
-                  style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#6b7280', lineHeight: 1 }}
+                  style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#6b7280', lineHeight: 1 }}
                 >
                   ✕
                 </button>
                 {/* Avatar */}
-                <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
