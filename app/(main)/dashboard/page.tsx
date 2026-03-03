@@ -51,7 +51,7 @@ function DashboardPageContent() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-[#F6F6F6]">
+    <div className="min-h-screen bg-[#F6F6F6] page-root">
       {/* Banner Section */}
       <div className="banner-wrapper">
         <Banner />
@@ -64,6 +64,10 @@ function DashboardPageContent() {
           .banner-wrapper {
             padding: 1rem;
           }
+        }
+        .page-root { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); }
+        @media (min-width: 768px) {
+          .page-root { padding-bottom: 0; }
         }
       `}</style>
       
@@ -104,13 +108,30 @@ function DashboardPageContent() {
       </div>
 
       {/* Footer Section */}
-      <div className="mt-10 bg-white px-0 md:px-8 py-6">
+      <div className="mt-10 bg-[#F5F6F5] px-0 md:px-8 py-6">
 
 
-<div className=" bg-white px-2 md:px-8 py-6">
+<div className=" bg-[#F5F6F5] px-2 md:px-8 py-6">
   {/* Links Row */}
   <hr className="my-4 border-gray-300 mb-6" />
-  <div className="flex flex-wrap items-center justify-start gap-x-1 gap-y-2 text-xs md:text-sm font-semibold text-[#005DAC] mb-6 pl-4 md:pl-0">
+  <style>{`
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 8px 4px;
+      justify-content: start;
+      font-size: 12px; /* smaller on mobile */
+    }
+    @media (min-width: 768px) {
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 4px;
+        font-size: 18px;
+      }
+    }
+  `}</style>
+  <div className="footer-links font-normal text-[#005DAC] mb-6 px-2 md:px-0">
     <span className="mr-2 md:mr-3">
       <a href="/about-us" className="hover:underline">About Us</a>
     </span>
@@ -149,20 +170,21 @@ function DashboardPageContent() {
 </div>
   
         {/* Bottom Row: Logo + Copyright */}
-        <div className="flex items-center gap-4 mb-8 px-2 md:px-0 pl-4">
+  <div className="flex items-center gap-4 mb-2 px-2 md:px-0 md:pl-8">
           <Image
             src="/blue-logo.png"
             alt="Crickex"
             width={80}
             height={20}
-            className="object-contain w-16 md:w-20"
+            className="object-contain w-24 md:w-30"
           />
           <div>
             <p className="text-[#005DAC] font-bold text-xs md:text-sm">Best Quality Platform</p>
-            <p className="text-gray-400 text-[10px] md:text-xs">© 2026 CRICKEX Copyrights. All Rights Reserved</p>
+            <p className="text-gray-400 text-xs md:text-sm">© 2026 CRICKEX Copyrights. All Rights Reserved</p>
           </div>
         </div>
       </div>
     </div>
+  
   );
 }

@@ -75,7 +75,7 @@ export default function PopularGamesSection() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-4 bg-[#005DAC] rounded" />
+            <div className="w-1 h-5 bg-[#005DAC] rounded" />
             <h3 className="text-xl font-extrabold">Popular Games</h3>
           </div>
           <button className="flex items-center gap-1 text-[#005DAC] text-sm font-medium hover:underline">
