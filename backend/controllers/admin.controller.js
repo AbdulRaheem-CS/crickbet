@@ -483,8 +483,8 @@ exports.getAllBets = asyncHandler(async (req, res) => {
   const query = {};
 
   if (status) query.status = status;
-  if (userId) query.userId = userId;
-  if (marketId) query.marketId = marketId;
+  if (userId) query.user = userId;
+  if (marketId) query.market = marketId;
   if (startDate || endDate) {
     query.createdAt = {};
     if (startDate) query.createdAt.$gte = new Date(startDate);
@@ -495,8 +495,8 @@ exports.getAllBets = asyncHandler(async (req, res) => {
 
   const [bets, total] = await Promise.all([
     Bet.find(query)
-      .populate('userId', 'username email')
-      .populate('marketId', 'name sportId')
+      .populate('user', 'username email')
+      .populate('market', 'name sportId')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -523,8 +523,8 @@ exports.getAllBets = asyncHandler(async (req, res) => {
  */
 exports.getBetById = asyncHandler(async (req, res) => {
   const bet = await Bet.findById(req.params.id)
-    .populate('userId', 'username email phone')
-    .populate('marketId', 'name sportId eventId status')
+    .populate('user', 'username email phone')
+    .populate('market', 'name sportId eventId status')
     .lean();
 
   if (!bet) {
@@ -841,7 +841,7 @@ exports.getAllTransactions = asyncHandler(async (req, res) => {
 
   if (type) query.type = type;
   if (status) query.status = status;
-  if (userId) query.userId = userId;
+  if (userId) query.user = userId;
   if (startDate || endDate) {
     query.createdAt = {};
     if (startDate) query.createdAt.$gte = new Date(startDate);
@@ -852,7 +852,7 @@ exports.getAllTransactions = asyncHandler(async (req, res) => {
 
   const [transactions, total] = await Promise.all([
     Transaction.find(query)
-      .populate('userId', 'username email')
+      .populate('user', 'username email')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -879,7 +879,7 @@ exports.getAllTransactions = asyncHandler(async (req, res) => {
  */
 exports.getTransactionById = asyncHandler(async (req, res) => {
   const transaction = await Transaction.findById(req.params.id)
-    .populate('userId', 'username email phone')
+    .populate('user', 'username email phone')
     .lean();
 
   if (!transaction) {

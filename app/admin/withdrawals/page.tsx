@@ -17,15 +17,17 @@ import {
 
 interface Withdrawal {
   _id: string;
-  userId: {
+  user: {
     _id: string;
     username: string;
     email: string;
   };
   amount: number;
-  status: 'pending' | 'approved' | 'rejected';
-  method: string;
-  accountDetails?: any;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  type: string;
+  method?: string;
+  paymentDetails?: any;
+  reference?: string;
   createdAt: string;
 }
 
@@ -47,12 +49,12 @@ export default function AdminWithdrawalsPage() {
   const fetchWithdrawals = async () => {
     try {
       setLoading(true);
-      const response = await adminAPI.getPendingWithdrawals({
+      const response: any = await adminAPI.getPendingWithdrawals({
         page,
         limit: 20,
       });
-      setWithdrawals(response.data.transactions || response.data);
-      setTotalPages(response.data.pagination?.pages || 1);
+      setWithdrawals(response.data || []);
+      setTotalPages(response.pagination?.pages || 1);
     } catch (error) {
       console.error('Error fetching withdrawals:', error);
     } finally {
@@ -181,10 +183,10 @@ export default function AdminWithdrawalsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {withdrawal.userId?.username || 'N/A'}
+                          {withdrawal.user?.username || 'N/A'}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {withdrawal.userId?.email || 'N/A'}
+                          {withdrawal.user?.email || 'N/A'}
                         </div>
                       </div>
                     </td>
@@ -270,7 +272,7 @@ export default function AdminWithdrawalsPage() {
                 <div>
                   <label className="text-sm font-medium text-gray-600">User</label>
                   <p className="text-sm text-gray-900">
-                    {selectedWithdrawal.userId?.username || 'N/A'}
+                    {selectedWithdrawal.user?.username || 'N/A'}
                   </p>
                 </div>
                 <div>

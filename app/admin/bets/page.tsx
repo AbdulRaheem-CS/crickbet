@@ -17,19 +17,27 @@ import {
 
 interface Bet {
   _id: string;
-  userId: {
+  user: {
     _id: string;
     username: string;
   };
-  marketId: {
+  market: {
     _id: string;
     name: string;
   };
+  event?: {
+    name: string;
+    sportName: string;
+  };
+  selection?: {
+    name: string;
+  };
+  betType: string;
   stake: number;
   odds: number;
   potentialWin: number;
-  status: 'pending' | 'won' | 'lost' | 'void';
-  type: string;
+  liability: number;
+  status: 'pending' | 'matched' | 'partially_matched' | 'won' | 'lost' | 'void' | 'cancelled';
   createdAt: string;
 }
 
@@ -50,13 +58,13 @@ export default function AdminBetsPage() {
   const fetchBets = async () => {
     try {
       setLoading(true);
-      const response = await adminAPI.getAllBets({
+      const response: any = await adminAPI.getAllBets({
         page,
         limit: 20,
         status: statusFilter || undefined,
       });
-      setBets(response.data.bets || response.data);
-      setTotalPages(response.data.pagination?.pages || 1);
+      setBets(response.data || []);
+      setTotalPages(response.pagination?.pages || 1);
     } catch (error) {
       console.error('Error fetching bets:', error);
     } finally {
@@ -175,12 +183,12 @@ export default function AdminBetsPage() {
                   <tr key={bet._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {bet.userId?.username || 'N/A'}
+                        {bet.user?.username || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {bet.marketId?.name || 'N/A'}
+                        {bet.event?.name || bet.market?.name || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -285,7 +293,7 @@ export default function AdminBetsPage() {
                 <div>
                   <label className="text-sm font-medium text-gray-600">User</label>
                   <p className="text-sm text-gray-900">
-                    {selectedBet.userId?.username || 'N/A'}
+                    {selectedBet.user?.username || 'N/A'}
                   </p>
                 </div>
                 <div>

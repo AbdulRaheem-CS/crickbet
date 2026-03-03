@@ -86,9 +86,9 @@ function AdminLayoutContent({
       icon: FiFileText,
     },
     {
-      name: 'Markets',
-      href: '/admin/markets',
-      icon: FiTrendingUp,
+      name: 'Deposits',
+      href: '/admin/deposits',
+      icon: FiDollarSign,
     },
     {
       name: 'Withdrawals',
@@ -104,11 +104,6 @@ function AdminLayoutContent({
       name: 'Transactions',
       href: '/admin/transactions',
       icon: FiDollarSign,
-    },
-    {
-      name: 'Settings',
-      href: '/admin/settings',
-      icon: FiSettings,
     },
   ];
 
