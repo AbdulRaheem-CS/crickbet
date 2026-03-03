@@ -77,7 +77,7 @@ export default function FavouritesSection() {
 				<div className="flex items-center justify-between mb-4 py-[11px] md:py-0">
 					<div className="flex items-center gap-3">
 						<div className="w-1 h-4 bg-[#005DAC] rounded" />
-						<h3 className="font-extrabold text-[17.2px] md:text-[17.2]">Favourites</h3>
+						<h3 className="font-extrabold text-[17.2px] md:text-[17.2] text-black">Favourites</h3>
 					</div>
 					<button className="flex items-center gap-1 text-[#005DAC] text-sm font-medium hover:underline">
 						View All <FaChevronRight className="text-xs" />

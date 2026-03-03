@@ -70,7 +70,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
           onToggleMinimize={() => setSidebarMinimized(v => !v)}
           onMobileMenuOpen={() => setMobileNavOpen(true)}
         />
-        <main className={`flex-1 bg-[#F6F6F6] overflow-auto ${!user ? 'pb-16 md:pb-0' : ''}`}>
+        <main className="flex-1 bg-[#F6F6F6] overflow-auto pb-16 md:pb-0">
           {children}
         </main>
       </div>

@@ -245,7 +245,7 @@ export default function CategoryNav() {
           <div className="flex items-center justify-between mb-4 py-[11px] md:py-0">
             <div className="flex items-center gap-3">
               <div className="w-1 h-4 bg-[#005DAC] rounded" />
-              <h3 className="font-extrabold text-[17.2px] md:text-[17.2px]">{selected}</h3>
+              <h3 className="font-extrabold text-[17.2px] md:text-[17.2px] text-black">{selected}</h3>
             </div>
             {selectedCat && (
               <button
