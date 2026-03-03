@@ -143,7 +143,6 @@ const menuItems: MenuItem[] = [
   },
   { label: 'Promotions', icon: FaGift, href: '/promotions' },
   // { label: 'VIP Club', icon: FaCrown, href: '/vip' },
-  { label: 'Leaderboard', icon: FaChartLine, href: 'https://heyvipwin.com' },
   { label: 'Winner Board', icon: FaTrophy, href: '/winner-board', isModal: true },
   { label: 'Affiliate', icon: FaHandshake, href: '/affiliate/login', openInNewTab: true },
   { 
@@ -156,7 +155,8 @@ const menuItems: MenuItem[] = [
       { label: 'Refer Program', href: '/referral' },
     ]
   },
-  { label: 'Sponsorship', icon: FaBullhorn, href: '/sponsorship' },
+  { label: 'Leaderboard', icon: FaBullhorn, href: '/leaderboard' },
+  { label: 'Sponsorship', icon: FaHandshake, href: '/sponsorship' },
   { label: 'Download App', icon: FaMobileAlt, href: '/download' },
   { label: 'Responsible Gaming', icon: FaShieldAlt, href: '/responsible-gambling' },
   { label: 'About Us', icon: FaShieldAlt, href: '/about-us' },

@@ -52,7 +52,8 @@ export default function WinnerBoardModal() {
       onClick={closeWinnerBoardModal}
     >
       <div 
-        className="bg-white rounded-xl shadow-2xl w-full max-w-md h-[85vh] overflow-hidden flex flex-col"
+        style={{ width: '376px', height: '670px' }}
+        className="bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

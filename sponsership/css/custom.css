@@ -1,0 +1,122 @@
+/* font styles */
+@font-face {
+    font-family: "Mazzard";
+    src: url("../fonts/MazzardH-Black.otf") format("opentype");
+}
+@font-face {
+    font-family: "IrinaC";
+    src: url("../fonts/IrinaC.otf") format("opentype");
+}
+@font-face {
+    font-family: "Inter";
+    src: url("../fonts/Inter-Regular.ttf") format("truetype");
+}
+@font-face {
+    font-family: "Monda";
+    src: url("../fonts/Monda-Regular.ttf") format("truetype");
+}
+
+
+/* global styles */
+
+*,::after,::before{
+    box-sizing: border-box!important;
+    margin: 0;
+    padding: 0;
+}
+body{
+    font-family: "Monda";
+    position: relative;
+}
+
+.text-mazzard{
+    font-family: "Mazzard";
+}
+.text-irinac{
+    font-family: "IrinaC";
+}
+.text-inter{
+    font-family: "Inter";
+}
+.text-monda{
+    font-family: "Monda";
+}
+.text-white{
+    color: #fff !important;
+}
+.text-blue{
+    color: #121932;
+}
+.text-green{
+    color: #61D81D;
+}
+.bg-body{
+    background-color: #1E549C;
+}
+.bg-primary{
+    background-color: #091027;
+}
+.bg-secondary{
+    background-color: #1C4985;
+}
+.bg-tertiary{
+    background-color: #0080EA;
+}
+.bg-quaternary{
+    background-color: #2B65B3;
+}
+.bg-green{
+    background-color: #61D81D;
+}
+.bg-red{
+    background-color: #F14A4A;
+}
+.bg-white{
+    background-color: #fff;
+}
+.skew-1{
+    transform: skew(-12deg);
+}
+.skew-2{
+   transform: skew(12deg); 
+}
+a:focus{
+    outline: unset !important;
+}
+
+/* header  */
+.header__nav-toggle{
+    display: none;
+}
+
+/* home banner  */
+
+.banner-heading{
+      /* -webkit-text-stroke: 0.5px black; */
+}
+.animate-bounce-x{
+    animation: bounceX 1s infinite;
+}
+@keyframes bounceX {
+  0%, 100% {
+    transform: translatex(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translatex(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+#banner-info.active{
+    display: block;
+}
+
+.swiper-wrapper {
+  transition-timing-function: linear !important;
+  position: relative;
+}
+
+.swiper-slide {
+  /* transform: skew(-10deg) !important; */
+}

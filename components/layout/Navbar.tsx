@@ -18,6 +18,7 @@ import {
   FaSyncAlt, FaExchangeAlt, FaUser, FaLock, FaEnvelope, FaSpinner
 } from 'react-icons/fa';
 import { useWithdrawal } from '@/context/WithdrawalContext';
+import { useWinnerBoard } from '@/context/WinnerBoardContext';
 import { useRouter } from 'next/navigation';
 import CurrencyLanguageModal from './CurrencyLanguageModal';
 import BD from 'country-flag-icons/react/1x1/BD';
@@ -33,6 +34,7 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
   const { balance, availableBalance, lockedFunds } = useWallet();
   const { openDepositModal } = useDeposit();
   const { openWithdrawalModal, openPersonalInfoModal, openChangePasswordModal } = useWithdrawal();
+  const { openWinnerBoardModal } = useWinnerBoard();
   const [profileOpen, setProfileOpen] = useState(false);
   const [currencyLanguageOpen, setCurrencyLanguageOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -56,7 +58,7 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
     { label: 'Free Spin', icon: <FaSpinner />, href: '#', disabled: true },
     { label: 'Real-Time Bonus', icon: <FaGift />, href: '#', disabled: true },
     { label: 'Refer Bonus', icon: <FaGift />, href: '#', disabled: true },
-    { label: 'Winner Board', icon: <FaTrophy />, href: '/winner-board' },
+    { label: 'Winner Board', icon: <FaTrophy />, href: '#', action: () => openWinnerBoardModal() },
     { label: 'Betting Records', icon: <FaClipboardList />, href: '#', disabled: true },
     { label: 'Turnover', icon: <FaSyncAlt />, href: '#', disabled: true },
     { label: 'Transaction Records', icon: <FaExchangeAlt />, href: '#', disabled: true },

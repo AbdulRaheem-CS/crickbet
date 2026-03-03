@@ -6,7 +6,7 @@ import { DepositProvider, useDeposit } from '@/context/DepositContext';
 import { WithdrawalProvider, useWithdrawal } from '@/context/WithdrawalContext';
 import { BetSlipProvider } from '@/context/BetSlipContext';
 import { SocketProvider } from '@/context/SocketContext';
-import { WinnerBoardProvider } from '@/context/WinnerBoardContext';
+import { WinnerBoardProvider, useWinnerBoard } from '@/context/WinnerBoardContext';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import MobileNav from '@/components/layout/MobileNav';
@@ -122,6 +122,7 @@ function MobileBottomBarInline() {
   const { user, logout, openAuthModal } = useAuth();
   const { openDepositModal } = useDeposit();
   const { openWithdrawalModal, openPersonalInfoModal, openChangePasswordModal } = useWithdrawal();
+  const { openWinnerBoardModal } = useWinnerBoard();
   const { availableBalance } = useWallet();
   const [isMobile, setIsMobile] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -266,7 +267,7 @@ function MobileBottomBarInline() {
               <AccountSection title="My Promotion" items={[
                 { label: 'Real-Time Bonus', href: '', color: '#e11d48', icon: '💰', disabled: true },
                 { label: 'Refer Bonus', href: '', color: '#22c55e', icon: '👥', disabled: true },
-                { label: 'Winner Board', href: '/winner-board', color: '#e11d48', icon: '🏆' },
+                { label: 'Winner Board', href: '#', color: '#e11d48', icon: '🏆', action: () => { setAccountOpen(false); openWinnerBoardModal(); } },
               ]} onClose={() => setAccountOpen(false)} />
 
               {/* History Section */}

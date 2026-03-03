@@ -1,0 +1,9 @@
+@media only screen and (min-device-width : 320px) and (max-device-width : 1024px) {
+   .sm-skew-0{
+       transform: none;
+   }
+      /* home banner  */
+  .banner-heading{
+    -webkit-text-stroke: 0;
+  }
+}
