@@ -100,11 +100,6 @@ function AdminLayoutContent({
       href: '/admin/kyc',
       icon: FiCheckSquare,
     },
-    {
-      name: 'Transactions',
-      href: '/admin/transactions',
-      icon: FiDollarSign,
-    },
   ];
 
   return (
