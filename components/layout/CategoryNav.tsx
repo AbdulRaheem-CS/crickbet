@@ -124,8 +124,22 @@ export default function CategoryNav() {
 
   if (!mounted) {
     return (
-      <div className="bg-white overflow-x-auto">
-        <div className="bg-[#004179] mx-0 md:mx-8 h-28 rounded-none md:rounded-lg" />
+      <div className="bg-[#F6F6F6] overflow-x-auto">
+        <div className="category-nav-bar bg-[#004179] h-28" />
+        <style>{`
+          .category-nav-bar {
+            border-radius: 0;
+            margin-left: 0;
+            margin-right: 0;
+          }
+          @media (min-width: 768px) {
+            .category-nav-bar {
+              border-radius: 0.5rem;
+              margin-left: 2rem;
+              margin-right: 2rem;
+            }
+          }
+        `}</style>
       </div>
     );
   }
@@ -144,8 +158,24 @@ export default function CategoryNav() {
         />
       )}
 
-      <div className="bg-white">
-        <div className="bg-[#004179] mx-0 md:mx-8 flex items-center gap-1 py-0 rounded-none md:rounded-lg overflow-x-auto md:overflow-hidden scrollbar-hide">
+      <div className="bg-[#F6F6F6]">
+        <style>{`
+          .category-nav-bar {
+            border-radius: 0;
+            margin-left: 0;
+            margin-right: 0;
+            overflow-x: auto;
+          }
+          @media (min-width: 768px) {
+            .category-nav-bar {
+              border-radius: 0.5rem;
+              margin-left: 2rem;
+              margin-right: 2rem;
+              overflow: hidden;
+            }
+          }
+        `}</style>
+        <div className="category-nav-bar bg-[#004179] flex items-center gap-1 py-0 scrollbar-hide">
           {categories.map((cat) => {
             const Icon = cat.icon;
             const active = selected === cat.key;

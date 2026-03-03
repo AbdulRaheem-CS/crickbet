@@ -18,7 +18,7 @@ export default function ScrollingHeadline() {
   const duplicatedHeadlines = [...headlines, ...headlines];
 
   return (
-    <div className="bg-gradient-to-r from-[#ffffff] to-[#FFFFFF] text-black py-3 overflow-hidden relative p-8">
+    <div className="bg-gradient-to-r from-[#F6F6F6] to-[#F6F6F6] text-black py-3 overflow-hidden relative p-8">
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
