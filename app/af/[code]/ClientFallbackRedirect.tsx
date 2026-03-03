@@ -17,10 +17,10 @@ export default function ClientFallbackRedirect({ pattern, queryKey }: { pattern:
       const params = new URLSearchParams();
       if (code) params.set(queryKey, code);
       params.set('open', 'register');
-      router.replace(`/dashboard?${params.toString()}`);
+      router.replace(`/?${params.toString()}`);
     } catch (err) {
-      // if anything fails, open the dashboard register modal without ref
-      router.replace('/dashboard?open=register');
+      // if anything fails, open the register modal without ref
+      router.replace('/?open=register');
     }
   }, [pattern, queryKey, router]);
 

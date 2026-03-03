@@ -46,7 +46,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { label: 'Home', icon: FaHome, href: '/dashboard' },
+  { label: 'Home', icon: FaHome, href: '/' },
   { 
     label: 'HOT', 
     icon: FaFire, 
@@ -247,9 +247,9 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
         <div className="group relative">
           <div className="flex items-center gap-1">
             <Link
-              href="/dashboard"
+              href="/"
               className={`w-full flex items-center ${isMinimized ? 'justify-center' : 'justify-start'} px-4 py-3 rounded-lg transition ${
-                pathname === '/dashboard'
+                pathname === '/'
                   ? 'bg-[#1A79D3] text-white'
                   : 'text-gray-200 hover:bg-[#1A79D3] hover:text-white'
               }`}
@@ -295,7 +295,7 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
         )}
 
         {/* Rest of menu items (skip Home as it's shown above) */}
-        {menuItems.filter(item => item.href !== '/dashboard').map((item) => {
+        {menuItems.filter(item => item.href !== '/').map((item) => {
           const IconComponent = item.icon;
           const isOpen = openDropdowns[item.href];
           const isActive = pathname === item.href || (item.submenuItems?.some(sub => pathname === sub.href));

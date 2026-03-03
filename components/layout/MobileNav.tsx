@@ -39,7 +39,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { label: 'Home', icon: FaHome, href: '/dashboard' },
+  { label: 'Home', icon: FaHome, href: '/' },
   {
     label: 'HOT', icon: FaFire, href: '/hot', hasSubmenu: true,
     submenuItems: [

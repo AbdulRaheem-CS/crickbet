@@ -8,7 +8,7 @@ export default async function JoinRedirect({ params }: { params: Promise<{ code?
   // site-wide register popup (so the default player signup link opens the
   // signup modal instead of navigating to the standalone /register page).
   if (code) {
-    return redirect(`/dashboard?ref=${encodeURIComponent(code)}&open=register`);
+    return redirect(`/?ref=${encodeURIComponent(code)}&open=register`);
   }
 
   // Fallback: render a small client-side redirect component which will

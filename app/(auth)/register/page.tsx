@@ -57,7 +57,7 @@ function RegisterPageContent() {
   // send referral as refCode so backend will resolve it
   refCode: formData.referralCode || undefined,
       });
-      router.push('/dashboard');
+      router.push('/');
     } catch (err: any) {
       setError(err.toString());
     } finally {
