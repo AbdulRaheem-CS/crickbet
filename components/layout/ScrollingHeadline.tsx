@@ -19,6 +19,12 @@ export default function ScrollingHeadline() {
 
   return (
     <div className="bg-gradient-to-r from-[#005DAC] to-[#0073d1] text-black py-3 overflow-hidden relative p-8">
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
       <div className="flex items-center">
         {/* Icon - Fixed on the left */}
         <div className="shrink-0 pl-4 pr-4 z-10">
@@ -40,13 +46,6 @@ export default function ScrollingHeadline() {
           </div>
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}} />
     </div>
   );
 }
