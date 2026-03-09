@@ -11,9 +11,9 @@ export default function PublicFooter() {
           {/* Brand Section (use logo from public) */}
           <div>
             <div className="mb-4">
-              <img src="/logo-2.svg" alt="Crickex logo" className="w-40 h-auto" />
+              <img src="/logo-2.svg" alt="KingBaji logo" className="w-40 h-auto" />
             </div>
-            <p className="text-white text-sm">© 2026 Crickex Copyright</p>
+            <p className="text-white text-sm">© 2026 KingBaji Copyright</p>
           </div>
 
           {/* Quick Links */}

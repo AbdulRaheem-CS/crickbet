@@ -174,7 +174,7 @@ const SettingsSchema = new mongoose.Schema(
       ],
       default: [
         {
-          text: "Join Crickex 🏏 Earn unlimited rebate commission from every refer up to 3 tier. Back & Lay, Premium Cricket Market, 20+ Sports",
+          text: "Join KingBaji 🏏 Earn unlimited rebate commission from every refer up to 3 tier. Back & Lay, Premium Cricket Market, 20+ Sports",
           enabled: true,
           order: 0,
         },

@@ -11,7 +11,7 @@ import { publicAPI } from '@/lib/api-client';
  */
 
 const DEFAULT_HEADLINES = [
-  "Join Crickex 🏏 Earn unlimited rebate commission from every refer up to 3 tier. Back & Lay, Premium Cricket Market, 20+ Sports",
+  "Join KingBaji 🏏 Earn unlimited rebate commission from every refer up to 3 tier. Back & Lay, Premium Cricket Market, 20+ Sports",
   "Weekly Leaderboard Rs.12,000 - Hit Big Multiplier on Aviator",
   "New Games Added! Check out our latest casino games",
 ];

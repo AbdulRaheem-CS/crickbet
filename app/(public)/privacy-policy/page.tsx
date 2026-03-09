@@ -43,7 +43,7 @@ export default function PublicHomePage() {
         <div className="max-w-7xl mx-auto px-6 text-white">
           <div className="space-y-6 text-lg leading-relaxed">
             <p>
-              Welcome to Crickex, the best gaming destination for players from South Asia. Your privacy is extremely important to us, and we are committed to protecting your personal information. We take pride in constantly improving the security of site to protect all your private information. This Privacy Policy outlines how we collect, use, and protect your information when you use our online casino services.
+              Welcome to KingBaji, the best gaming destination for players from South Asia. Your privacy is extremely important to us, and we are committed to protecting your personal information. We take pride in constantly improving the security of site to protect all your private information. This Privacy Policy outlines how we collect, use, and protect your information when you use our online casino services.
             </p>
 
             <h3 className="font-semibold">Information We Collect</h3>
@@ -61,7 +61,7 @@ export default function PublicHomePage() {
                 <strong>Browser And URLs</strong> – All the pages visited, content viewed, links clicked, and URLs visited before and after using our services will be collected, this will help us suggest more relevant games for your ease.
               </li>
               <li>
-                <strong>Crickex Transactions</strong> – All the betting, gaming, deposits, payments, transaction history, and other transactions done on site will be on record. This will provide an extra layer of security for you as all your transactions can be recorded.
+                <strong>KingBaji Transactions</strong> – All the betting, gaming, deposits, payments, transaction history, and other transactions done on site will be on record. This will provide an extra layer of security for you as all your transactions can be recorded.
               </li>
               <li>
                 <strong>Customer Care Chats</strong> – All customer support messages; emails and live Chat conversations will be collected. This information will help shape our site to suit your needs better.
@@ -123,11 +123,11 @@ export default function PublicHomePage() {
             <h3 className="font-semibold">How to Contact Us</h3>
             <p>
               For any requests or doubts related to your personal information or your rights, please do not hesitate to contact us at{' '}
-              <a href="mailto:support.pk@crickex.com" className="text-[#7FFF00] hover:underline">support.pk@crickex.com</a>.
+              <a href="mailto:support.pk@KingBaji.com" className="text-[#7FFF00] hover:underline">support.pk@KingBaji.com</a>.
             </p>
 
             <p>
-              Thank you for choosing Crickex Online Casino. We value your privacy and are dedicated to providing you with a safe and enjoyable gaming experience.
+              Thank you for choosing KingBaji Online Casino. We value your privacy and are dedicated to providing you with a safe and enjoyable gaming experience.
             </p>
           </div>
         </div>

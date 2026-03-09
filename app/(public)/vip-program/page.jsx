@@ -212,15 +212,15 @@ export default function VipPage() {
             <div className="flex items-center p-6 sm:p-8" style={{ width: "70%" }}>
               <div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-snug">
-                  WHY CRICKEX <span style={{ color: "#FFD700" }}>VIP CLUB?</span>
+                  WHY KingBaji <span style={{ color: "#FFD700" }}>VIP CLUB?</span>
                 </h2>
                 <p className="mt-4 text-sm sm:text-base leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
-                  The Crickex VIP Club takes your gaming journey to the next level with priority
+                  The KingBaji VIP Club takes your gaming journey to the next level with priority
                   transactions, faster withdrawals, and a 24/7 personal VIP manager dedicated only
-                  to Crickex VIP members.
+                  to KingBaji VIP members.
                 </p>
                 <p className="mt-3 text-sm sm:text-base leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
-                  Join the Crickex VIP Club today and enjoy exclusive rewards, exciting offers, and
+                  Join the KingBaji VIP Club today and enjoy exclusive rewards, exciting offers, and
                   cash prizes designed just for you!
                 </p>
               </div>
@@ -538,53 +538,53 @@ export default function VipPage() {
             <div className="marquee-row">
               {/* First set */}
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Wild-Ace-JILI.png" alt="Wild Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Wild-Ace-JILI.png" alt="Wild Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Super-Rich-JILI.png" alt="Super Rich" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Super-Rich-JILI.png" alt="Super Rich" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Super-Ace-Joker-JILI.png" alt="Super Ace Joker" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Super-Ace-Joker-JILI.png" alt="Super Ace Joker" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Money-Pot-JILI.png" alt="Money Pot" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Money-Pot-JILI.png" alt="Money Pot" />
               </div>
               {/* Duplicate set for seamless loop */}
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Wild-Ace-JILI.png" alt="Wild Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Wild-Ace-JILI.png" alt="Wild Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Super-Rich-JILI.png" alt="Super Rich" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Super-Rich-JILI.png" alt="Super Rich" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Super-Ace-Joker-JILI.png" alt="Super Ace Joker" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Super-Ace-Joker-JILI.png" alt="Super Ace Joker" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Money-Pot-JILI.png" alt="Money Pot" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Money-Pot-JILI.png" alt="Money Pot" />
               </div>
             </div>
           </div>
@@ -594,53 +594,53 @@ export default function VipPage() {
             <div className="marquee-row-reverse">
               {/* First set */}
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Money-Coming-JILI.png" alt="Money Coming" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Money-Coming-JILI.png" alt="Money Coming" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Lucky-Jaguar-JILI.png" alt="Lucky Jaguar" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Lucky-Jaguar-JILI.png" alt="Lucky Jaguar" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Golden-Bank-JILI.png" alt="Golden Bank" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Golden-Bank-JILI.png" alt="Golden Bank" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               {/* Duplicate set for seamless loop */}
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Money-Coming-JILI.png" alt="Money Coming" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Money-Coming-JILI.png" alt="Money Coming" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Pirate-Queen-2-JILI.png" alt="Pirate Queen 2" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Lucky-Jaguar-JILI.png" alt="Lucky Jaguar" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Lucky-Jaguar-JILI.png" alt="Lucky Jaguar" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Golden-Bank-JILI.png" alt="Golden Bank" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Golden-Bank-JILI.png" alt="Golden Bank" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Amazing-Gems-3-JILI.png" alt="Amazing Gems 3" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Amazing-Gems-3-JILI.png" alt="Amazing Gems 3" />
               </div>
             </div>
           </div>
@@ -650,53 +650,53 @@ export default function VipPage() {
             <div className="marquee-row">
               {/* First set */}
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Fortune-Coins-JILI.png" alt="Fortune Coins" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Fortune-Coins-JILI.png" alt="Fortune Coins" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Diamond-Party-JILI.png" alt="Diamond Party" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Diamond-Party-JILI.png" alt="Diamond Party" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Crystal-777-JILI.png" alt="Crystal 777" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Crystal-777-JILI.png" alt="Crystal 777" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Charge-Buffalo-JILI.png" alt="Charge Buffalo" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Charge-Buffalo-JILI.png" alt="Charge Buffalo" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Fortune-Gems-JILI.png" alt="Fortune Gems" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Fortune-Gems-JILI.png" alt="Fortune Gems" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Fortune-Gems-2-JILI.png" alt="Fortune Gems 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Fortune-Gems-2-JILI.png" alt="Fortune Gems 2" />
               </div>
               {/* Duplicate set for seamless loop */}
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Fortune-Coins-JILI.png" alt="Fortune Coins" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Fortune-Coins-JILI.png" alt="Fortune Coins" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Diamond-Party-JILI.png" alt="Diamond Party" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Diamond-Party-JILI.png" alt="Diamond Party" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Crystal-777-JILI.png" alt="Crystal 777" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Crystal-777-JILI.png" alt="Crystal 777" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Mega-Ace-JILI.png" alt="Mega Ace" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Charge-Buffalo-JILI.png" alt="Charge Buffalo" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Charge-Buffalo-JILI.png" alt="Charge Buffalo" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Fortune-Gems-JILI.png" alt="Fortune Gems" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Fortune-Gems-JILI.png" alt="Fortune Gems" />
               </div>
               <div className="game-image-wrapper">
-                <img src="https://crickexguide.com/wp-content/uploads/2025/10/Fortune-Gems-2-JILI.png" alt="Fortune Gems 2" />
+                <img src="https://KingBajiguide.com/wp-content/uploads/2025/10/Fortune-Gems-2-JILI.png" alt="Fortune Gems 2" />
               </div>
             </div>
           </div>

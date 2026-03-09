@@ -2,7 +2,7 @@
 
 /**
  * Currency and Language Modal Component
- * Modal matching the Crickex design — rows with flag, currency, and language buttons
+ * Modal matching the KingBaji design — rows with flag, currency, and language buttons
  * Uses country-flag-icons/react/1x1 for proper circular SVG flags
  */
 

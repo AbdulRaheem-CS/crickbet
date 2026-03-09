@@ -27,8 +27,8 @@ All public pages are organized under the `app/(public)` directory, which uses a 
 - **Features**:
   - Contact information for support and corporate teams
   - Email addresses:
-    - Support: support.pk@crickex.com
-    - Corporate: marketing@crickex.com
+    - Support: support.pk@KingBaji.com
+    - Corporate: marketing@KingBaji.com
   - Contact form with fields:
     - Name
     - Email
@@ -72,7 +72,7 @@ All public pages are organized under the `app/(public)` directory, which uses a 
 
 ### 1. PublicHeader (`components/public/PublicHeader.tsx`)
 - **Features**:
-  - CrickEx logo (CRICK in white, EX in lime green)
+  - KingBaji logo (CRICK in white, EX in lime green)
   - Navigation links:
     - Home
     - Referral
@@ -193,8 +193,8 @@ app/
 
 ### Contact Information
 Prominently displayed throughout:
-- Support: support.pk@crickex.com
-- Corporate: marketing@crickex.com
+- Support: support.pk@KingBaji.com
+- Corporate: marketing@KingBaji.com
 
 ### Call-to-Actions
 - "Get Started Now" button on home page

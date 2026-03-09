@@ -164,7 +164,7 @@ function DashboardPageContent() {
     
     <span className="flex items-center">
       <span className="border-l-2 border-[#005DAC] h-4 mr-2 md:mr-3"></span>
-      <a href="/blog" className="hover:underline">Crickex Blog</a>
+      <a href="/blog" className="hover:underline">KingBaji Blog</a>
     </span>
   </div>
   <hr className="my-4 border-gray-300 mb-3" />
@@ -174,14 +174,14 @@ function DashboardPageContent() {
   <div className="flex items-center gap-4 mb-2 px-2 md:px-0 md:pl-8">
           <Image
             src="/blue-logo.png"
-            alt="Crickex"
+            alt="KingBaji"
             width={80}
             height={20}
             className="object-contain w-24 md:w-30"
           />
           <div>
             <p className="text-[#005DAC] font-bold text-xs md:text-sm">Best Quality Platform</p>
-            <p className="text-gray-400 text-xs md:text-sm">© 2026 CRICKEX Copyrights. All Rights Reserved</p>
+            <p className="text-gray-400 text-xs md:text-sm">© 2026 KingBaji Copyrights. All Rights Reserved</p>
           </div>
         </div>
       </div>

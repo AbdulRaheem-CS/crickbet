@@ -40,7 +40,7 @@ export default function PublicHeader() {
           <Link href="/home" className="flex items-center gap-2 ml-8 ">
             <Image
               src="/logo.png"
-              alt="Crickex"
+              alt="KingBaji"
               width={140}
               height={40}
               className="object-contain"

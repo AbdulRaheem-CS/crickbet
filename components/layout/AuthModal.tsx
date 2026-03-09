@@ -127,7 +127,7 @@ function AuthModalInner() {
         <div className={`p-6 ${tab === 'register' ? 'max-h-[70vh] overflow-y-auto' : ''}`}>
           {/* Logo centered */}
           <div className="flex justify-center mb-4">
-            <Image src="/blue-logo.png" alt="Crickex" width={140} height={36} />
+            <Image src="/blue-logo.png" alt="KingBaji" width={140} height={36} />
           </div>
 
           {tab === 'login' ? (

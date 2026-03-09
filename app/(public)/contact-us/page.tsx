@@ -48,12 +48,12 @@ export default function PublicHomePage() {
       </div>
       <div className="text-start space-y-4 text-md text-white">
         <p>
-          If you wish to contact Crickex support team regarding any issue, please drop us an email at{' '}
-          <a href="mailto:support.pk@crickex.com" className="text-[#7FFF00] hover:underline">support.pk@crickex.com</a>
+          If you wish to contact KingBaji support team regarding any issue, please drop us an email at{' '}
+          <a href="mailto:support.pk@KingBaji.com" className="text-[#7FFF00] hover:underline">support.pk@KingBaji.com</a>
         </p>
         <p>
-          If you wish to contact Crickex corporate team, please drop us an email at{' '}
-          <a href="mailto:marketing@crickex.com" className="text-[#7FFF00] hover:underline">marketing@crickex.com</a>
+          If you wish to contact KingBaji corporate team, please drop us an email at{' '}
+          <a href="mailto:marketing@KingBaji.com" className="text-[#7FFF00] hover:underline">marketing@KingBaji.com</a>
         </p>
       </div>
     </div>

@@ -45,12 +45,12 @@ export default function PublicHomePage() {
     <div className="max-w-7xl mx-auto px-6 text-white">
       <div className="space-y-6 text-lg leading-relaxed">
         <p>
-          Crickex places absolute importance in promoting responsible gaming. We are dedicated to ensuring that our platform performs and maintains the most efficient, responsible and safe gaming environment and experience. We strive to provide safe and fair gaming experiences for you. We believe and practice in responsible gaming as gambling experiences should be entertaining and fun, not tiring and draining.
+          KingBaji places absolute importance in promoting responsible gaming. We are dedicated to ensuring that our platform performs and maintains the most efficient, responsible and safe gaming environment and experience. We strive to provide safe and fair gaming experiences for you. We believe and practice in responsible gaming as gambling experiences should be entertaining and fun, not tiring and draining.
         </p>
 
         <h3 className="font-semibold">Our Commitment to Responsible Gaming</h3>
         <p>
-          At Crickex, we are committed to providing a safe and sound while practising responsible gaming. Like one says everything becomes better when done in moderation so gaming should always be done in moderation. We strive to protect our players from the potential adverse consequences of excessive gaming.
+          At KingBaji, we are committed to providing a safe and sound while practising responsible gaming. Like one says everything becomes better when done in moderation so gaming should always be done in moderation. We strive to protect our players from the potential adverse consequences of excessive gaming.
         </p>
 
         <h3 className="font-semibold">Tips for Responsible Gambling</h3>
@@ -84,7 +84,7 @@ export default function PublicHomePage() {
         </ul>
 
         <h3 className="font-semibold">Preventing Underage Gambling</h3>
-        <p>Crickex strictly prohibits anyone under the age of 18 from registering an account or participating in any form of gambling on our platform. We have robust verification systems in place to prevent underage users from accessing our site. Any attempts to provide false information about one’s age will result in the forfeiture of winnings and the refund of all deposits.</p>
+        <p>KingBaji strictly prohibits anyone under the age of 18 from registering an account or participating in any form of gambling on our platform. We have robust verification systems in place to prevent underage users from accessing our site. Any attempts to provide false information about one’s age will result in the forfeiture of winnings and the refund of all deposits.</p>
 
         <h3 className="font-semibold">Parental Controls</h3>
         <p>If you share your devices with children, we recommend using parental control software to restrict their internet access. The following websites offer helpful parental control tools:</p>

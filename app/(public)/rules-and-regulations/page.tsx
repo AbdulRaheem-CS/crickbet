@@ -51,33 +51,33 @@ export default function PublicHomePage() {
         <p>If Specific Sports Rules don’t cover certain markets, General Rules and Market Information apply.</p>
 
         <h3 className="font-semibold">2. Market Information</h3>
-        <p>Market Information guides market management and settlement. Crickex may suspend any market at its discretion to protect users.</p>
+        <p>Market Information guides market management and settlement. KingBaji may suspend any market at its discretion to protect users.</p>
 
         <h3 className="font-semibold">3. User Responsibility</h3>
         <p>Users must read and understand the Rules and Regulations of markets they bet on. Market Information may not include all rules, so users should be aware.</p>
 
         <h3 className="font-semibold">4. Suspicious Activity Rules</h3>
-        <p>Crickex may void bets and suspend or close accounts in case of suspicious activity. Suspicious activities include VPN use, multiple accounts, and unfair betting practices. Decisions made by Crickex in such cases are final.</p>
+        <p>KingBaji may void bets and suspend or close accounts in case of suspicious activity. Suspicious activities include VPN use, multiple accounts, and unfair betting practices. Decisions made by KingBaji in such cases are final.</p>
 
         <h3 className="font-semibold">5. User Betting Disputes</h3>
-        <p>Users with disputes regarding bet settlements should contact Crickex immediately. Users must provide details of their complaints for resolution.</p>
+        <p>Users with disputes regarding bet settlements should contact KingBaji immediately. Users must provide details of their complaints for resolution.</p>
 
         <h2 className="text-2xl font-semibold">Part B – General Rules</h2>
         <h3 className="font-semibold">1. Managing markets In-Play</h3>
-        <p>Crickex aims to suspend in-play markets at the start and end of events but does not guarantee the timing. Users are responsible for managing their in-play bets. Live transmissions may have delays; users should be aware.</p>
+        <p>KingBaji aims to suspend in-play markets at the start and end of events but does not guarantee the timing. Users are responsible for managing their in-play bets. Live transmissions may have delays; users should be aware.</p>
 
         <h3 className="font-semibold">2. Results and market settlement</h3>
         <p><strong>General</strong></p>
-        <p>Markets are settled based on Market Information or Specific Sports Rules. If official results are unavailable, Crickex uses independent sources. Crickex reserves the right to suspend settlement during uncertainties.</p>
+        <p>Markets are settled based on Market Information or Specific Sports Rules. If official results are unavailable, KingBaji uses independent sources. KingBaji reserves the right to suspend settlement during uncertainties.</p>
         <p><strong>Resettlements</strong></p>
-        <p>Markets may be settled immediately or after official outcomes are declared. Crickex may change market settlement in case of errors or void markets. Settlement reversals may affect customer balances.</p>
+        <p>Markets may be settled immediately or after official outcomes are declared. KingBaji may change market settlement in case of errors or void markets. Settlement reversals may affect customer balances.</p>
         <p><strong>Non-runners, withdrawals, and disqualifications</strong></p>
         <p>Bets stand even if a team or competitor doesn’t participate, except when stated otherwise. If a team or competitor is disqualified or withdraws, bets are void unless an official result is recorded.</p>
         <p><strong>Winner with [named selection] markets</strong></p>
         <p>Markets dependent on specific competitors will be void if the named competitor doesn’t participate. Competitors are deemed to have participated if they have an official result or classification.</p>
 
         <h3 className="font-semibold">3. Abandonments, Cancellations, Postponements</h3>
-        <p>In cricket betting for CrickEx, if a match isn’t completed within three days of its scheduled date, bets on that match will be invalid, unless outcomes are already determined.</p>
+        <p>In cricket betting for KingBaji, if a match isn’t completed within three days of its scheduled date, bets on that match will be invalid, unless outcomes are already determined.</p>
         <p>For tournaments, if an event isn’t finished within three days of its scheduled end, bets will be resolved based on the official decision of the governing body. If no decision is made within 90 days of the scheduled end, bets will be invalid, except for those on markets with determined outcomes.</p>
 
         <h3 className="font-semibold">4. Change of venue</h3>

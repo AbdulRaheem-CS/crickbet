@@ -72,7 +72,7 @@ export default function ReferralPage() {
 
           {/* Sub-heading */}
           <p className="text-white/90 text-xs sm:text-sm md:text-base font-medium px-5 sm:px-8 mb-5 sm:mb-8">
-            How to refer your friends in Crickex?
+            How to refer your friends in KingBaji?
           </p>
 
           {/* Steps Grid */}

@@ -1,6 +1,6 @@
 # CrickBet - Betting Exchange & Casino Platform
 
-A full-stack MERN application for a betting exchange and casino platform similar to crickexnow.com.
+A full-stack MERN application for a betting exchange and casino platform similar to KingBajinow.com.
 
 ## Project Structure
 

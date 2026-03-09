@@ -103,14 +103,14 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
           {/* Logo — centered on mobile */}
           <div className="absolute left-1/2 -translate-x-1/2 md:hidden">
             <Link href="/dashboard" className="flex items-center">
-              <Image src="/logo.png" alt="Crickex" width={130} height={32} priority />
+              <Image src="/logo.png" alt="KingBaji" width={130} height={32} priority />
             </Link>
           </div>
 
           {/* Logo — left-aligned on desktop */}
           <div className="hidden md:block">
             <Link href="/dashboard" className="flex items-center pl-4">
-              <Image src="/logo.png" alt="Crickex" width={130} height={32} priority />
+              <Image src="/logo.png" alt="KingBaji" width={130} height={32} priority />
             </Link>
           </div>
 

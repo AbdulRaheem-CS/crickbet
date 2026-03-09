@@ -1,7 +1,7 @@
 # Promotions Page Implementation
 
 ## Overview
-Implemented the promotions page with a UI matching the reference screenshot from crickexnow.com.
+Implemented the promotions page with a UI matching the reference screenshot from KingBajinow.com.
 
 ## Components Created
 
