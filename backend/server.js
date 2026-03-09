@@ -44,6 +44,9 @@ const paymentRoutes = require('./routes/payment.routes');
 const winnerBoardRoutes = require('./routes/winnerBoard.routes');
 const gscCallbackRoutes = require('./routes/gsc-callback.routes');
 
+// Public headlines controller (no auth required)
+const adminController = require('./controllers/admin.controller');
+
 // Initialize Express app
 const app = express();
 
@@ -110,6 +113,9 @@ app.use('/api/winner-board', winnerBoardRoutes);
 
 // GSC+ Seamless Wallet Callback Routes (called by GSC+ platform, no JWT auth)
 app.use('/v1/api/seamless', gscCallbackRoutes);
+
+// Public route: headlines (no auth — needed for the scrolling banner on all pages)
+app.get('/api/public/headlines', adminController.getHeadlines);
 
 // 404 Handler
 app.use((req, res, next) => {

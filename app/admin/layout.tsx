@@ -21,6 +21,7 @@ import {
   FiLogOut,
   FiMenu,
   FiX,
+  FiRadio,
 } from 'react-icons/fi';
 
 function AdminLayoutContent({
@@ -30,6 +31,7 @@ function AdminLayoutContent({
 }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isChecking, setIsChecking] = useState(true);
 
@@ -100,6 +102,11 @@ function AdminLayoutContent({
       href: '/admin/kyc',
       icon: FiCheckSquare,
     },
+    {
+      name: 'Headlines',
+      href: '/admin/headlines',
+      icon: FiRadio,
+    },
   ];
 
   return (
@@ -129,17 +136,22 @@ function AdminLayoutContent({
 
           {/* Menu Items */}
           <ul className="space-y-2">
-            {menuItems.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="flex items-center p-3 text-white rounded-lg hover:bg-blue-800 group"
-                >
-                  <item.icon className="w-5 h-5 text-blue-300 group-hover:text-white" />
-                  <span className="ml-3">{item.name}</span>
-                </Link>
-              </li>
-            ))}
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center p-3 text-white rounded-lg group transition ${
+                      isActive ? 'bg-blue-600' : 'hover:bg-blue-800'
+                    }`}
+                  >
+                    <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-blue-300 group-hover:text-white'}`} />
+                    <span className="ml-3">{item.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
           {/* Logout */}

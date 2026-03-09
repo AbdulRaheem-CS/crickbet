@@ -1640,4 +1640,61 @@ exports.getSystemLogs = asyncHandler(async (req, res) => {
   });
 });
 
+// ============================================
+// HEADLINES MANAGEMENT
+// ============================================
+
+/**
+const DEFAULT_HEADLINES = [
+  { text: "Join Crickex 🏏 Earn unlimited rebate commission from every refer up to 3 tier. Back & Lay, Premium Cricket Market, 20+ Sports", enabled: true, order: 0 },
+  { text: "Weekly Leaderboard Rs.12,000 - Hit Big Multiplier on Aviator", enabled: true, order: 1 },
+  { text: "New Games Added! Check out our latest casino games", enabled: true, order: 2 },
+];
+
+/**
+ * @route   GET /api/admin/headlines  (admin, auth required)
+ * @route   GET /api/public/headlines (public, no auth)
+ * @desc    Get all scrolling headlines
+ */
+exports.getHeadlines = asyncHandler(async (req, res) => {
+  const settings = await Settings.getSettings();
+  let headlines = settings.headlines || [];
+
+  // If DB has no headlines yet, seed defaults and persist them
+  if (headlines.length === 0) {
+    await Settings.findOneAndUpdate(
+      { category: 'default' },
+      { $set: { headlines: DEFAULT_HEADLINES } },
+      { upsert: true }
+    );
+    headlines = DEFAULT_HEADLINES;
+  }
+
+  const sorted = [...headlines].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  res.status(200).json({ success: true, data: sorted });
+});
+
+/**
+ * @route   PUT /api/admin/headlines
+ * @desc    Replace all headlines
+ * @access  Admin
+ */
+exports.updateHeadlines = asyncHandler(async (req, res) => {
+  const { headlines } = req.body;
+  if (!Array.isArray(headlines)) {
+    return res.status(400).json({ success: false, message: 'headlines must be an array' });
+  }
+  const normalized = headlines.map((h, i) => ({
+    text: String(h.text || '').trim(),
+    enabled: Boolean(h.enabled),
+    order: i,
+  }));
+  const settings = await Settings.findOneAndUpdate(
+    { category: 'default' },
+    { $set: { headlines: normalized, updatedBy: req.user?.id } },
+    { new: true, upsert: true }
+  );
+  res.status(200).json({ success: true, data: settings.headlines });
+});
+
 module.exports = exports;

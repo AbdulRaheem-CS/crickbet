@@ -680,6 +680,22 @@ export const adminAPI = {
   getBetsReport: async (params?: { period?: string }) => {
     return apiClient.get('/admin/stats/bets', { params });
   },
+
+  // Headlines Management
+  getHeadlines: async () => {
+    return apiClient.get('/admin/headlines');
+  },
+
+  updateHeadlines: async (headlines: { text: string; enabled: boolean; order: number }[]) => {
+    return apiClient.put('/admin/headlines', { headlines });
+  },
+};
+
+// Public API (no auth required)
+export const publicAPI = {
+  getHeadlines: async () => {
+    return apiClient.get('/public/headlines');
+  },
 };
 
 // ============================================

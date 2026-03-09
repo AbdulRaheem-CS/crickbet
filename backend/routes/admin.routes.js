@@ -73,6 +73,10 @@ router.get('/reports/bets', adminController.getBetsReport);
 router.get('/settings', adminController.getSettings);
 router.put('/settings', requireSuperAdmin, logAdminAction('update_settings'), adminController.updateSettings);
 
+// Headlines (GET is public — no auth middleware, but we still use the admin router prefix)
+router.get('/headlines', adminController.getHeadlines);
+router.put('/headlines', logAdminAction('update_headlines'), adminController.updateHeadlines);
+
 // Logs
 router.get('/logs/admin-actions', requireSuperAdmin, adminController.getAdminLogs);
 router.get('/logs/system', requireSuperAdmin, adminController.getSystemLogs);

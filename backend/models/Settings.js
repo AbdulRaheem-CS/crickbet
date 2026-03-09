@@ -163,6 +163,34 @@ const SettingsSchema = new mongoose.Schema(
       coolingOffPeriod: { type: Number, default: 24 }, // Hours
     },
 
+    // Scrolling Headlines / Announcements
+    headlines: {
+      type: [
+        {
+          text: { type: String, required: true },
+          enabled: { type: Boolean, default: true },
+          order: { type: Number, default: 0 },
+        },
+      ],
+      default: [
+        {
+          text: "Join Crickex 🏏 Earn unlimited rebate commission from every refer up to 3 tier. Back & Lay, Premium Cricket Market, 20+ Sports",
+          enabled: true,
+          order: 0,
+        },
+        {
+          text: "Weekly Leaderboard Rs.12,000 - Hit Big Multiplier on Aviator",
+          enabled: true,
+          order: 1,
+        },
+        {
+          text: "New Games Added! Check out our latest casino games",
+          enabled: true,
+          order: 2,
+        },
+      ],
+    },
+
     // Custom settings (for flexibility)
     custom: {
       type: mongoose.Schema.Types.Mixed,
