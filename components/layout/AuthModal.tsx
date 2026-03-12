@@ -39,7 +39,6 @@ function AuthModalInner() {
   // Register form state
   const [regForm, setRegForm] = useState({ 
     username: '', 
-    email: '', 
     phone: '', 
     password: '', 
     confirmPassword: '', 
@@ -91,7 +90,6 @@ function AuthModalInner() {
     try {
       await register({
         username: regForm.username,
-        email: regForm.email,
         phone: regForm.phone,
         password: regForm.password,
         refCode: regForm.refCode || undefined,
@@ -212,19 +210,6 @@ function AuthModalInner() {
                 />
               </div>
 
-              {/* Email */}
-              <div className="text-sm text-gray-800">
-                Email
-                <input 
-                  placeholder="Enter your email" 
-                  type="email"
-                  value={regForm.email} 
-                  onChange={(e) => setRegForm({ ...regForm, email: e.target.value })} 
-                  className="w-full border border-gray-300 mt-2 px-3 py-2 rounded bg-gray-100" 
-                  required 
-                />
-              </div>
-
               {/* Password */}
               <div className="text-sm text-gray-800">
                 Password
@@ -301,7 +286,7 @@ function AuthModalInner() {
 
               {/* Submit Button */}
               <div className="pt-2">
-                <button type="submit" disabled={regLoading} className={`w-full py-2 rounded font-semibold ${regForm.username && regForm.email && regForm.password && regForm.confirmPassword && regForm.phone ? 'bg-[#015DAC] text-white' : 'bg-[#999999] text-white'}`}>
+                <button type="submit" disabled={regLoading} className={`w-full py-2 rounded font-semibold ${regForm.username && regForm.password && regForm.confirmPassword && regForm.phone ? 'bg-[#015DAC] text-white' : 'bg-[#999999] text-white'}`}>
                   {regLoading ? 'Creating...' : 'Submit'}
                 </button>
               </div>

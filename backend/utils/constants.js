@@ -169,7 +169,7 @@ exports.TIMEOUTS = {
 // Regex Patterns
 exports.PATTERNS = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  PHONE: /^[6-9]\d{9}$/,
+  PHONE: /^\+?\d{4,15}$/,
   PAN: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
   IFSC: /^[A-Z]{4}0[A-Z0-9]{6}$/,
 };

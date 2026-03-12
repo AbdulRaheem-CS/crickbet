@@ -16,16 +16,28 @@ module.exports = {
   
   // Public registration for affiliate (creates a pending user and affiliate record)
   registerAffiliate: asyncHandler(async (req, res) => {
-    const { username, firstName, lastName, email, password, phone, dateOfBirth, refCode } = req.body;
+    const { username, firstName, lastName, password, phone, dateOfBirth, refCode } = req.body;
 
-    if (!username || !email || !password) {
-      return res.status(400).json({ success: false, message: 'username, email and password are required' });
+    // Step 1 fields are required
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Username and password are required' });
     }
 
-    // Check for existing username/email
-    const existing = await User.findOne({ $or: [{ username }, { email }] });
-    if (existing) {
-      return res.status(400).json({ success: false, message: 'User with this email or username already exists' });
+    // Step 2 fields — phone is required
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Phone number is required' });
+    }
+
+    // Check for existing username among affiliates only
+    const existingByUsername = await User.findOne({ username, role: 'affiliate' });
+    if (existingByUsername) {
+      return res.status(400).json({ success: false, message: 'Username already taken' });
+    }
+
+    // Phone uniqueness is only checked among affiliates (same phone can exist on a player account)
+    const existingByPhone = await User.findOne({ phone, role: 'affiliate' });
+    if (existingByPhone) {
+      return res.status(400).json({ success: false, message: 'Phone number already registered as affiliate' });
     }
 
     // If refCode provided, look up the referring affiliate
@@ -46,10 +58,9 @@ module.exports = {
       }
     }
 
-    // Create user with pending status
+    // Create user with pending status (no email for affiliates)
     const user = await User.create({
       username,
-      email,
       password,
       phone,
       firstName,

@@ -740,13 +740,12 @@ export const affiliateAPI = {
   // Register new affiliate
   register: async (data: {
     username: string;
-    firstName: string;
-    lastName: string;
-    email: string;
     password: string;
-    phone?: string;
+    phone: string;
+    firstName?: string;
+    lastName?: string;
     dateOfBirth?: string;
-    refCode?: string;  // Referral code from referring affiliate
+    refCode?: string;
   }) => {
     return apiClient.post('/affiliate/register', data);
   },

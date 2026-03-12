@@ -31,7 +31,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen }: NavbarProps) {
-  const { user, logout, openAuthModal } = useAuth();
+  const { user, logout } = useAuth();
   const { balance, availableBalance, lockedFunds } = useWallet();
   const { openDepositModal } = useDeposit();
   const { openWithdrawalModal, openPersonalInfoModal, openChangePasswordModal } = useWithdrawal();
@@ -210,13 +210,13 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
             ) : (
               <>
                 <button
-                  onClick={() => openAuthModal('register')}
+                  onClick={() => router.push('/register')}
                   className="bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-2.5 rounded-sm transition text-sm"
                 >
                   Sign up
                 </button>
                 <button
-                  onClick={() => openAuthModal('login')}
+                  onClick={() => router.push('/login')}
                   className="bg-[#1A79D3] hover:bg-blue-400 text-white font-semibold px-8 py-2.5 rounded-sm transition text-sm"
                 >
                   Login

@@ -6,7 +6,7 @@
  */
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { casinoService } from '@/lib/services/casino.service';
 import type { CasinoGame } from '@/lib/services/casino.service';
 import GameLauncher from '@/components/casino/GameLauncher';
@@ -32,7 +32,8 @@ export default function SportsPage() {
 
 function SportsPageContent() {
 	const searchParams = useSearchParams();
-	const { user, openAuthModal } = useAuth();
+	const { user } = useAuth();
+	const sportsRouter = useRouter();
 	const [games, setGames] = useState<CasinoGame[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [launchUrl, setLaunchUrl] = useState<string | null>(null);
@@ -67,7 +68,7 @@ function SportsPageContent() {
 
 	const handlePlayById = async (gameId: string) => {
 		if (!user) {
-			openAuthModal('login');
+			sportsRouter.push('/login');
 			return;
 		}
 
@@ -87,7 +88,7 @@ function SportsPageContent() {
 
 	const handlePlay = async (game: CasinoGame) => {
 		if (!user) {
-			openAuthModal('login');
+			sportsRouter.push('/login');
 			return;
 		}
 

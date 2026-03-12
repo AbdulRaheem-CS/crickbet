@@ -8,6 +8,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import { chatAPI } from '@/lib/api-client';
 import { io, Socket } from 'socket.io-client';
 import {
@@ -31,7 +32,8 @@ interface LiveChatModalProps {
 }
 
 export default function LiveChatModal({ isOpen, onClose }: LiveChatModalProps) {
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
+  const chatRouter = useRouter();
   const [tab, setTab] = useState<'chat' | 'history'>('chat');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMsg, setInputMsg] = useState('');
@@ -144,7 +146,7 @@ export default function LiveChatModal({ isOpen, onClose }: LiveChatModalProps) {
           <h3 className="text-lg font-bold text-gray-800 mb-2">Login Required</h3>
           <p className="text-sm text-gray-500 mb-5">Please log in to start a live chat with our support team.</p>
           <button
-            onClick={() => { onClose(); openAuthModal('login'); }}
+            onClick={() => { onClose(); chatRouter.push('/login'); }}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition"
           >
             Login

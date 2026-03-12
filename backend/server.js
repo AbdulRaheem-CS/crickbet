@@ -58,7 +58,25 @@ const server = http.createServer(app);
 initializeSocket(server);
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(async () => {
+  // Drop legacy unique indexes on phone and email (phone is no longer unique, email is sparse)
+  try {
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
+    if (db) {
+      const usersCol = db.collection('users');
+      const indexes = await usersCol.indexes();
+      for (const idx of indexes) {
+        if (idx.key && idx.key.phone && idx.unique) {
+          await usersCol.dropIndex(idx.name);
+          console.log('[DB] Dropped legacy unique index on phone:', idx.name);
+        }
+      }
+    }
+  } catch (err) {
+    // Index may not exist, ignore
+  }
+});
 
 // Security Middleware
 app.use(helmet());

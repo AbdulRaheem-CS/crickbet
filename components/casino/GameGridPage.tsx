@@ -36,7 +36,7 @@ function GameGridContent({
 }: GameGridPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
 
   // Read initial provider filter from URL query params (e.g., /casino?provider=Evolution)
   const initialProvider = searchParams.get('provider') || '';
@@ -170,7 +170,7 @@ function GameGridContent({
   // Handle game play
   const handlePlay = async (game: CasinoGame) => {
     if (!user) {
-      openAuthModal('login');
+      router.push('/login');
       return;
     }
 

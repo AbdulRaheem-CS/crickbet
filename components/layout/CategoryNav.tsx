@@ -49,7 +49,7 @@ const categories: Category[] = [
 
 export default function CategoryNav() {
   const router = useRouter();
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [selected, setSelected] = useState(categories[0].key);
   const [games, setGames] = useState<Record<string, CasinoGame[]>>({});
@@ -117,7 +117,7 @@ export default function CategoryNav() {
   // Handle game play
   const handlePlay = async (game: CasinoGame) => {
     if (!user) {
-      openAuthModal('login');
+      router.push('/login');
       return;
     }
 

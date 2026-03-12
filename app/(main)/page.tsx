@@ -10,7 +10,6 @@ import { FavouritesSection, PopularGamesSection } from '@/components/casino';
 import CategoryNav from '@/components/layout/CategoryNav';
 import ScrollingHeadline from '@/components/layout/ScrollingHeadline';
 import { Suspense, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
@@ -27,25 +26,20 @@ export default function DashboardPage() {
 }
 
 function DashboardPageContent() {
-  const { openAuthModal } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // If the URL contains open=register (and optional ref=code), open the
-  // site-wide register modal. After consuming the params, remove them using
-  // router.replace to avoid re-triggering on back navigation.
+  // If the URL contains open=register (and optional ref=code), redirect to the
+  // register page. After consuming the params, remove them to avoid re-triggering.
   useEffect(() => {
     try {
       const open = searchParams?.get('open');
       if (open === 'register') {
-        openAuthModal('register');
-        // Only remove the 'open' param — keep 'ref' in the URL so AuthModal can read it
-        const url = new URL(window.location.href);
-        url.searchParams.delete('open');
-        router.replace(url.pathname + url.search, { scroll: false });
+        const ref = searchParams?.get('ref') || '';
+        router.replace(`/register${ref ? `?ref=${ref}` : ''}`);
       }
     } catch (err) {
-      console.error('Failed to auto-open register modal from URL params', err);
+      console.error('Failed to redirect to register page from URL params', err);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);

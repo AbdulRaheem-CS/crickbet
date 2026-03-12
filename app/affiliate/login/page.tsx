@@ -61,12 +61,12 @@ export default function AffiliateLogin() {
         <form onSubmit={submit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email or Phone
+              Username
             </label>
             <input
               name="login"
               type="text"
-              placeholder="Enter your email or phone"
+              placeholder="Enter your username"
               value={form.login}
               onChange={handleChange}
               required

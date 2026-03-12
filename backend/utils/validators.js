@@ -25,8 +25,9 @@ exports.validatePhone = (phone) => {
   if (!phone) {
     return { isValid: false, error: 'Phone number is required' };
   }
-  if (!PATTERNS.PHONE.test(phone)) {
-    return { isValid: false, error: 'Invalid phone number (must be 10 digits starting with 6-9)' };
+  // Accept any numeric string (with optional leading +) of reasonable length
+  if (!/^\+?\d{4,15}$/.test(phone)) {
+    return { isValid: false, error: 'Invalid phone number' };
   }
   return { isValid: true };
 };

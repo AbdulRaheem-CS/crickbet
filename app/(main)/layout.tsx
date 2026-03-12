@@ -11,9 +11,8 @@ import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import MobileNav from '@/components/layout/MobileNav';
 import BetSlip from '@/components/betting/BetSlip';
-import LuckySpin from '@/components/layout/LuckySpin';
+// import LuckySpin from '@/components/layout/LuckySpin';
 import WinnerBoardModal from '@/components/layout/WinnerBoardModal';
-import AuthModal from '@/components/layout/AuthModal';
 import DepositModal from '@/components/layout/DepositModal';
 import WithdrawalModal from '@/components/layout/WithdrawalModal';
 import PlayerKYCModal from '@/components/layout/PlayerKYCModal';
@@ -21,10 +20,16 @@ import ChangePasswordModal from '@/components/layout/ChangePasswordModal';
 import CurrencyLanguageModal, { currencyOptions } from '@/components/layout/CurrencyLanguageModal';
 import LiveChatModal from '@/components/layout/LiveChatModal';
 import { useState, useEffect, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+
+// Auth pages where we hide sidebar/navbar/bottom-bar
+const AUTH_ROUTES = ['/login', '/register'];
 
 // Inner component so we can use useEffect with correct values
 function MainContent({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const pathname = usePathname();
+  const isAuthPage = AUTH_ROUTES.includes(pathname);
   const { showKYCModal, closeKYCModal, onKYCComplete, kycInitialView, kycDisableAutoComplete, showChangePasswordModal, closeChangePasswordModal } = useWithdrawal();
   const [sidebarMinimized, setSidebarMinimized] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -36,6 +41,10 @@ function MainContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const applyMargin = () => {
       if (!contentRef.current) return;
+      if (isAuthPage) {
+        contentRef.current.style.marginLeft = '0px';
+        return;
+      }
       if (window.innerWidth >= 768) {
         contentRef.current.style.marginLeft = sidebarMinimized ? '80px' : '17%';
       } else {
@@ -45,7 +54,20 @@ function MainContent({ children }: { children: React.ReactNode }) {
     applyMargin();
     window.addEventListener('resize', applyMargin);
     return () => window.removeEventListener('resize', applyMargin);
-  }, [sidebarMinimized]);
+  }, [sidebarMinimized, isAuthPage]);
+
+  // If it's an auth page, render children directly without sidebar/navbar
+  if (isAuthPage) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div ref={contentRef} style={{ minHeight: '100vh' }}>
+          <main className="flex-1">
+            {children}
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F6F6F6]">
@@ -80,9 +102,8 @@ function MainContent({ children }: { children: React.ReactNode }) {
       </div>
 
       <BetSlip isOpen={betSlipOpen} onClose={() => setBetSlipOpen(false)} />
-      <LuckySpin />
+      {/* <LuckySpin /> */}
       <WinnerBoardModal />
-      <AuthModal />
       <DepositModal />
       <WithdrawalModal />
       <PlayerKYCModal
@@ -127,7 +148,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
 /** Inline bottom bar — lives at the absolute top of the React tree, no parent transforms */
 function MobileBottomBarInline() {
-  const { user, logout, openAuthModal } = useAuth();
+  const { user, logout } = useAuth();
   const { openDepositModal } = useDeposit();
   const { openWithdrawalModal, openPersonalInfoModal, openChangePasswordModal } = useWithdrawal();
   const { openWinnerBoardModal } = useWinnerBoard();
@@ -137,6 +158,11 @@ function MobileBottomBarInline() {
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [selCurrency, setSelCurrency] = useState('INR');
   const [selLanguage, setSelLanguage] = useState('en');
+  const mobileRouter = useRouter();
+  const bottomBarPathname = usePathname();
+
+  // Hide bottom bar on auth pages
+  const isAuthPage = AUTH_ROUTES.includes(bottomBarPathname);
 
   // Load saved currency/language from localStorage
   useEffect(() => {
@@ -162,6 +188,7 @@ function MobileBottomBarInline() {
   }, [accountOpen]);
 
   if (!isMobile) return null;
+  if (isAuthPage) return null;
 
   // Logged-in bottom bar: Home | Promotions | Deposit | My Account
   if (user) {
@@ -384,7 +411,7 @@ function MobileBottomBarInline() {
 
       {/* Sign up */}
       <button
-        onClick={() => openAuthModal('register')}
+        onClick={() => mobileRouter.push('/register')}
         style={{
           flex: 1,
           height: '100%',
@@ -402,7 +429,7 @@ function MobileBottomBarInline() {
 
       {/* Login */}
       <button
-        onClick={() => openAuthModal('login')}
+        onClick={() => mobileRouter.push('/login')}
         style={{
           flex: 1,
           height: '100%',

@@ -20,15 +20,13 @@ const UserSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
       unique: true,
+      sparse: true,
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
     },
     phone: {
       type: String,
-      unique: true,
-      sparse: true,
     },
     password: {
       type: String,
@@ -166,7 +164,8 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Indexes for better query performance
-// Note: email, phone, referralCode, affiliateCode already have unique indexes from schema definition
+// Note: email, referralCode, affiliateCode have unique indexes from schema definition
+// Phone uniqueness is handled at the controller level (affiliates can share phone with players)
 UserSchema.index({ status: 1 });
 UserSchema.index({ createdAt: -1 });
 

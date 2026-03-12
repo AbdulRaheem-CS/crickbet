@@ -15,24 +15,34 @@ exports.register = asyncHandler(async (req, res, next) => {
   // Also accept referral via query param e.g. /api/auth/register?ref=<affiliateId|refCode>
   const refQuery = req.query.ref;
 
-  // Validate input
-  if (!username || !email || !password) {
+  // Validate input — phone is required, email is optional
+  if (!username || !password || !phone) {
     return res.status(400).json({
       success: false,
-      message: 'Please provide username, email, and password',
+      message: 'Please provide username, password, and phone number',
     });
   }
 
-  // Check if user already exists
-  const existingUser = await User.findOne({ 
-    $or: [{ email }, { username }] 
-  });
+  // Check if user already exists by username (globally unique)
+  const existingByUsername = await User.findOne({ username });
+  if (existingByUsername) {
+    return res.status(400).json({ success: false, message: 'Username already taken' });
+  }
 
-  if (existingUser) {
-    return res.status(400).json({
-      success: false,
-      message: 'User with this email or username already exists',
-    });
+  // Check phone uniqueness among non-affiliate (player) accounts only
+  if (phone) {
+    const existingByPhone = await User.findOne({ phone, role: { $ne: 'affiliate' } });
+    if (existingByPhone) {
+      return res.status(400).json({ success: false, message: 'Phone number already registered' });
+    }
+  }
+
+  // Check email uniqueness if provided
+  if (email) {
+    const existingByEmail = await User.findOne({ email });
+    if (existingByEmail) {
+      return res.status(400).json({ success: false, message: 'Email already registered' });
+    }
   }
 
   // Generate referral code
@@ -59,14 +69,16 @@ exports.register = asyncHandler(async (req, res, next) => {
   }
 
   // Create user
-  const user = await User.create({
+  const userData = {
     username,
-    email,
     password, // Will be hashed by pre-save hook in User model
     phone,
     referralCode,
     referredBy: referredByFinal,
-  });
+  };
+  if (email) userData.email = email;
+  
+  const user = await User.create(userData);
 
   // Generate JWT token
   const token = user.getSignedJwtToken();
@@ -100,34 +112,43 @@ exports.login = asyncHandler(async (req, res, next) => {
   if (!loginIdentifier || !password) {
     return res.status(400).json({
       success: false,
-      message: 'Please provide email and password',
+      message: 'Please provide your credentials and password',
     });
   }
 
-  // Find user by email or phone (if it's a numeric string)
+  // Find user by email, phone, or username
   const isPhone = /^[0-9]+$/.test(loginIdentifier);
-  const query = isPhone 
-    ? { phone: loginIdentifier }
-    : { email: loginIdentifier };
+  const isEmail = /\S+@\S+\.\S+/.test(loginIdentifier);
+  let user = null;
 
-  // Find user and include password field
-  const user = await User.findOne(query).select('+password');
+  if (isPhone) {
+    // Phone can match multiple users (player + affiliate), try each
+    const candidates = await User.find({ phone: loginIdentifier }).select('+password');
+    for (const candidate of candidates) {
+      const match = await candidate.matchPassword(password);
+      if (match) {
+        user = candidate;
+        break;
+      }
+    }
+    if (!user && candidates.length === 0) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+  } else {
+    const query = isEmail ? { email: loginIdentifier } : { username: loginIdentifier };
+    user = await User.findOne(query).select('+password');
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
 
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid credentials',
-    });
-  }
-
-  // Check if password matches
-  const isPasswordMatch = await user.matchPassword(password);
-
-  if (!isPasswordMatch) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid credentials',
-    });
+    const isPasswordMatch = await user.matchPassword(password);
+    if (!isPasswordMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
   }
 
   // Check account status

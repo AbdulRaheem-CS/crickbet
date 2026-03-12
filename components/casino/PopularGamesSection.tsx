@@ -10,10 +10,12 @@ import { FaChevronRight, FaPlay, FaSpinner } from 'react-icons/fa';
 import { casinoService } from '@/lib/services/casino.service';
 import type { CasinoGame } from '@/lib/services/casino.service';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import GameLauncher from '@/components/casino/GameLauncher';
 
 export default function PopularGamesSection() {
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
+  const popRouter = useRouter();
   const [games, setGames] = useState<CasinoGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [launchUrl, setLaunchUrl] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export default function PopularGamesSection() {
 
   const handlePlay = async (game: CasinoGame) => {
     if (!user) {
-      openAuthModal('login');
+      popRouter.push('/login');
       return;
     }
 

@@ -9,9 +9,11 @@
  */
 
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function MobileBottomBar() {
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
+  const router = useRouter();
 
   // Only show for guests on mobile
   if (user) return null;
@@ -29,7 +31,7 @@ export default function MobileBottomBar() {
 
       {/* Sign up */}
       <button
-        onClick={() => openAuthModal('register')}
+        onClick={() => router.push('/register')}
         className="flex-1 h-full bg-white text-gray-800 font-bold text-sm border-r border-gray-200 hover:bg-gray-50 transition"
       >
         Sign up
@@ -37,7 +39,7 @@ export default function MobileBottomBar() {
 
       {/* Login */}
       <button
-        onClick={() => openAuthModal('login')}
+        onClick={() => router.push('/login')}
         className="flex-1 h-full bg-[#005DAC] text-white font-bold text-sm hover:bg-[#004a8a] transition"
       >
         Login
