@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/services/auth.service';
 import { useAuth } from '@/context/AuthContext';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
@@ -51,7 +53,16 @@ export default function AdminLogin() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
-            <input name="password" type="password" value={form.password} onChange={handleChange} required className="w-full px-4 py-2 border rounded" />
+            <div className="relative">
+              <input name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange} required className="w-full px-4 py-2 border rounded pr-12" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
           {error && <div className="text-red-600 text-sm">{error}</div>}
           <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded">{loading ? 'Signing in...' : 'Sign In'}</button>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { affiliateAPI } from '@/lib/api-client';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 type FormState = {
   username: string;
@@ -44,6 +45,8 @@ function AffiliateRegisterContent() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -77,13 +80,7 @@ function AffiliateRegisterContent() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // For phone field, keep only digits
-    if (name === 'phone') {
-      const digits = value.replace(/\D/g, '');
-      setForm((p) => ({ ...p, phone: digits }));
-    } else {
-      setForm((p) => ({ ...p, [name]: value }));
-    }
+    setForm((p) => ({ ...p, [name]: value }));
   };
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -106,14 +103,6 @@ function AffiliateRegisterContent() {
       return;
     }
 
-    // Validate phone (must be 10 digits)
-    const phoneDigits = form.phone ? form.phone.replace(/\D/g, '') : '';
-    if (!phoneDigits || phoneDigits.length !== 10) {
-      setError('Please provide a valid 10-digit mobile number');
-      setLoading(false);
-      return;
-    }
-
     try {
       const response: any = await affiliateAPI.register({
         username: form.username,
@@ -121,7 +110,7 @@ function AffiliateRegisterContent() {
         lastName: form.lastName,
         email: form.email,
         password: form.password,
-        phone: phoneDigits,
+        phone: form.phone,
         dateOfBirth: form.dateOfBirth,
         refCode: refCode || undefined  // Include referral code from URL if present
       });
@@ -299,32 +288,48 @@ function AffiliateRegisterContent() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password <span className="text-red-500">*</span>
               </label>
-              <input
-                name="password"
-                type="password"
-                placeholder="Create a strong password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
+              <div className="relative">
+                <input
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a password"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password <span className="text-red-500">*</span>
               </label>
-              <input
-                name="confirmPassword"
-                type="password"
-                placeholder="Re-enter your password"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
+              <div className="relative">
+                <input
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Re-enter your password"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
             </div>
           </div>
 

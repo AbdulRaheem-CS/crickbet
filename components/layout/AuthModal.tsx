@@ -9,7 +9,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function AuthModal() {
   return (
@@ -59,6 +59,11 @@ function AuthModalInner() {
   }, [showAuthModal, tab, searchParams]);
   const [regError, setRegError] = useState('');
   const [regLoading, setRegLoading] = useState(false);
+
+  // Password visibility toggles
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,21 +152,30 @@ function AuthModalInner() {
 
               <div className="text-sm text-gray-800 mt-2">
                 Password
-                <input
-                  placeholder="6-20 characters and numbers"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border bg-gray-100 mt-3 border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  required
-                />
+                <div className="relative mt-3">
+                  <input
+                    placeholder="Enter your password"
+                    type={showLoginPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`w-full border bg-gray-100 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200 pr-10 ${password ? 'border-green-500' : 'border-gray-300'}`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
               <div className="text-right mt-2">
                 <button type="button" onClick={() => router.push('/forgot-password')} className="text-blue-600 text-sm">Forgot password?</button>
               </div>
               
               <div>
-                <button type="submit" disabled={loginLoading} className="w-full bg-[#999999] text-gray-100 py-2 rounded font-semibold">
+                <button type="submit" disabled={loginLoading} className={`w-full py-2 rounded font-semibold ${emailOrPhone && password ? 'bg-[#015DAC] text-white' : 'bg-[#999999] text-gray-100'}`}>
                   {loginLoading ? 'Logging in...' : 'Login'}
                 </button>
               </div>
@@ -214,36 +228,45 @@ function AuthModalInner() {
               {/* Password */}
               <div className="text-sm text-gray-800">
                 Password
-                <input 
-                  placeholder="6-20 characters and numbers" 
-                  value={regForm.password} 
-                  onChange={(e) => setRegForm({ ...regForm, password: e.target.value })} 
-                  type="password" 
-                  className="w-full border border-gray-300 mt-2 px-3 py-2 rounded bg-gray-100" 
-                  required 
-                  minLength={6}
-                  maxLength={20}
-                />
-                <div className="mt-2 text-xs text-gray-600 space-y-1">
-                  <div>Between 6~20 characters.</div>
-                  <div>At least one alphabet.</div>
-                  <div>At least one number. (Special character, symbols are allowed)</div>
+                <div className="relative mt-2">
+                  <input 
+                    placeholder="Enter your password" 
+                    value={regForm.password} 
+                    onChange={(e) => setRegForm({ ...regForm, password: e.target.value })} 
+                    type={showRegPassword ? 'text' : 'password'} 
+                    className={`w-full border px-3 py-2 rounded bg-gray-100 pr-10 ${regForm.password ? 'border-green-500' : 'border-gray-300'}`} 
+                    required 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword(!showRegPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showRegPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
               </div>
 
               {/* Confirm Password */}
               <div className="text-sm text-gray-800">
                 Confirm Password
-                <input 
-                  placeholder="Re-enter your password" 
-                  value={regForm.confirmPassword} 
-                  onChange={(e) => setRegForm({ ...regForm, confirmPassword: e.target.value })} 
-                  type="password" 
-                  className="w-full border border-gray-300 mt-2 px-3 py-2 rounded bg-gray-100" 
-                  required 
-                  minLength={6}
-                  maxLength={20}
-                />
+                <div className="relative mt-2">
+                  <input 
+                    placeholder="Re-enter your password" 
+                    value={regForm.confirmPassword} 
+                    onChange={(e) => setRegForm({ ...regForm, confirmPassword: e.target.value })} 
+                    type={showRegConfirmPassword ? 'text' : 'password'} 
+                    className={`w-full border px-3 py-2 rounded bg-gray-100 pr-10 ${regForm.confirmPassword && regForm.confirmPassword === regForm.password ? 'border-green-500' : 'border-gray-300'}`} 
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showRegConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
 
               {/* Phone Number */}
@@ -278,7 +301,7 @@ function AuthModalInner() {
 
               {/* Submit Button */}
               <div className="pt-2">
-                <button type="submit" disabled={regLoading} className="w-full bg-[#999999] text-white py-2 rounded font-semibold">
+                <button type="submit" disabled={regLoading} className={`w-full py-2 rounded font-semibold ${regForm.username && regForm.email && regForm.password && regForm.confirmPassword && regForm.phone ? 'bg-[#015DAC] text-white' : 'bg-[#999999] text-white'}`}>
                   {regLoading ? 'Creating...' : 'Submit'}
                 </button>
               </div>

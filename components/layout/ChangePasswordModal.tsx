@@ -47,10 +47,6 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
       setError('Please fill in all fields.');
       return;
     }
-    if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters.');
-      return;
-    }
     if (newPassword !== confirmPassword) {
       setError('New passwords do not match.');
       return;
@@ -222,7 +218,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                     type={showNew ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password (min 6 chars)"
+                    placeholder="Enter new password"
                     autoComplete="new-password"
                     style={{
                       width: '100%',

@@ -29,12 +29,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       unique: true,
       sparse: true,
-      match: [/^[0-9]{10}$/, 'Please provide a valid 10-digit phone number'],
     },
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
       select: false, // Don't return password by default
     },
 

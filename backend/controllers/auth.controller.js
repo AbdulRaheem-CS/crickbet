@@ -104,8 +104,8 @@ exports.login = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Find user by email or phone (if it's a 10-digit number)
-  const isPhone = /^[0-9]{10}$/.test(loginIdentifier);
+  // Find user by email or phone (if it's a numeric string)
+  const isPhone = /^[0-9]+$/.test(loginIdentifier);
   const query = isPhone 
     ? { phone: loginIdentifier }
     : { email: loginIdentifier };
@@ -227,13 +227,6 @@ exports.changePassword = asyncHandler(async (req, res, next) => {
     return res.status(400).json({
       success: false,
       message: 'Please provide current password and new password',
-    });
-  }
-
-  if (newPassword.length < 6) {
-    return res.status(400).json({
-      success: false,
-      message: 'New password must be at least 6 characters',
     });
   }
 
