@@ -146,7 +146,7 @@ const menuItems: MenuItem[] = [
   { label: 'Promotions', icon: FaGift, href: '/promotions' },
   { label: 'Live Chat', icon: FaHeadset, href: '#live-chat', isLiveChat: true },
   // { label: 'VIP Club', icon: FaCrown, href: '/vip' },
-  { label: 'Winner Board', icon: FaTrophy, href: '/winner-board', isModal: true },
+  // { label: 'Winner Board', icon: FaTrophy, href: '/winner-board', isModal: true },
   { label: 'Affiliate', icon: FaHandshake, href: '/affiliate/login', openInNewTab: true },
   { 
     label: 'Referral', 
@@ -154,13 +154,13 @@ const menuItems: MenuItem[] = [
     href: '/referral', 
     hasSubmenu: true,
     submenuItems: [
-      { label: 'Refer Bonus', href: '#' },
+      // { label: 'Refer Bonus', href: '#' },
       { label: 'Refer Program', href: '/referral' },
     ]
   },
-  { label: 'Leaderboard', icon: FaBullhorn, href: '/leaderboard' },
-  { label: 'Sponsorship', icon: FaHandshake, href: '/sponsorship' },
-  { label: 'Download App', icon: FaMobileAlt, href: '/download' },
+  // { label: 'Leaderboard', icon: FaBullhorn, href: '/leaderboard' },
+  // { label: 'Sponsorship', icon: FaHandshake, href: '/sponsorship' },
+  // { label: 'Download App', icon: FaMobileAlt, href: '/download' },
   { label: 'Responsible Gaming', icon: FaShieldAlt, href: '/responsible-gambling' },
   { label: 'About Us', icon: FaShieldAlt, href: '/about-us' },
   { label: 'FAQS', icon: FaShieldAlt, href: '/home' },
