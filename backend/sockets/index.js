@@ -64,6 +64,12 @@ exports.initializeSocket = (server) => {
       socket.join(`user:${socket.userId}`);
     }
 
+    // Admin joins admin chat room for real-time chat notifications
+    socket.on('admin:joinChat', () => {
+      socket.join('admin:chat');
+      console.log(`Socket ${socket.id} joined admin:chat room`);
+    });
+
     // Initialize betting socket handlers
     initializeBettingSocket(socket);
 

@@ -18,7 +18,7 @@ import {
   FaCrown, FaBullhorn, FaHistory, FaFileAlt,
   FaMoneyBillWave, FaCog, FaQuestionCircle,
   FaStar, FaChartLine, FaChevronLeft, FaChevronRight,
-  FaSpinner
+  FaSpinner, FaHeadset
 } from 'react-icons/fa';
 import { casinoService } from '@/lib/services/casino.service';
 import type { CasinoGame } from '@/lib/services/casino.service';
@@ -26,6 +26,7 @@ import type { CasinoGame } from '@/lib/services/casino.service';
 interface SidebarProps {
   isMinimized: boolean;
   onToggleMinimize: () => void;
+  onLiveChatOpen?: () => void;
 }
 
 interface SubMenuItem {
@@ -41,6 +42,7 @@ interface MenuItem {
   openInNewTab?: boolean;
   submenuItems?: SubMenuItem[];
   isModal?: boolean; // For items that open modals instead of navigating
+  isLiveChat?: boolean; // Opens live chat modal
   dynamicSubmenu?: boolean; // For items that fetch submenu items from API
   apiCategory?: string; // The casino category to fetch games from
 }
@@ -142,6 +144,7 @@ const menuItems: MenuItem[] = [
     ]
   },
   { label: 'Promotions', icon: FaGift, href: '/promotions' },
+  { label: 'Live Chat', icon: FaHeadset, href: '#live-chat', isLiveChat: true },
   // { label: 'VIP Club', icon: FaCrown, href: '/vip' },
   { label: 'Winner Board', icon: FaTrophy, href: '/winner-board', isModal: true },
   { label: 'Affiliate', icon: FaHandshake, href: '/affiliate/login', openInNewTab: true },
@@ -165,7 +168,7 @@ const menuItems: MenuItem[] = [
 
 ];
 
-export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps) {
+export default function Sidebar({ isMinimized, onToggleMinimize, onLiveChatOpen }: SidebarProps) {
   const pathname = usePathname();
   const { openWinnerBoardModal } = useWinnerBoard();
   const [mounted, setMounted] = useState(false);
@@ -394,6 +397,30 @@ export default function Sidebar({ isMinimized, onToggleMinimize }: SidebarProps)
                         </Link>
                       ))
                     )}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // Live Chat items (opens live chat modal)
+          if (item.isLiveChat) {
+            return (
+              <div key={item.href} className="group relative">
+                <button
+                  onClick={() => onLiveChatOpen?.()}
+                  className={`w-full flex items-center ${isMinimized ? 'justify-center' : 'justify-between'} px-4 py-3 rounded-lg transition text-gray-200 hover:bg-[#1A79D3] hover:text-white`}
+                  title={isMinimized ? item.label : ''}
+                >
+                  <div className={`flex items-center ${isMinimized ? '' : 'gap-3'}`}>
+                    <IconComponent className="text-xl" />
+                    {!isMinimized && <span className="font-extrabold text-md">{item.label}</span>}
+                  </div>
+                </button>
+                {/* Tooltip for minimized state */}
+                {isMinimized && (
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                    {item.label}
                   </div>
                 )}
               </div>

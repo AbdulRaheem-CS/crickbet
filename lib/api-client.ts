@@ -699,6 +699,41 @@ export const publicAPI = {
 };
 
 // ============================================
+// CHAT API
+// ============================================
+export const chatAPI = {
+  // User endpoints
+  getMyConversation: async () => {
+    return apiClient.get('/chat/conversations');
+  },
+
+  getMyMessages: async (params?: { page?: number; limit?: number }) => {
+    return apiClient.get('/chat/messages', { params });
+  },
+
+  sendMessage: async (message: string) => {
+    return apiClient.post('/chat/messages', { message });
+  },
+
+  // Admin endpoints
+  getConversations: async (params?: { status?: string; page?: number; limit?: number }) => {
+    return apiClient.get('/admin/chat/conversations', { params });
+  },
+
+  getConversationMessages: async (conversationId: string, params?: { page?: number; limit?: number }) => {
+    return apiClient.get(`/admin/chat/conversations/${conversationId}/messages`, { params });
+  },
+
+  adminReply: async (conversationId: string, message: string) => {
+    return apiClient.post(`/admin/chat/conversations/${conversationId}/messages`, { message });
+  },
+
+  getUnreadCount: async () => {
+    return apiClient.get('/admin/chat/unread-count');
+  },
+};
+
+// ============================================
 // AFFILIATE API
 // ============================================
 export const affiliateAPI = {

@@ -43,6 +43,7 @@ const oddsFeedRoutes = require('./routes/odds-feed.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const winnerBoardRoutes = require('./routes/winnerBoard.routes');
 const gscCallbackRoutes = require('./routes/gsc-callback.routes');
+const chatRoutes = require('./routes/chat.routes');
 
 // Public headlines controller (no auth required)
 const adminController = require('./controllers/admin.controller');
@@ -110,6 +111,7 @@ app.use('/api/slots', slotsRoutes);
 app.use('/api/odds-feed', oddsFeedRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/winner-board', winnerBoardRoutes);
+app.use('/api/chat', chatRoutes);
 
 // GSC+ Seamless Wallet Callback Routes (called by GSC+ platform, no JWT auth)
 app.use('/v1/api/seamless', gscCallbackRoutes);

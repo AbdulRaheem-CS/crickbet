@@ -21,6 +21,7 @@ import { useWithdrawal } from '@/context/WithdrawalContext';
 import { useWinnerBoard } from '@/context/WinnerBoardContext';
 import { useRouter } from 'next/navigation';
 import CurrencyLanguageModal from './CurrencyLanguageModal';
+import LiveChatModal from './LiveChatModal';
 import BD from 'country-flag-icons/react/1x1/BD';
 
 interface NavbarProps {
@@ -37,6 +38,7 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
   const { openWinnerBoardModal } = useWinnerBoard();
   const [profileOpen, setProfileOpen] = useState(false);
   const [currencyLanguageOpen, setCurrencyLanguageOpen] = useState(false);
+  const [liveChatOpen, setLiveChatOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -119,6 +121,7 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
 
           {/* ── Mobile right: Live Chat icon (< md) ── */}
           <button
+            onClick={() => setLiveChatOpen(true)}
             className="md:hidden flex flex-col items-center text-white hover:text-gray-200 transition"
             aria-label="Live Chat"
           >
@@ -239,6 +242,12 @@ export default function Navbar({ isMinimized, onToggleMinimize, onMobileMenuOpen
       <CurrencyLanguageModal 
         isOpen={currencyLanguageOpen}
         onClose={() => setCurrencyLanguageOpen(false)}
+      />
+
+      {/* Live Chat Modal */}
+      <LiveChatModal
+        isOpen={liveChatOpen}
+        onClose={() => setLiveChatOpen(false)}
       />
     </>
   );

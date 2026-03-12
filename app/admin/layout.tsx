@@ -22,6 +22,7 @@ import {
   FiMenu,
   FiX,
   FiRadio,
+  FiMessageSquare,
 } from 'react-icons/fi';
 
 function AdminLayoutContent({
@@ -106,6 +107,11 @@ function AdminLayoutContent({
       name: 'Headlines',
       href: '/admin/headlines',
       icon: FiRadio,
+    },
+    {
+      name: 'Live Chat',
+      href: '/admin/chat',
+      icon: FiMessageSquare,
     },
   ];
 

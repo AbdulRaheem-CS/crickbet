@@ -77,6 +77,13 @@ router.put('/settings', requireSuperAdmin, logAdminAction('update_settings'), ad
 router.get('/headlines', adminController.getHeadlines);
 router.put('/headlines', logAdminAction('update_headlines'), adminController.updateHeadlines);
 
+// Live Chat Management
+const chatController = require('../controllers/chat.controller');
+router.get('/chat/conversations', chatController.getConversations);
+router.get('/chat/conversations/:conversationId/messages', chatController.getConversationMessages);
+router.post('/chat/conversations/:conversationId/messages', chatController.adminReply);
+router.get('/chat/unread-count', chatController.getUnreadCount);
+
 // Logs
 router.get('/logs/admin-actions', requireSuperAdmin, adminController.getAdminLogs);
 router.get('/logs/system', requireSuperAdmin, adminController.getSystemLogs);

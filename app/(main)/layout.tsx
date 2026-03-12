@@ -19,6 +19,7 @@ import WithdrawalModal from '@/components/layout/WithdrawalModal';
 import PlayerKYCModal from '@/components/layout/PlayerKYCModal';
 import ChangePasswordModal from '@/components/layout/ChangePasswordModal';
 import CurrencyLanguageModal, { currencyOptions } from '@/components/layout/CurrencyLanguageModal';
+import LiveChatModal from '@/components/layout/LiveChatModal';
 import { useState, useEffect, useRef } from 'react';
 
 // Inner component so we can use useEffect with correct values
@@ -28,6 +29,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
   const [sidebarMinimized, setSidebarMinimized] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [betSlipOpen, setBetSlipOpen] = useState(false);
+  const [liveChatOpen, setLiveChatOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Update margin whenever sidebar state or window width changes
@@ -52,6 +54,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
       <Sidebar
         isMinimized={sidebarMinimized}
         onToggleMinimize={() => setSidebarMinimized(v => !v)}
+        onLiveChatOpen={() => setLiveChatOpen(true)}
       />
 
       {/* Mobile drawer */}
@@ -92,6 +95,10 @@ function MainContent({ children }: { children: React.ReactNode }) {
       <ChangePasswordModal
         isOpen={showChangePasswordModal}
         onClose={closeChangePasswordModal}
+      />
+      <LiveChatModal
+        isOpen={liveChatOpen}
+        onClose={() => setLiveChatOpen(false)}
       />
     </div>
   );
