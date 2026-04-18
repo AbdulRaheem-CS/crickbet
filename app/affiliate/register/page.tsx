@@ -1,10 +1,46 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { affiliateAPI } from '@/lib/api-client';
 import { FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+
+type FieldStatus = null | 'checking' | 'available' | 'taken' | 'invalid';
+
+function useAvailability(value: string, field: 'username' | 'phone', minLen: number): FieldStatus {
+  const [status, setStatus] = useState<FieldStatus>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!value || value.length < minLen) { setStatus(null); return; }
+    setStatus('checking');
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_BASE}/auth/check-availability?${field}=${encodeURIComponent(value)}`);
+        const data = await res.json();
+        setStatus(data.available ? 'available' : 'taken');
+      } catch { setStatus(null); }
+    }, 600);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [value, field, minLen]);
+  return status;
+}
+
+function StatusHint({ status, availableText, takenText }: { status: FieldStatus; availableText: string; takenText: string }) {
+  if (status === 'checking') return <p className="text-gray-400 text-xs mt-1">Checking…</p>;
+  if (status === 'available') return <p className="text-green-500 text-xs mt-1">✓ {availableText}</p>;
+  if (status === 'taken') return <p className="text-red-500 text-xs mt-1">✗ {takenText}</p>;
+  return null;
+}
+
+function borderClass(status: FieldStatus) {
+  if (status === 'available') return 'border-green-500';
+  if (status === 'taken') return 'border-red-500';
+  return 'border-gray-300';
+}
 
 export default function AffiliateRegister() {
   return (
@@ -41,6 +77,12 @@ function AffiliateRegisterContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Availability checks
+  const usernameStatus = useAvailability(username, 'username', 4);
+  const phoneRawStatus = useAvailability(phone, 'phone', 10);
+  const phoneValid = /^\d{10,11}$/.test(phone.replace(/\s/g, ''));
+  const phoneStatus: FieldStatus = !phone ? null : !phoneValid ? 'invalid' : phoneRawStatus;
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -69,18 +111,11 @@ function AffiliateRegisterContent() {
 
   const goToStep2 = () => {
     setError('');
-    if (!username.trim()) {
-      setError('Please enter a username');
-      return;
-    }
-    if (!password) {
-      setError('Please enter a password');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+    if (!username.trim()) { setError('Please enter a username'); return; }
+    if (usernameStatus === 'taken') { setError('Username is already taken'); return; }
+    if (usernameStatus === 'checking') { setError('Please wait while we check username availability'); return; }
+    if (!password) { setError('Please enter a password'); return; }
+    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
     setStep(2);
   };
 
@@ -90,11 +125,9 @@ function AffiliateRegisterContent() {
     setError('');
     setMessage('');
 
-    if (!phone.trim()) {
-      setError('Please enter a phone number');
-      setLoading(false);
-      return;
-    }
+    if (!phone.trim()) { setError('Please enter a phone number'); setLoading(false); return; }
+    if (!phoneValid) { setError('Phone number must be 10 or 11 digits'); setLoading(false); return; }
+    if (phoneStatus === 'taken') { setError('Phone number is already registered'); setLoading(false); return; }
 
     try {
       const response: any = await affiliateAPI.register({
@@ -189,11 +222,12 @@ function AffiliateRegisterContent() {
               </label>
               <input
                 type="text"
-                placeholder="Choose a username"
+                placeholder="Choose a username (can be a phone number)"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${borderClass(usernameStatus)}`}
               />
+              <StatusHint status={usernameStatus} availableText="Username available" takenText="Username already taken" />
             </div>
 
             <div>
@@ -263,11 +297,20 @@ function AffiliateRegisterContent() {
               </label>
               <input
                 type="tel"
-                placeholder="Enter your phone number"
+                placeholder="10 or 11 digit number, any start"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                maxLength={11}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
+                  !phone ? 'border-gray-300' : !phoneValid ? 'border-red-500' : borderClass(phoneStatus)
+                }`}
               />
+              {phone && !phoneValid && (
+                <p className="text-red-500 text-xs mt-1">Must be 10 or 11 digits</p>
+              )}
+              {phoneValid && (
+                <StatusHint status={phoneStatus} availableText="Phone number available" takenText="Phone number already registered" />
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

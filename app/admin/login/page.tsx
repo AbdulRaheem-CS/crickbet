@@ -11,6 +11,7 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<null | 'wrong' | 'correct'>(null);
   const router = useRouter();
   const { login } = useAuth();
 
@@ -21,21 +22,22 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setPasswordStatus(null);
     try {
-      // use AuthContext login which stores token and user
       await login(form.email, form.password);
-  // verify role is admin (use api client so it targets the backend)
-  const meResp: any = await authService.me();
-  const user = meResp?.data || meResp?.user || meResp;
-  if (!user || user.role !== 'admin') {
+      const meResp: any = await authService.me();
+      const user = meResp?.data || meResp?.user || meResp;
+      if (!user || user.role !== 'admin') {
         setError('Access denied: not an admin');
-        // logout
+        setPasswordStatus('wrong');
         localStorage.removeItem('authToken');
         setLoading(false);
         return;
       }
-      router.push('/admin');
+      setPasswordStatus('correct');
+      setTimeout(() => router.push('/admin'), 600);
     } catch (err: any) {
+      setPasswordStatus('wrong');
       setError(err?.response?.data?.message || err.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -54,7 +56,20 @@ export default function AdminLogin() {
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <div className="relative">
-              <input name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange} required className="w-full px-4 py-2 border rounded pr-12" />
+              <input
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={(e) => { handleChange(e); setPasswordStatus(null); }}
+                required
+                className={`w-full px-4 py-2 border rounded pr-12 transition-colors ${
+                  passwordStatus === 'wrong'
+                    ? 'border-red-500 focus:ring-red-300'
+                    : passwordStatus === 'correct'
+                    ? 'border-green-500 focus:ring-green-300'
+                    : 'border-gray-300'
+                }`}
+              />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -63,6 +78,12 @@ export default function AdminLogin() {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
+            {passwordStatus === 'wrong' && (
+              <p className="text-red-500 text-xs mt-1">Wrong password</p>
+            )}
+            {passwordStatus === 'correct' && (
+              <p className="text-green-500 text-xs mt-1">Password correct</p>
+            )}
           </div>
           {error && <div className="text-red-600 text-sm">{error}</div>}
           <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded">{loading ? 'Signing in...' : 'Sign In'}</button>

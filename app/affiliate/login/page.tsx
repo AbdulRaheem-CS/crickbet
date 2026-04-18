@@ -14,6 +14,7 @@ export default function AffiliateLogin() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<null | 'wrong' | 'correct'>(null);
   const router = useRouter();
   const { login } = useAuth();
 
@@ -32,18 +33,19 @@ export default function AffiliateLogin() {
     setLoading(true);
     setError('');
     setMessage('');
+    setPasswordStatus(null);
 
     try {
       await login(form.login, form.password);
-      // If successful, auth guard will redirect to /affiliate
+      setPasswordStatus('correct');
       setMessage('Login successful! Redirecting...');
-      router.push('/affiliate');
+      setTimeout(() => router.push('/affiliate'), 600);
     } catch (error: unknown) {
-      // Extract error message from various shapes (api-client rejects { message, status, data })
       const anyErr = error as any;
       const msg = (anyErr && typeof anyErr === 'object' && (anyErr.message || anyErr.data?.message || anyErr.response?.data?.message))
         || (error instanceof Error && error.message)
         || 'Login failed. Please check your credentials.';
+      setPasswordStatus('wrong');
       setError(msg as string);
     } finally {
       setLoading(false);
@@ -84,9 +86,15 @@ export default function AffiliateLogin() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
                 value={form.password}
-                onChange={handleChange}
+                onChange={(e) => { handleChange(e); setPasswordStatus(null); }}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-12"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition pr-12 ${
+                  passwordStatus === 'wrong'
+                    ? 'border-red-500 focus:ring-red-300'
+                    : passwordStatus === 'correct'
+                    ? 'border-green-500 focus:ring-green-300'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
               />
               <button
                 type="button"
@@ -96,6 +104,12 @@ export default function AffiliateLogin() {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
+            {passwordStatus === 'wrong' && (
+              <p className="text-red-500 text-xs mt-1">Wrong password</p>
+            )}
+            {passwordStatus === 'correct' && (
+              <p className="text-green-500 text-xs mt-1">Password correct</p>
+            )}
           </div>
 
           <button 

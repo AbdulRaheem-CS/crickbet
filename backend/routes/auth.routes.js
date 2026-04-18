@@ -9,6 +9,11 @@ const authController = require('../controllers/auth.controller');
 const { authLimiter, passwordResetLimiter, otpLimiter } = require('../middleware/rateLimit.middleware');
 const { protect } = require('../middleware/auth.middleware');
 
+// @route   GET /api/auth/check-availability
+// @desc    Check if username or phone is available
+// @access  Public
+router.get('/check-availability', authController.checkAvailability);
+
 // @route   POST /api/auth/register
 // @desc    Register new user
 // @access  Public

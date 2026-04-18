@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<null | 'wrong' | 'correct'>(null);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -27,11 +28,14 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
+    setPasswordStatus(null);
     setLoginLoading(true);
     try {
       await login(emailOrPhone, password);
-      router.push('/');
+      setPasswordStatus('correct');
+      setTimeout(() => router.push('/'), 600);
     } catch (err: any) {
+      setPasswordStatus('wrong');
       setLoginError(err?.message || String(err));
     } finally {
       setLoginLoading(false);
@@ -75,8 +79,14 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   type={showLoginPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full border bg-gray-100 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200 pr-10 ${password ? 'border-green-500' : 'border-gray-300'}`}
+                  onChange={(e) => { setPassword(e.target.value); setPasswordStatus(null); }}
+                  className={`w-full border bg-gray-100 px-3 py-2 rounded focus:outline-none focus:ring-2 pr-10 transition-colors ${
+                    passwordStatus === 'wrong'
+                      ? 'border-red-500 focus:ring-red-200'
+                      : passwordStatus === 'correct'
+                      ? 'border-green-500 focus:ring-green-200'
+                      : 'border-gray-300 focus:ring-blue-200'
+                  }`}
                   required
                 />
                 <button
@@ -87,6 +97,12 @@ export default function LoginPage() {
                   {showLoginPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
+              {passwordStatus === 'wrong' && (
+                <p className="text-red-500 text-xs mt-1">Wrong password</p>
+              )}
+              {passwordStatus === 'correct' && (
+                <p className="text-green-500 text-xs mt-1">Password correct</p>
+              )}
             </div>
             <div className="text-right mt-2">
               <Link href="/forgot-password" className="text-blue-600 text-sm">Forgot password?</Link>

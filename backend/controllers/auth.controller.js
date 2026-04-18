@@ -6,6 +6,25 @@
 const { asyncHandler } = require('../middleware/error.middleware');
 const User = require('../models/User');
 
+// @desc    Check if username or phone is already taken
+// @route   GET /api/auth/check-availability?username=x  OR  ?phone=x
+// @access  Public
+exports.checkAvailability = asyncHandler(async (req, res) => {
+  const { username, phone } = req.query;
+
+  if (username) {
+    const exists = await User.findOne({ username: username.trim() }).select('_id').lean();
+    return res.json({ available: !exists, field: 'username' });
+  }
+
+  if (phone) {
+    const exists = await User.findOne({ phone: phone.trim() }).select('_id').lean();
+    return res.json({ available: !exists, field: 'phone' });
+  }
+
+  return res.status(400).json({ success: false, message: 'Provide username or phone query param' });
+});
+
 // @desc    Register new user
 // @route   POST /api/auth/register
 // @access  Public
