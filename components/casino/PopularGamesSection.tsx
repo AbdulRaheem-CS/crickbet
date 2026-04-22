@@ -73,7 +73,7 @@ export default function PopularGamesSection() {
         />
       )}
 
-      <div className="mx-0 md:mx-8 mt-0 mb-12 p-2">
+      <div className="mx-0 md:mx-8 mt-0 mb-2 p-2">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 py-[11px] md:py-0">
           <div className="flex items-center gap-3">

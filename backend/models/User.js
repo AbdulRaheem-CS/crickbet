@@ -24,6 +24,8 @@ const UserSchema = new mongoose.Schema(
       sparse: true,
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
+      // Convert empty string / null → undefined so the sparse index ignores it
+      set: (v) => (v === '' || v === null ? undefined : v),
     },
     phone: {
       type: String,

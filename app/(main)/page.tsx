@@ -77,9 +77,9 @@ function DashboardPageContent() {
       <PopularGamesSection />
 
       {/* Dashboard image banner (desktop for md+, mobile for smaller screens) */}
-      <div className="mx-0 md:mx-8 mt-8">
+      {/* <div className="mx-0 md:mx-8 mt-8"> */}
         {/* Desktop */}
-        <div className="hidden md:block">
+        {/* <div className="hidden md:block">
           <Image
             src="/dashboard.png"
             alt="Dashboard banner"
@@ -87,10 +87,10 @@ function DashboardPageContent() {
             height={300}
             className="rounded-lg w-full h-auto object-cover"
           />
-        </div>
+        </div> */}
 
         {/* Mobile */}
-        <div className="block md:hidden">
+        {/* <div className="block md:hidden">
           <Image
             src="/dashboard_mobile.png"
             alt="Dashboard mobile banner"
@@ -98,8 +98,8 @@ function DashboardPageContent() {
             height={300}
             className="rounded-lg w-full h-auto object-cover"
           />
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
 
       {/* Footer Section */}
       <div className="mt-2 bg-[#F5F6F5] px-0 md:px-8 py-6">

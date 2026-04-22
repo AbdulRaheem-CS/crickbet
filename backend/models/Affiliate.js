@@ -57,6 +57,15 @@ const AffiliateSchema = new mongoose.Schema(
       monthlyVisitors: { type: Number },
     },
 
+    // Alternative contact (Telegram / WhatsApp)
+    others: {
+      type: {
+        type: String,
+        enum: ['telegram', 'whatsapp'],
+      },
+      value: { type: String, trim: true }, // username for telegram, phone for whatsapp
+    },
+
     // Payment information
     paymentInfo: {
       method: {

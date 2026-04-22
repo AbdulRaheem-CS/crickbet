@@ -67,6 +67,8 @@ function AffiliateRegisterContent() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [othersType, setOthersType] = useState<'' | 'telegram' | 'whatsapp'>('');
+  const [othersValue, setOthersValue] = useState('');
 
   const [refCode, setRefCode] = useState('');
   const [error, setError] = useState('');
@@ -138,6 +140,7 @@ function AffiliateRegisterContent() {
         lastName: lastName.trim() || undefined,
         dateOfBirth: dateOfBirth || undefined,
         refCode: refCode || undefined,
+        others: othersType && othersValue.trim() ? { type: othersType, value: othersValue.trim() } : null,
       });
       setMessage(response.message || 'Registration submitted successfully!');
       setSuccess(true);
@@ -350,6 +353,47 @@ function AffiliateRegisterContent() {
                 onChange={(e) => setDateOfBirth(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Others <span className="text-gray-400 text-xs font-normal">(optional)</span>
+              </label>
+              {/* Type dropdown */}
+              <select
+                value={othersType}
+                onChange={(e) => { setOthersType(e.target.value as '' | 'telegram' | 'whatsapp'); setOthersValue(''); }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition mb-2"
+              >
+                <option value="">— Select contact type —</option>
+                <option value="telegram">📱 Telegram</option>
+                <option value="whatsapp">💬 WhatsApp</option>
+              </select>
+
+              {/* Telegram: username input */}
+              {othersType === 'telegram' && (
+                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                  <span className="px-3 py-3 bg-gray-100 text-gray-500 text-sm border-r border-gray-300 select-none">@</span>
+                  <input
+                    type="text"
+                    placeholder="Telegram username (without @)"
+                    value={othersValue}
+                    onChange={(e) => setOthersValue(e.target.value.replace(/^@/, ''))}
+                    className="flex-1 px-3 py-3 focus:outline-none text-sm"
+                  />
+                </div>
+              )}
+
+              {/* WhatsApp: phone input — no digit-count validation */}
+              {othersType === 'whatsapp' && (
+                <input
+                  type="tel"
+                  placeholder="WhatsApp phone number (with country code)"
+                  value={othersValue}
+                  onChange={(e) => setOthersValue(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+              )}
             </div>
 
             <div>

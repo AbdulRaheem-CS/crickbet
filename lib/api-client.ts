@@ -746,6 +746,7 @@ export const affiliateAPI = {
     lastName?: string;
     dateOfBirth?: string;
     refCode?: string;
+    others?: { type: 'telegram' | 'whatsapp'; value: string } | null;
   }) => {
     return apiClient.post('/affiliate/register', data);
   },

@@ -16,7 +16,7 @@ module.exports = {
   
   // Public registration for affiliate (creates a pending user and affiliate record)
   registerAffiliate: asyncHandler(async (req, res) => {
-    const { username, firstName, lastName, password, phone, dateOfBirth, refCode } = req.body;
+    const { username, firstName, lastName, password, phone, dateOfBirth, refCode, others } = req.body;
 
     // Step 1 fields are required
     if (!username || !password) {
@@ -69,6 +69,7 @@ module.exports = {
       role: 'affiliate',
       status: 'pending',
       referredBy: referringAffiliateId || undefined,
+      // email intentionally omitted — sparse unique index must not receive null/undefined clash
     });
 
     // Create minimal affiliate record (ensure affiliateCode provided)
@@ -79,7 +80,12 @@ module.exports = {
     for (let i = 0; i < 7; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    await Affiliate.create({ user: user._id, affiliateCode: code, parentAffiliate: referringAffiliateId || undefined });
+    await Affiliate.create({
+      user: user._id,
+      affiliateCode: code,
+      parentAffiliate: referringAffiliateId || undefined,
+      ...(others?.type && others?.value ? { others: { type: others.type, value: others.value } } : {}),
+    });
 
     res.status(201).json({ success: true, message: 'Affiliate registration submitted. Awaiting admin approval.' });
   }),
